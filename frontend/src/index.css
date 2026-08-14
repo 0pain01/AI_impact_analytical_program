@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  background: #fbfbfe;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .reveal {
+    opacity: 0;
+  }
+  .reveal.is-visible {
+    animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(0 51 141 / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(0 51 141 / 0.06) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .text-gradient {
+    /* KPMG Blue → Cobalt gradient text. */
+    background: linear-gradient(90deg, #00338d, #0091da, #00338d);
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* Fine film grain over the gradient mesh — without it the large, heavily
+     blurred radial gradients show visible 8-bit banding on wide displays. */
+  .noise-overlay {
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* Lenis smooth scroll: the library drives scroll position itself, so native
+   smooth-scroll must stay off or the two fight each other. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

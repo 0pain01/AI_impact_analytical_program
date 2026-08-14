@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: connector-jira
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:aiimpacteval}
+    password: ${RABBITMQ_PASSWORD:aiimpacteval_local}
+    publisher-confirm-type: correlated
+
+server:
+  port: ${SERVER_PORT:8083}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+jira:
+  # Jira webhooks are not HMAC-signed; the webhook URL carries this shared token
+  # (?token=...) and requests without it are rejected.
+  webhook-secret: ${JIRA_WEBHOOK_SECRET:}
+  base-url: ${JIRA_BASE_URL:}
+  # Atlassian Cloud basic auth: account email + API token (read-only scope).
+  email: ${JIRA_EMAIL:}
+  api-token: ${JIRA_API_TOKEN:}
+  backfill-days: ${JIRA_BACKFILL_DAYS:90}

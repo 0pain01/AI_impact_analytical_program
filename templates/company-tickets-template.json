@@ -1,0 +1,112 @@
+{
+  "_meta": {
+    "name": "OFFICE iQ — Company + Tickets DUMMY TEMPLATE (rules-only, no real content)",
+    "purpose": "Upload exactly this file (company + tickets already merged) via the admin Catalog toolbar's 'Add workspace' button, 'Company & tickets file (.json) *' picker (POST /api/admin/catalog/import, ADR 0009). This is the one required file for that flow — 'DSA problems file' and 'Quiz file' on the same modal are separate, optional uploads (see dsa-template.json / quiz-template.json). This whole `_meta` block is ignored on import (unknown top-level keys are stripped).",
+    "howToUse": [
+      "1. Fill in `company` — this becomes the catalog/workspace entry.",
+      "2. Replace the sample `tickets` entries with real ones — one ticket per simulation day, day 1..30, no duplicate days, at most 30 total.",
+      "3. Delete this `_meta` block (optional — it's stripped automatically) and upload as the 'Company & tickets file'.",
+      "4. Optionally also pick a separate DSA and/or quiz file in the same modal (dsa-template.json / quiz-template.json) — they get merged onto this same import automatically, no need to combine them into this file too."
+    ],
+    "importEndpoint": "POST /api/admin/catalog/import (admin-gated, ADR 0009)",
+    "validationOrder": "The whole bundle is normalized BEFORE anything is written to the database. An invalid file returns 422 with a `details` array listing every problem found — no partial/orphan data is ever created. Re-uploading the same `slug` later is a 409 (no upsert) — pick a slug you're sure is new.",
+    "requiredFields": {
+      "company": ["name", "slug", "businessDomain", "baseRepoUrl"],
+      "tickets[]": ["title", "description"]
+    },
+    "hardLimits": {
+      "tickets": "1 to 30 items, one per simulation day (1..30), each day used at most once"
+    },
+    "enums": {
+      "company.catalogType": ["workspace"],
+      "company.businessDomain": ["BANKING_FINTECH", "SOCIAL_MEDIA", "ENTERPRISE_SAAS"],
+      "company.category": ["FULLSTACK", "JAVA", "REACT", "JAVASCRIPT", "TYPESCRIPT", "REACT_NATIVE", "AI_ML"],
+      "company.cultureProfile.communicationStyle": ["async", "sync"],
+      "company.cultureProfile.reviewStrictness": "integer 1-5",
+      "tickets[].type": ["onboarding", "feature", "bug", "security", "performance", "reliability", "tech-debt", "incident", "deployment"],
+      "tickets[].priority": ["low", "medium", "high", "critical"]
+    },
+    "notes": [
+      "`company.techStack` is a free-form object — the keys shown below are just the common ones, not a fixed schema. Add, remove, or rename keys freely (e.g. `messaging`, `observability`) — the workspace UI renders every key you set.",
+      "`company.category` accepts either an array (a workspace can carry more than one, e.g. [\"JAVA\", \"REACT\"] — ADR 0019) or a single string (back-compat). It's optional; omit it entirely for an uncategorized entry rather than sending an empty array (rejected).",
+      "`company.slug` must be lowercase letters, numbers and hyphens only, and must not already exist in the catalog.",
+      "`tickets[].day` is optional per item — if omitted, the item's position in the array (1st = day 1, 2nd = day 2, ...) is used instead. Prefer setting it explicitly so re-ordering the array can't silently change days.",
+      "`tickets[].ticketId` is optional — if omitted one is generated from the domain + day.",
+      "Only 3 sample tickets are shown to keep this template short — copy an object to add more, up to the 30 hard limit."
+    ]
+  },
+
+  "company": {
+    "name": "<COMPANY_OR_PROJECT_DISPLAY_NAME>",
+    "slug": "<lowercase-hyphenated-unique-slug>",
+    "catalogType": "workspace",
+    "businessDomain": "<BANKING_FINTECH | SOCIAL_MEDIA | ENTERPRISE_SAAS>",
+    "category": ["<FULLSTACK | JAVA | REACT | JAVASCRIPT | TYPESCRIPT | REACT_NATIVE | AI_ML>"],
+    "tagline": "<one-line pitch, max 200 chars>",
+    "description": "<longer description of the simulated codebase/product, max 4000 chars>",
+    "domainDetails": "<domain-specific context a candidate needs, max 2000 chars>",
+    "stackHighlights": ["<Tech1>", "<Tech2>", "<Tech3>"],
+    "techStack": {
+      "frontend": "<e.g. React + Vite>",
+      "backend": "<e.g. Node.js / Express>",
+      "database": "<e.g. PostgreSQL>",
+      "cloudProvider": "<optional, e.g. AWS>",
+      "cicd": "<optional, e.g. GitHub Actions>",
+      "containerization": "<optional, e.g. Docker>",
+      "testing": "<optional, e.g. Vitest>",
+      "language": "<optional, e.g. JavaScript (ES modules)>"
+    },
+    "cultureProfile": {
+      "reviewStrictness": 3,
+      "communicationStyle": "async"
+    },
+    "baseRepoUrl": "https://github.com/<org>/<repo>",
+    "suggestedBranch": "main",
+    "branding": {
+      "primaryColor": "#4f46e5",
+      "displayName": "<short display name for badges/cards>"
+    }
+  },
+
+  "tickets": [
+    {
+      "day": 1,
+      "ticketId": "<PREFIX-D1-01>",
+      "title": "<short ticket title, max 200 chars>",
+      "description": "<full ticket description a candidate reads before starting, max 4000 chars>",
+      "type": "onboarding",
+      "priority": "low",
+      "estimatedHours": 4,
+      "acceptanceCriteria": [
+        "<criterion 1>",
+        "<criterion 2>"
+      ]
+    },
+    {
+      "day": 2,
+      "ticketId": "<PREFIX-D2-01>",
+      "title": "<example: a real feature/bug/security ticket>",
+      "description": "<describe the concrete task, the file(s)/area involved, and how it's verified>",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 6,
+      "acceptanceCriteria": [
+        "<criterion 1>",
+        "<criterion 2>",
+        "<criterion 3>"
+      ]
+    },
+    {
+      "day": 3,
+      "ticketId": "<PREFIX-D3-01>",
+      "title": "<example: a security/incident ticket>",
+      "description": "<describe the concrete task, the file(s)/area involved, and how it's verified>",
+      "type": "security",
+      "priority": "critical",
+      "estimatedHours": 3,
+      "acceptanceCriteria": [
+        "<criterion 1>"
+      ]
+    }
+  ]
+}

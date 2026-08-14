@@ -1,0 +1,28 @@
+# Secrets & local config — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.tsbuildinfo
+
+# Build outputs
+target/
+build/
+dist/
+node_modules/
+.next/
+out/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Claude Code local settings (machine-specific paths — never commit)
+.claude/settings.local.json
+
+# Logs & local data
+*.log
+docker-volumes/

@@ -1,0 +1,139 @@
+{
+  "_meta": {
+    "name": "OFFICE iQ — Project Pack DUMMY TEMPLATE (rules-only, no real content)",
+    "purpose": "Hand this file to another repo/team so they can generate ONE JSON file describing their own project — company + tickets + DSA problems + quiz — in the exact shape OFFICE iQ's importer expects. Every field below is either a placeholder (replace the <ANGLE_BRACKET> value) or a working minimal example showing the shape. This whole `_meta` block is ignored on import (unknown top-level keys are stripped) — it exists purely to document the rules inline.",
+    "howToUse": [
+      "1. Fill in `company` — this becomes the catalog/workspace entry.",
+      "2. Replace the sample `tickets` entries with real ones — one ticket per simulation day, day 1..30, no duplicate days, at most 30 total.",
+      "3. Replace the sample `dsaProblems` — at most 30, paired to tickets either by matching `day` or, if `day` is omitted, by position (1st DSA -> 1st ticket, 2nd -> 2nd, ...).",
+      "4. Replace the sample `quizQuestions` — at most 200, each MUST have exactly 4 `options` and a `correctIndex` in 0..3.",
+      "5. Delete this `_meta` block (optional — it's stripped automatically) and upload the file via the admin Catalog screen's 'Import project (.json)' button.",
+      "6. On success this ONE upload creates the catalog entry AND its tickets/DSA/quiz in one shot. Re-uploading the same `slug` later is a 409 (no upsert) — pick a slug you're sure is new."
+    ],
+    "importEndpoint": "POST /api/admin/catalog/import (admin-gated, ADR 0009)",
+    "validationOrder": "The whole file is normalized BEFORE anything is written to the database (normalizeContentPack runs against your `company` block first). An invalid file returns 422 with a `details` array listing every problem found — no partial/orphan data is ever created.",
+    "hardLimits": {
+      "tickets": "1 to 30 items, one per simulation day (1..30), each day used at most once",
+      "dsaProblems": "0 to 30 items (optional, but pairing with tickets is how DSA problems reach candidates)",
+      "quizQuestions": "0 to 200 items (optional; each question needs exactly 4 options)"
+    },
+    "enums": {
+      "company.catalogType": ["workspace"],
+      "company.businessDomain": ["BANKING_FINTECH", "SOCIAL_MEDIA", "ENTERPRISE_SAAS"],
+      "company.category": ["BACKEND", "FULLSTACK", "FRONTEND", "MOBILE", "AI", "DEVOPS", "DATA"],
+      "company.cultureProfile.communicationStyle": ["async", "sync"],
+      "company.cultureProfile.reviewStrictness": "integer 1-5",
+      "tickets[].type": ["onboarding", "feature", "bug", "security", "performance", "reliability", "tech-debt", "incident", "deployment"],
+      "tickets[].priority": ["low", "medium", "high", "critical"],
+      "dsaProblems[].difficulty": ["Easy", "Medium", "Hard"],
+      "quizQuestions[].difficulty": ["Easy", "Medium", "Hard"]
+    },
+    "requiredFields": {
+      "company": ["name", "slug", "businessDomain", "baseRepoUrl"],
+      "tickets[]": ["title", "description"],
+      "dsaProblems[]": ["title", "prompt"],
+      "quizQuestions[]": ["question", "options (exactly 4)", "correctIndex (0-3)"]
+    },
+    "notes": [
+      "`company.slug` must be lowercase letters, numbers and hyphens only, and must not already exist in the catalog.",
+      "`tickets[].day` is optional per item — if omitted, the item's position in the array (1st = day 1, 2nd = day 2, ...) is used instead. Prefer setting it explicitly so re-ordering the array can't silently change days.",
+      "`tickets[].ticketId` is optional — if omitted one is generated from the domain + day.",
+      "`dsaProblems[].day` links a problem to a ticket's day; if omitted, DSA problems pair to tickets positionally.",
+      "`quizQuestions[].correctIndex` and `.explanation` are stored server-side and never sent to candidates before they submit — write real answers, they are not shown early.",
+      "Malformed quiz questions are silently dropped (not fatal); malformed tickets/DSA make the whole upload fail with a 422 and a details list, so fix everything the response flags.",
+      "Only 2 sample `tickets`/1 sample `dsaProblems`/1 sample `quizQuestions` are shown below to keep this template short — copy those objects to add more, up to the hard limits above (30/30/200)."
+    ]
+  },
+
+  "company": {
+    "name": "<COMPANY_OR_PROJECT_DISPLAY_NAME>",
+    "slug": "<lowercase-hyphenated-unique-slug>",
+    "catalogType": "workspace",
+    "businessDomain": "<BANKING_FINTECH | SOCIAL_MEDIA | ENTERPRISE_SAAS>",
+    "category": "<BACKEND | FULLSTACK | FRONTEND | MOBILE | AI | DEVOPS | DATA>",
+    "tagline": "<one-line pitch, max 200 chars>",
+    "description": "<longer description of the simulated codebase/product, max 4000 chars>",
+    "objective": "<what a candidate should demonstrate by the end of 30 days, max 2000 chars>",
+    "domainDetails": "<domain-specific context a candidate needs, max 2000 chars>",
+    "stackHighlights": ["<Tech1>", "<Tech2>", "<Tech3>"],
+    "techStack": {
+      "frontend": "<e.g. React + Vite>",
+      "backend": "<e.g. Node.js / Express>",
+      "database": "<e.g. PostgreSQL>",
+      "cloudProvider": "<optional, e.g. AWS>",
+      "cicd": "<optional, e.g. GitHub Actions>",
+      "containerization": "<optional, e.g. Docker>",
+      "testing": "<optional, e.g. Vitest>",
+      "language": "<optional, e.g. JavaScript (ES modules)>"
+    },
+    "cultureProfile": {
+      "reviewStrictness": 3,
+      "communicationStyle": "async"
+    },
+    "baseRepoUrl": "https://github.com/<org>/<repo>",
+    "suggestedBranch": "main",
+    "branding": {
+      "primaryColor": "#4f46e5",
+      "displayName": "<short display name for badges/cards>"
+    }
+  },
+
+  "tickets": [
+    {
+      "day": 1,
+      "ticketId": "<PREFIX-D1-01>",
+      "title": "<short ticket title, max 200 chars>",
+      "description": "<full ticket description a candidate reads before starting, max 4000 chars>",
+      "type": "onboarding",
+      "priority": "low",
+      "estimatedHours": 4,
+      "acceptanceCriteria": [
+        "<criterion 1>",
+        "<criterion 2>"
+      ]
+    },
+    {
+      "day": 2,
+      "ticketId": "<PREFIX-D2-01>",
+      "title": "<example: a real feature/bug/security ticket>",
+      "description": "<describe the concrete task, the file(s)/area involved, and how it's verified>",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 6,
+      "acceptanceCriteria": [
+        "<criterion 1>",
+        "<criterion 2>",
+        "<criterion 3>"
+      ]
+    }
+  ],
+
+  "dsaProblems": [
+    {
+      "day": 1,
+      "id": "<DSA-101>",
+      "title": "<problem name, e.g. Two Sum>",
+      "difficulty": "Easy",
+      "topics": ["<Topic1>", "<Topic2>"],
+      "prompt": "<full problem statement, max 2000 chars>",
+      "example": "<one input/output example, max 600 chars>"
+    }
+  ],
+
+  "quizQuestions": [
+    {
+      "id": "<QZ-101>",
+      "topic": "<short topic label>",
+      "difficulty": "Easy",
+      "question": "<MCQ question text, max 500 chars>",
+      "options": [
+        "<option A>",
+        "<option B — the correct one>",
+        "<option C>",
+        "<option D>"
+      ],
+      "correctIndex": 1,
+      "explanation": "<why the correct option is right, shown to candidates only after they submit>"
+    }
+  ]
+}

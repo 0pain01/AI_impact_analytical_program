@@ -1,0 +1,239 @@
+openapi: 3.1.0
+info:
+  title: AI Impact Evaluation API Core
+  version: 0.1.0
+  description: >
+    Dashboards API (contract-first — update this spec before implementing endpoint changes;
+    engineering standards §5). RBAC is enforced (E8-S1, ADR-0004): all endpoints except the
+    auth bridge require a bearer JWT with an appropriate role claim.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+paths:
+  /auth/dev-token:
+    post:
+      operationId: issueDevToken
+      summary: Dev/pilot auth bridge — issue a short-lived role-scoped JWT (ADR-0004)
+      description: >
+        Gated by auth.dev-token-enabled; MUST be disabled in production (OIDC replaces it).
+        Every issuance is audited.
+      security: []
+      parameters:
+        - { name: email, in: query, required: true, schema: { type: string } }
+        - name: role
+          in: query
+          required: true
+          schema: { type: string, enum: [ADMIN, ENG_LEADER, MANAGER, IC, FINANCE_READONLY] }
+      responses:
+        "200":
+          description: Issued token.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token, role, expiresAt]
+                properties:
+                  token: { type: string }
+                  role: { type: string }
+                  expiresAt: { type: string, format: date-time }
+        "400": { description: Unknown role. }
+  /audit:
+    get:
+      operationId: getAuditLog
+      summary: Recent audit entries (E8-S3) — ADMIN only
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500, default: 100 } }
+      responses:
+        "200":
+          description: Audit entries, newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    actorEmail: { type: [string, "null"] }
+                    action: { type: string }
+                    targetType: { type: string }
+                    targetId: { type: [string, "null"] }
+                    occurredAt: { type: string, format: date-time }
+        "403": { description: Caller is not ADMIN. }
+  /metrics/cockpit:
+    get:
+      operationId: getCockpitMetrics
+      summary: Cockpit tiles — daily metric series with per-metric aggregates (PRD E4-S1/E4-S2)
+      description: Requires an analytical role (ADMIN, ENG_LEADER, MANAGER, FINANCE_READONLY); IC is denied.
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 90, default: 30 }
+          description: Trailing window in days.
+        - name: scope
+          in: query
+          required: false
+          schema: { type: string, default: "*" }
+          description: >
+            Repository full name, "*" for the org rollup, or a team id (from GET /teams) for
+            the org → team drill-down (E4-S2).
+      responses:
+        "200":
+          description: Metric tiles for the requested scope and window.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CockpitResponse" }
+        "400":
+          description: Invalid parameters (RFC 9457 problem details).
+  /teams:
+    get:
+      operationId: listTeams
+      summary: List teams for the Cockpit org → team drill-down picker (PRD E4-S2)
+      responses:
+        "200":
+          description: Teams, alphabetical by name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [id, name, repoCount]
+                  properties:
+                    id: { type: string, format: uuid }
+                    name: { type: string }
+                    repoCount: { type: integer, description: Number of repositories mapped to this team. }
+  /setup/status:
+    get:
+      operationId: getSetupStatus
+      summary: Onboarding checklist and time-to-value instrumentation (PRD E1-S5) — ADMIN/ENG_LEADER only
+      description: >
+        Every field is derived from staging/mart timestamps already written by the ingestion and
+        metrics pipelines — never a manually-maintained flag.
+      responses:
+        "200":
+          description: Current setup readiness.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SetupStatus" }
+        "403": { description: Caller is not ADMIN or ENG_LEADER. }
+  /admin/connectors:
+    get:
+      operationId: getAdminConnectors
+      summary: Connector health for the Admin console (PRD E1-S4/E8) — ADMIN only
+      description: >
+        Status, last-sync time, and event count per connector, derived from staging.raw_event
+        timestamps already written by ingestion — never a manually-maintained status flag. Only
+        connectors actually wired into ingestion are listed; connectors named in the PRD but not
+        yet built are intentionally absent rather than faked.
+      responses:
+        "200":
+          description: Connector health, one entry per wired connector.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ConnectorHealth" }
+        "403": { description: Caller is not ADMIN. }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: RS256 JWT with a `role` claim (ADR-0004).
+  schemas:
+    CockpitResponse:
+      type: object
+      required: [asOf, windowDays, scope, tiles]
+      properties:
+        asOf:
+          type: string
+          format: date-time
+          description: Freshness indicator — most recent mart computation time in scope (null when no data).
+        windowDays: { type: integer }
+        scope: { type: string }
+        tiles:
+          type: array
+          items: { $ref: "#/components/schemas/CockpitTile" }
+    CockpitTile:
+      type: object
+      required: [metricKey, label, unit, aggregation, aggregate, sampleSize, series]
+      properties:
+        metricKey:
+          type: string
+          enum: [deployment_frequency, lead_time_p50_hours, change_failure_rate, mttr_p50_hours, pr_velocity, pr_cycle_time_p50_hours]
+        label: { type: string }
+        unit: { type: string }
+        aggregation:
+          type: string
+          enum: [sum, latest, rate]
+          description: >
+            How `aggregate` was derived from the series: sum for counts, latest for daily
+            percentiles, rate for sample-weighted ratios (e.g. change failure rate).
+        aggregate:
+          type: [number, "null"]
+          description: Headline value for the tile over the window; null when no data.
+        sampleSize: { type: integer }
+        definition:
+          type: string
+          description: Plain-language metric definition (metric transparency requirement).
+        series:
+          type: array
+          items:
+            type: object
+            required: [day, value]
+            properties:
+              day: { type: string, format: date }
+              value: { type: number }
+    SetupStatus:
+      type: object
+      required: [checklist, targetMinutes]
+      properties:
+        checklist:
+          type: array
+          items:
+            type: object
+            required: [key, label, done, detail]
+            properties:
+              key: { type: string, enum: [git, ticketing, ci, dashboard] }
+              label: { type: string }
+              done: { type: boolean }
+              detail: { type: string }
+        firstConnectionAt:
+          type: [string, "null"]
+          format: date-time
+          description: Earliest ingested GitHub or Jira event, org-wide.
+        firstDashboardAt:
+          type: [string, "null"]
+          format: date-time
+          description: Earliest mart.metric_daily computation, org-wide.
+        minutesToValue:
+          type: [integer, "null"]
+          description: Minutes between firstConnectionAt and firstDashboardAt; null until both exist.
+        withinTarget:
+          type: [boolean, "null"]
+          description: Whether minutesToValue is within the 30-minute time-to-value target.
+        targetMinutes: { type: integer, description: The time-to-value target (30, PRD E1-S5). }
+    ConnectorHealth:
+      type: object
+      required: [key, name, type, status, eventCount]
+      properties:
+        key: { type: string, description: Stable identifier, e.g. "github". }
+        name: { type: string, description: Display name, e.g. "GitHub". }
+        type: { type: string, description: "Connector category, e.g. \"Git host\", \"CI/CD\", \"Ticketing\"." }
+        status:
+          type: string
+          enum: [CONNECTED, STALE, NOT_CONNECTED]
+          description: >
+            CONNECTED = event within the last 24h; STALE = has synced before but not in 24h;
+            NOT_CONNECTED = no event ever ingested.
+        lastSyncAt:
+          type: [string, "null"]
+          format: date-time
+          description: Most recent event received_at for this connector; null if never connected.
+        eventCount: { type: integer, description: Total events ingested for this connector. }

@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "name": "OFFICE iQ — Quiz DUMMY TEMPLATE (rules-only, no real content)",
+    "purpose": "Upload via the admin Catalog screen's Content step 'Upload Quiz JSON' button (POST /api/admin/catalog/:id/content/quiz, ADR 0027) to add/replace the daily-quiz pool on an EXISTING catalog entry that already has tickets uploaded — or pick this file separately as the 'Quiz file (.json, optional)' in the same 'Add workspace' modal as company-tickets-template.json to include it in a brand-new entry (POST /api/admin/catalog/import, ADR 0009; the two files are merged client-side, no need to combine them yourself). This `_meta` block is ignored on import.",
+    "howToUse": [
+      "1. Replace the sample entries with real ones — at most 200, each MUST have exactly 4 `options` and a `correctIndex` in 0..3.",
+      "2. Delete this `_meta` block (optional — it's stripped automatically) and upload."
+    ],
+    "hardLimits": { "quizQuestions": "1 to 200 items (the button requires at least one)" },
+    "requiredFields": ["question", "options (exactly 4)", "correctIndex (0-3)"],
+    "enums": { "difficulty": ["Easy", "Medium", "Hard"] },
+    "notes": [
+      "This upload PATCHES the current active content pack in place — tickets and DSA problems are left exactly as they were, no new pack version is created.",
+      "The catalog entry must already have tickets uploaded (via the Tickets button or 'Add workspace') before a quiz can be uploaded — otherwise the request fails with a 422 telling you to upload tickets first.",
+      "`correctIndex` and `.explanation` are stored server-side and never sent to candidates before they submit — write real answers, they are not shown early.",
+      "Malformed questions are silently dropped (not fatal) rather than failing the whole upload — a partly-bad quiz file still gets you the valid questions.",
+      "Only 2 samples are shown to keep this template short — copy an object to add more, up to the 200 hard limit."
+    ]
+  },
+
+  "quizQuestions": [
+    {
+      "id": "<QZ-101>",
+      "topic": "<short topic label>",
+      "difficulty": "Easy",
+      "question": "<MCQ question text, max 500 chars>",
+      "options": [
+        "<option A>",
+        "<option B — the correct one>",
+        "<option C>",
+        "<option D>"
+      ],
+      "correctIndex": 1,
+      "explanation": "<why the correct option is right, shown to candidates only after they submit>"
+    },
+    {
+      "id": "<QZ-102>",
+      "topic": "<short topic label>",
+      "difficulty": "Medium",
+      "question": "<MCQ question text, max 500 chars>",
+      "options": [
+        "<option A — the correct one>",
+        "<option B>",
+        "<option C>",
+        "<option D>"
+      ],
+      "correctIndex": 0,
+      "explanation": "<why the correct option is right, shown to candidates only after they submit>"
+    }
+  ]
+}

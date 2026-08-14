@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.3.5</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.aiimpacteval</groupId>
+  <artifactId>ai-impact-evaluation-services</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>AI Impact Evaluation Services</name>
+  <description>Engineering Intelligence and Analytics Platform - backend services</description>
+
+  <properties>
+    <java.version>21</java.version>
+    <maven.compiler.release>21</maven.compiler.release>
+    <!-- Boot 3.3 manages 1.19.x, whose docker-java speaks an API version Docker Engine 29+ rejects -->
+    <testcontainers.version>1.21.3</testcontainers.version>
+  </properties>
+
+  <modules>
+    <module>platform-common</module>
+    <module>api-core</module>
+    <module>ingestion-writer</module>
+    <module>metrics-engine</module>
+    <module>identity-service</module>
+    <module>connectors/connector-github</module>
+    <module>connectors/connector-jira</module>
+  </modules>
+  <!-- CI/CD (GitHub Actions) flows through connector-github; a Jenkins connector would be a new module -->
+</project>

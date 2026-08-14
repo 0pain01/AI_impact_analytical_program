@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: connector-github
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:aiimpacteval}
+    password: ${RABBITMQ_PASSWORD:aiimpacteval_local}
+    publisher-confirm-type: correlated
+
+server:
+  port: ${SERVER_PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+github:
+  # HMAC secret configured on the GitHub webhook; requests failing verification are rejected.
+  webhook-secret: ${GITHUB_WEBHOOK_SECRET:}
+  # Fine-grained PAT or GitHub App installation token with read-only scopes (security standards §3).
+  token: ${GITHUB_TOKEN:}
+  api-base-url: ${GITHUB_API_BASE_URL:https://api.github.com}
+  backfill-days: ${GITHUB_BACKFILL_DAYS:90}

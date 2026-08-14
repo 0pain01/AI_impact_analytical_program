@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: metrics-engine
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5442/aiimpacteval}
+    username: ${DB_USERNAME:aiimpacteval}
+    password: ${DB_PASSWORD:aiimpacteval_local}
+
+server:
+  port: ${SERVER_PORT:8084}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+metrics:
+  # Recompute cadence; NFR freshness target is 15 min, default well inside it.
+  recompute-interval-ms: ${METRICS_RECOMPUTE_INTERVAL_MS:300000}
+  window-days: ${METRICS_WINDOW_DAYS:90}
+  # Per-repo deployment detection default (PRD E1-S3 / metric-definitions DORA-1):
+  # a successful workflow run whose name matches this pattern counts as a production deploy.
+  deploy-workflow-pattern: ${METRICS_DEPLOY_WORKFLOW_PATTERN:deploy|release|publish|ship|rollout}
+  # Remediation detection for CFR/MTTR (DORA-3/4): a successful run whose name matches this
+  # is treated as a hotfix/rollback that remediates a prior deployment.
+  hotfix-workflow-pattern: ${METRICS_HOTFIX_WORKFLOW_PATTERN:hotfix|rollback|revert}

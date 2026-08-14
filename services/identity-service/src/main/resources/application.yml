@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: identity-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5442/aiimpacteval}
+    username: ${DB_USERNAME:aiimpacteval}
+    password: ${DB_PASSWORD:aiimpacteval_local}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:aiimpacteval}
+    password: ${RABBITMQ_PASSWORD:aiimpacteval_local}
+    listener:
+      simple:
+        acknowledge-mode: auto
+        default-requeue-rejected: false
+
+server:
+  port: ${SERVER_PORT:8085}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true

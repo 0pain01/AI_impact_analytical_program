@@ -1,0 +1,32 @@
+{
+  "_meta": {
+    "name": "OFFICE iQ — DSA problems DUMMY TEMPLATE (rules-only, no real content)",
+    "purpose": "Upload via the admin Catalog screen's Content step 'Upload DSA problems JSON' button (POST /api/admin/catalog/:id/content/dsa, ADR 0027) to add/replace DSA problems on an EXISTING catalog entry that already has tickets uploaded — or pick this file separately as the 'DSA problems file (.json, optional)' in the same 'Add workspace' modal as company-tickets-template.json to include it in a brand-new entry (POST /api/admin/catalog/import, ADR 0009; the two files are merged client-side, no need to combine them yourself). This `_meta` block is ignored on import.",
+    "howToUse": [
+      "1. Replace the sample entries with real ones — each item carries its own `day` (1..30), no duplicate days, at most 30 total.",
+      "2. Delete this `_meta` block (optional — it's stripped automatically) and upload."
+    ],
+    "hardLimits": { "dsaProblems": "1 to 30 items (the button requires at least one)" },
+    "requiredFields": ["title", "prompt"],
+    "enums": { "difficulty": ["Easy", "Medium", "Hard"] },
+    "notes": [
+      "As of ADR 0027, `day` links a DSA problem to a simulation day directly — it is matched onto that day's ticket(s) at *read* time, not denormalised onto the ticket at upload time. Previously (ADR 0009) DSA problems were paired onto tickets positionally when `day` was omitted; that positional fallback still works the same way here (1st item = day 1, 2nd = day 2, ...) if you omit `day`, but setting it explicitly is safer.",
+      "This upload PATCHES the current active content pack in place — tickets and the quiz pool are left exactly as they were, no new pack version is created.",
+      "The catalog entry must already have tickets uploaded (via the Tickets button or 'Add workspace') before DSA can be uploaded — otherwise the request fails with a 422 telling you to upload tickets first.",
+      "Malformed items make the whole upload fail with a 422 and a `details` array listing every problem found — no partial write.",
+      "Only 1 sample is shown to keep this template short — copy the object to add more, up to the 30 hard limit."
+    ]
+  },
+
+  "dsaProblems": [
+    {
+      "day": 1,
+      "id": "<DSA-101>",
+      "title": "<problem name, e.g. Two Sum>",
+      "difficulty": "Easy",
+      "topics": ["<Topic1>", "<Topic2>"],
+      "prompt": "<full problem statement, max 2000 chars>",
+      "example": "<one input/output example, max 600 chars>"
+    }
+  ]
+}

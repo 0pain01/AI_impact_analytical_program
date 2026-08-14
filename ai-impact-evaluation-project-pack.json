@@ -1,0 +1,1433 @@
+{
+  "company": {
+    "name": "AI Impact Evaluation",
+    "slug": "ai-impact-evaluation",
+    "catalogType": "workspace",
+    "businessDomain": "ENTERPRISE_SAAS",
+    "category": ["FULLSTACK", "JAVA", "REACT", "AI_ML"],
+    "tagline": "AI-native Software Engineering Intelligence: one trustworthy, real-time answer to how healthy your delivery is and what your AI investment returns.",
+    "description": "AI Impact Evaluation is a multi-tenant, event-driven Software Engineering Intelligence (SEI) platform. Teams connect their existing tools once and the platform ingests data from source control (GitHub/GitLab), project management (Jira), CI/CD (GitHub Actions/Jenkins), code quality (SonarQube), incident management (PagerDuty/Opsgenie), and AI coding assistants (Copilot, Cursor, Claude Code). It normalizes contributor identities and team structures, then computes DORA and SPACE-aligned metrics on a materialized semantic layer with zero manual tagging. Results are served through role-based drill-down dashboards for Executives, Managers, and ICs, plus exportable board-ready reports and (Phase 3) AI adoption/ROI analytics and an automated first-pass code-review agent. Architecture is five layers: Sources -> Ingestion (queue-isolated connectors) -> Identity & Normalization -> Metrics/Semantic layer -> Application/API -> Presentation. Connectors are isolated behind a message queue so a vendor API outage degrades gracefully and never loses events. It is strictly an analytics layer over the toolchain and never replaces Jira/GitHub/CI.",
+    "objective": "Over 30 days a candidate should demonstrate they can extend an event-driven analytics platform end to end: build and harden queue-isolated connectors with idempotent, replay-safe ingestion; reconcile contributor identities and team structures; implement DORA metric computations (deployment frequency, lead time, change failure rate, MTTR) correctly from tool events with no manual tagging; expose role-scoped, RBAC-enforced dashboard APIs; and ship the frontend drill-down and export surfaces. Throughout, they must respect the platform's non-negotiable rules: no surveillance features, no manual-tagging dependency, analytics-layer-only, least-privilege integrations, and full auditability. Documentation (ADRs, architecture doc, metric definitions, OpenAPI, CHANGELOG) is part of the definition of done for every change.",
+    "domainDetails": "SEI platforms live or die on metric trust. Three principles govern everything: (1) Trust over surveillance -- no keystroke, idle-time, or activity-monitoring metric may exist or be derivable; individual views are opt-in and growth-framed, never leaderboards. (2) Zero-tagging automation -- every metric derives automatically from tool events; engineers never change how they work. (3) Metric transparency -- every metric ships with a published definition and formula. DORA metrics are computed at repo, org, and team scope; team rollups are computed from raw per-event rows joined to team-repo membership, never by averaging repo-day medians (averaging medians is statistically wrong for percentiles). Lead time is reported as median (p50/p75/p90), never mean. Failures for CFR/MTTR come from incident linkage or hotfix/rollback heuristics, with confidence badges when heuristic-based. Freshness target is <=15 minutes from source event to materialized metric; dashboards load <3s at ~1M events; time-to-first-insight target is <30 minutes from first connection.",
+    "stackHighlights": ["Java 21 + Spring Boot 3", "React 18 + TypeScript + Tailwind", "PostgreSQL 16 (staging/core/mart schemas)", "RabbitMQ event queue", "DORA / SPACE metrics engine"],
+    "techStack": {
+      "frontend": "React 18 + TypeScript + Tailwind + Recharts",
+      "backend": "Java 21 + Spring Boot 3 (Web, Data JPA, Security)",
+      "database": "PostgreSQL 16 (staging, core, mart schemas)",
+      "cloudProvider": "Containerized cloud (K8s when scale demands)",
+      "cicd": "GitHub Actions",
+      "containerization": "Docker Compose (local) / Docker",
+      "testing": "JUnit + Spring Boot Test (backend), Vitest (frontend), recorded API fixtures for connectors",
+      "language": "Java 21 (backend), TypeScript (frontend)"
+    },
+    "cultureProfile": {
+      "reviewStrictness": 4,
+      "communicationStyle": "async"
+    },
+    "baseRepoUrl": "https://github.com/ai-impact-evaluation/platform",
+    "suggestedBranch": "main",
+    "branding": {
+      "primaryColor": "#4f46e5",
+      "displayName": "AI Impact Eval"
+    }
+  },
+
+  "tickets": [
+    {
+      "day": 1,
+      "ticketId": "AIE-D1-01",
+      "title": "Onboarding: run the platform locally and trace one event end-to-end",
+      "description": "Get the monorepo running via docker-compose (Postgres with staging/core/mart schemas, RabbitMQ, api-core, metrics-engine, identity-service, a connector, and the React frontend). Read docs/03-architecture/system-architecture.md and docs/02-standards/engineering-standards.md first -- code that contradicts them is rejected. Then follow a single GitHub webhook event through the pipeline: connector -> queue -> ingestion writer -> staging.raw_event -> identity-service -> core -> metrics-engine -> mart -> api-core -> dashboard. Write down where the event lands at each hop.",
+      "type": "onboarding",
+      "priority": "low",
+      "estimatedHours": 4,
+      "acceptanceCriteria": [
+        "All services start via docker-compose and the frontend renders the Cockpit shell",
+        "You can name the queue topic, the staging idempotency key, and the mart table a metric lands in",
+        "You have read the architecture doc and engineering standards and can state the five non-negotiable product rules"
+      ]
+    },
+    {
+      "day": 2,
+      "ticketId": "AIE-D2-01",
+      "title": "Verify GitHub webhook signatures in the GitHub connector",
+      "description": "The GitHub connector must reject any inbound webhook whose HMAC-SHA256 signature (X-Hub-Signature-256) does not match the shared secret before the payload is wrapped in an event envelope and published to the queue. Secret comes from an env var / secret manager -- never from code or config. Invalid signatures return 401 and are counted, never enqueued.",
+      "type": "security",
+      "priority": "high",
+      "estimatedHours": 5,
+      "acceptanceCriteria": [
+        "Requests with a missing or wrong X-Hub-Signature-256 are rejected with 401 and never published to the queue",
+        "Signature comparison is constant-time; the secret is read from an env var / secret manager",
+        "Unit tests cover valid, invalid, and missing-signature cases against recorded fixtures"
+      ]
+    },
+    {
+      "day": 3,
+      "ticketId": "AIE-D3-01",
+      "title": "Wrap connector payloads in the standard event envelope (ADR-0003)",
+      "description": "Every connector must publish to the queue using the standard envelope {source, sourceId, eventType, receivedAt, connectorVersion, payload} defined in ADR-0003. Refactor the GitHub connector's publish path to build this envelope consistently for PR, commit, and workflow_run events. If the envelope contract changes, ADR-0003 and the architecture doc must be updated in the same PR.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 5,
+      "acceptanceCriteria": [
+        "All published events use the {source, sourceId, eventType, receivedAt, connectorVersion, payload} envelope",
+        "eventType clearly distinguishes PR, commit, and workflow_run events",
+        "Envelope construction is covered by tests; no business logic leaks into the connector"
+      ]
+    },
+    {
+      "day": 4,
+      "ticketId": "AIE-D4-01",
+      "title": "Idempotent staging writes in the Ingestion Writer",
+      "description": "The Ingestion Writer is the sole writer to staging. It must insert each event idempotently on (source, sourceId, eventType) so that webhook re-delivery and backfill replay never create duplicate staging rows. Staging is immutable and append-only. Poison messages that repeatedly fail must be routed to the dead-letter queue, not retried forever.",
+      "type": "reliability",
+      "priority": "high",
+      "estimatedHours": 6,
+      "acceptanceCriteria": [
+        "Re-delivering the same event yields exactly one staging.raw_event row (idempotent on source+sourceId+eventType)",
+        "Poison messages are routed to the DLQ after bounded retries",
+        "Replaying a backfill batch over existing data produces no duplicates"
+      ]
+    },
+    {
+      "day": 5,
+      "ticketId": "AIE-D5-01",
+      "title": "Rate-limit-aware backfill polling for the GitHub connector",
+      "description": "On first connect the connector backfills historical PRs, commits, and workflow runs. It must honor GitHub's rate-limit headers and Retry-After, backing off and queue-and-draining rather than dropping events. Backfill progress must be visible so the Admin can see it advancing toward the 30-minute time-to-value target.",
+      "type": "reliability",
+      "priority": "high",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Connector honors rate-limit / Retry-After headers and backs off without dropping events",
+        "Backfill is resumable and idempotent (no duplicate events on retry)",
+        "Backfill progress is exposed for the Admin setup checklist"
+      ]
+    },
+    {
+      "day": 6,
+      "ticketId": "AIE-D6-01",
+      "title": "Jira connector: ingest issues with status-change changelogs",
+      "description": "Add Jira issue ingestion (epics, stories, sprints) including the full status-change history (changelog) needed for ticket lead time. Non-standard workflows must be tolerated and reported, never rejected. Publish under the standard envelope with source='jira'. Request only least-privilege read scopes.",
+      "type": "feature",
+      "priority": "high",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Issues ingest with their status-transition changelog within the freshness target",
+        "Non-standard workflows are tolerated and surfaced, not dropped",
+        "Only least-privilege read scopes are requested; integration tests run against recorded Jira fixtures"
+      ]
+    },
+    {
+      "day": 7,
+      "ticketId": "AIE-D7-01",
+      "title": "Contributor identity reconciliation across tools",
+      "description": "One human is v.sharma in Git, 'Vishal S' in Jira, and vishal@ in CI. The identity-service must resolve multiple tool identities to a single canonical contributor using email/name/user-ID heuristics with confidence scoring, detect bot accounts, and fall back to git signatures. Unresolved identities are flagged for Admin review -- never silently dropped or double-counted.",
+      "type": "feature",
+      "priority": "high",
+      "estimatedHours": 8,
+      "acceptanceCriteria": [
+        "Multiple tool identities for one person resolve to a single canonical contributor with a confidence score",
+        "Bot accounts are detected and excluded from people-dimension metrics by default",
+        "Unresolved identities are flagged for review, never dropped or double-counted"
+      ]
+    },
+    {
+      "day": 8,
+      "ticketId": "AIE-D8-01",
+      "title": "Team-structure import and team-repo membership",
+      "description": "Import the org > team > sub-team hierarchy from GitHub org teams (members + repos) and upsert core.team, core.team_repo, and core.team_member, resolving members through the identity resolver. Team-repo membership is what later lets the metrics engine compute team-scoped DORA rollups. Teams without a source-of-record can be created manually.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Org teams, members, and repos import into core.team / core.team_repo / core.team_member",
+        "Members are resolved through the identity resolver, not stored as raw tool handles",
+        "Teams lacking a source-of-record can be created manually"
+      ]
+    },
+    {
+      "day": 9,
+      "ticketId": "AIE-D9-01",
+      "title": "DORA-1: deployment frequency at repo, org, and team scope",
+      "description": "Compute deployment frequency as the count of successful production deployment events per day/week per scope. Production deployments are detected per-repo via the configurable deploy workflow pattern (METRICS_DEPLOY_WORKFLOW_PATTERN) -- no manual tagging. Failed/cancelled deployments are excluded from the count. Materialize into mart.metric_daily with scope_id/scope_type. Add the metric definition to docs/01-product/metric-definitions.md.",
+      "type": "feature",
+      "priority": "high",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Deployment frequency computes at repo, org, and team scope into mart.metric_daily",
+        "Failed/cancelled deployments are excluded; rollbacks count as deploys but are flagged for CFR",
+        "A metric definition (formula, sources, edge cases, BRD ref) is added to metric-definitions.md"
+      ]
+    },
+    {
+      "day": 10,
+      "ticketId": "AIE-D10-01",
+      "title": "DORA-2: lead time for changes (median, with p75/p90)",
+      "description": "For each PR included in a deployment, lead time = deploy_finished_at - min(authored_at of commits unique to the PR). Report the median (p50) with p75/p90 available; means are never used. Handle squash/rebase (use pre-merge PR commit history), force-pushed branches (earliest surviving authored time), and cap stale authored dates >90 days with a UI flag rather than skewing the median.",
+      "type": "feature",
+      "priority": "high",
+      "estimatedHours": 8,
+      "acceptanceCriteria": [
+        "Lead time reports p50/p75/p90 (never mean) per scope",
+        "Squash/rebase and force-push edge cases use the correct authored timestamps",
+        "Authored dates >90 days are capped and flagged, and unit tests cover each edge case"
+      ]
+    },
+    {
+      "day": 11,
+      "ticketId": "AIE-D11-01",
+      "title": "Team-scope percentiles from raw events, not median-of-medians",
+      "description": "A subtle correctness bug: team-scoped percentile metrics (lead time, MTTR, PR cycle time) must be computed from the underlying per-event population joined via core.team_repo -- NOT by averaging repo-day medians. Averaging medians does not yield the team's true median. Refactor the team rollup path to aggregate raw rows and add a regression test proving the two approaches differ.",
+      "type": "bug",
+      "priority": "critical",
+      "estimatedHours": 6,
+      "acceptanceCriteria": [
+        "Team percentile metrics are computed from the raw per-event population, never from repo-day medians",
+        "A regression test constructs data where median-of-medians differs from the true median and asserts the correct value",
+        "The behavior is documented in the metric definition's edge cases"
+      ]
+    },
+    {
+      "day": 12,
+      "ticketId": "AIE-D12-01",
+      "title": "DORA-3: change failure rate from hotfix/rollback heuristics",
+      "description": "CFR = failed_deployments / total_deployments over the window. A deployment is failed if within 48h it is followed by a rollback event or a hotfix deploy (branch hotfix/*, label hotfix) touching the same deployable unit. Until the incident connector ships, display a 'heuristic-based' confidence badge. A rollback deploy is itself excluded from the failure numerator (it is the remediation). Detection patterns are per-repo configurable.",
+      "type": "feature",
+      "priority": "high",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "CFR computes from rollback/hotfix heuristics within a 48h window and shows a heuristic-confidence badge",
+        "A rollback deploy is excluded from the failure numerator; multiple failure signals for one deploy count once",
+        "Deploy/hotfix detection patterns are per-repo configurable via env"
+      ]
+    },
+    {
+      "day": 13,
+      "ticketId": "AIE-D13-01",
+      "title": "DORA-4: MTTR (median restore time)",
+      "description": "MTTR (median) MVP heuristic = remediation_deploy_finished_at - failed_deploy_finished_at for deployments marked failed by DORA-3. Keep the name MTTR for industry familiarity though the statistic is the median. Cascading hotfix chains attribute failure to the earliest deploy in the chain. Design the code so the Phase-2 incident-based formula (incident_resolved_at - incident_opened_at) can slot in without a rewrite.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 6,
+      "acceptanceCriteria": [
+        "MTTR reports the median restore time for heuristic-failed deployments",
+        "Cascading hotfix chains attribute failure to the earliest deploy",
+        "The computation is structured so the incident-based formula can replace the heuristic without a rewrite"
+      ]
+    },
+    {
+      "day": 14,
+      "ticketId": "AIE-D14-01",
+      "title": "Incremental metric recompute within the 15-minute freshness target",
+      "description": "The metrics engine must incrementally recompute only the affected metric windows when new events land, keeping end-to-end lag (source event -> materialized mart) under 15 minutes. Recompute must be reproducible from staging: the same input always yields the same output, and the metric logic version is recorded with each value.",
+      "type": "performance",
+      "priority": "high",
+      "estimatedHours": 8,
+      "acceptanceCriteria": [
+        "Only affected windows recompute on new events; end-to-end lag stays under 15 minutes in a load smoke test",
+        "Recompute from staging is deterministic and reproducible",
+        "Each materialized value records the metric logic version that produced it"
+      ]
+    },
+    {
+      "day": 15,
+      "ticketId": "AIE-D15-01",
+      "title": "Cockpit API: headline metrics with a freshness indicator",
+      "description": "Implement GET /api/v1/metrics/cockpit?scope=<id> returning headline DORA metrics plus PR velocity for a repo, org (*), or team UUID, each with current value, trend, target band, and a data-freshness timestamp. Update the OpenAPI spec before implementing (APIs are contract-first). Empty results must explain why (no data / out of range / still ingesting), never return a blank payload.",
+      "type": "feature",
+      "priority": "high",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "The endpoint serves repo, org, and team scope with value, trend, target band, and freshness timestamp",
+        "OpenAPI spec is updated before the endpoint change and matches the response",
+        "Empty results carry an explanatory reason code rather than a blank payload"
+      ]
+    },
+    {
+      "day": 16,
+      "ticketId": "AIE-D16-01",
+      "title": "Cockpit UI: real tiles with loading/error/empty states and inline definitions",
+      "description": "Wire the React Cockpit to /api/v1/metrics/cockpit. Each tile shows the metric value, trend, RAG status against its target band, and its plain-language definition on hover (metric transparency is a trust requirement). Implement explicit loading, error, and empty states -- an empty chart must explain itself. Must render within 3s at ~1M events.",
+      "type": "feature",
+      "priority": "high",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Tiles render real metrics with RAG status and an inline definition on hover",
+        "Loading, error, and empty states are implemented and self-explanatory",
+        "Cockpit renders within the 3s performance budget"
+      ]
+    },
+    {
+      "day": 17,
+      "ticketId": "AIE-D17-01",
+      "title": "Org -> team drill-down preserving filters and breadcrumbs",
+      "description": "Add GET /api/v1/teams for the team picker and let the Cockpit drill from org into team-scoped tiles. Drill-down must preserve the active date/scope filters and provide breadcrumbs to navigate back up. Individual-level drill-down is out of scope here and must remain gated by RBAC AND personal opt-in (E8-S2).",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 6,
+      "acceptanceCriteria": [
+        "Drill-down from org to team preserves active filters and time range",
+        "Breadcrumbs navigate back up the scope hierarchy",
+        "No individual-level drill-down is exposed without opt-in gating"
+      ]
+    },
+    {
+      "day": 18,
+      "ticketId": "AIE-D18-01",
+      "title": "Enforce five-role RBAC on every metrics and admin endpoint",
+      "description": "api-core is an RS256 JWT resource server (ADR-0004). The five roles ADMIN, ENG_LEADER, MANAGER, IC, FINANCE_READONLY must enforce their default visibility on every request. Gate /api/v1/metrics/** to analytical roles (IC denied org/team metrics), and /api/v1/audit/** and /api/v1/admin/** to ADMIN. No path -- including exports and deep links -- may leak data outside the caller's scope. Run the OWASP Top 10 checklist for each endpoint.",
+      "type": "security",
+      "priority": "critical",
+      "estimatedHours": 8,
+      "acceptanceCriteria": [
+        "All five roles enforce default visibility server-side; IC is denied org/team metrics",
+        "Admin and audit endpoints are ADMIN-only; no export or deep link leaks out-of-scope data",
+        "An OWASP Top 10 review is recorded for the changed endpoints and access changes are audited"
+      ]
+    },
+    {
+      "day": 19,
+      "ticketId": "AIE-D19-01",
+      "title": "Append-only, tamper-evident audit log with admin-only read",
+      "description": "Every configuration change, access grant, and data export must be written to an append-only audit log capturing actor, timestamp, and target, retrievable for >=12 months. Reads are ADMIN-only. Lay the groundwork for cryptographic tamper-evidence (hash chaining) even if full hardening comes later. Wire the Admin console to GET /api/v1/audit.",
+      "type": "security",
+      "priority": "high",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Config changes, access grants, and exports are written to the append-only audit log with actor/timestamp/target",
+        "Audit reads are ADMIN-only and retained >=12 months",
+        "A tamper-evidence approach (e.g. hash chaining) is designed and documented"
+      ]
+    },
+    {
+      "day": 20,
+      "ticketId": "AIE-D20-01",
+      "title": "Presentation-ready export reflecting current filters",
+      "description": "Executives export a shareable, formatted artifact (PDF/deck-ready) reflecting the current filters, completing in seconds, with metric definitions attached. Every export emits a report_exported event and an audit-log entry. The export must respect the caller's access scope -- it can never contain data the viewer could not see on screen.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Export reflects active filters, attaches metric definitions, and completes in seconds",
+        "Each export emits report_exported and an audit entry",
+        "Export contents never exceed the caller's access scope"
+      ]
+    },
+    {
+      "day": 21,
+      "ticketId": "AIE-D21-01",
+      "title": "30-minute time-to-value: setup status checklist",
+      "description": "Implement GET /api/v1/setup/status (ADMIN/ENG_LEADER) deriving a four-item checklist (git / ticketing / CI / dashboard connected) and a firstConnectionAt -> firstDashboardAt minutesToValue figure entirely from staging.raw_event and mart.metric_daily timestamps -- no manual flags. When no events/metrics exist yet, minutesToValue and withinTarget stay null (never a misleading 0).",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 6,
+      "acceptanceCriteria": [
+        "The checklist and minutesToValue derive purely from existing staging/mart timestamps",
+        "withinTarget = minutesToValue <= 30; both stay null until any event/metric exists",
+        "The figure is org-wide, not per-user, and the frontend Setup view renders it"
+      ]
+    },
+    {
+      "day": 22,
+      "ticketId": "AIE-D22-01",
+      "title": "PR review analytics: size, turnaround, and reviewer balance",
+      "description": "Compute PR size distribution (additions+deletions; oversized default >400 lines), review turnaround, and reviewer workload shown as BALANCE across the team -- never an individual leaderboard. This requires ingesting PR review events. Respect access scope and the non-surveillance / growth-framed principle throughout.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "PR size, review turnaround, and reviewer load compute per team/repo",
+        "Reviewer load is presented as balance, never as an individual ranking",
+        "Views respect access scope and the non-surveillance principle"
+      ]
+    },
+    {
+      "day": 23,
+      "ticketId": "AIE-D23-01",
+      "title": "Proactive flags for oversized / aging PRs",
+      "description": "Flag open PRs that exceed configurable size or age thresholds (stale = no activity >7 days; oversized >400 lines by default) so a tech lead is alerted before release is blocked. Acting on a flag emits pr_flag_actioned. Thresholds are team-configurable with sensible defaults.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 5,
+      "acceptanceCriteria": [
+        "PRs exceeding size/age thresholds are flagged in-product with team-configurable thresholds",
+        "Acting on a flag emits pr_flag_actioned",
+        "Sensible defaults (>400 lines, >7 days) apply when unset"
+      ]
+    },
+    {
+      "day": 24,
+      "ticketId": "AIE-D24-01",
+      "title": "Investment Profile: planned vs unplanned vs rework classification",
+      "description": "Correlate Git activity to Jira epics to classify each unit of work as planned, unplanned, or rework using linkage heuristics (branch names, PR titles, smart commits). Show the split per team over time with category definitions; unclassifiable work goes to a transparent bucket, never silently dropped. Document the methodology so it is auditable.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 8,
+      "acceptanceCriteria": [
+        "Work classifies into planned / unplanned / rework via Jira<->Git linkage heuristics",
+        "The split is shown per team over time with visible category definitions",
+        "Unclassifiable work is bucketed transparently and the methodology is documented"
+      ]
+    },
+    {
+      "day": 25,
+      "ticketId": "AIE-D25-01",
+      "title": "Goals & OKR tracking bound to a metric",
+      "description": "Let a leader bind a goal to a metric, target value, scope, and time window, with multiple concurrent goals per team (emits goal_created). Progress recomputes automatically as metrics refresh within the freshness target, showing on-track / at-risk / off-track against the target trajectory, surfaced in the Cockpit for in-scope leaders.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "A goal binds to a metric, target, scope, and window; multiple concurrent goals per team are supported",
+        "Progress recomputes automatically and shows on-track / at-risk / off-track",
+        "goal_created is emitted and in-scope leaders see progress in the Cockpit"
+      ]
+    },
+    {
+      "day": 26,
+      "ticketId": "AIE-D26-01",
+      "title": "AI-assisted work detection from commit trailers",
+      "description": "Detect AI-assisted commits/PRs from assistant telemetry and/or commit-trailer conventions (Copilot/Claude/Cursor), computing adoption rate = distinct(engineers with AI attribution) / distinct(active engineers) per team and org. Detection method and confidence must be shown alongside the number; low-confidence attribution is labeled, never silently folded into the total.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Adoption rate computes per team and org from telemetry and/or commit-trailer conventions",
+        "Detection method and confidence are displayed with the figure",
+        "Low-confidence attribution is labeled, not silently included"
+      ]
+    },
+    {
+      "day": 27,
+      "ticketId": "AIE-D27-01",
+      "title": "AI vs non-AI delta with visible methodology caveats",
+      "description": "Compare cycle time, change failure rate, and rework side by side for AI-assisted vs non-AI-assisted work in the same window, segmenting existing DORA-2/DORA-3 and rework computations by the AI-attribution flag. Confounder caveats (team mix, PR-size mix) must be surfaced in the UI -- comparisons must never claim causation.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Cycle time, CFR, and rework are compared for AI vs non-AI work in the same window",
+        "Methodology and confounder caveats are surfaced in-UI",
+        "No comparison claims causation"
+      ]
+    },
+    {
+      "day": 28,
+      "ticketId": "AIE-D28-01",
+      "title": "Dollar AI ROI figure with adjustable assumptions",
+      "description": "Produce an estimated monthly value recovered vs AI spend: estimated_hours_saved = ai_assisted_pr_count * (nonAi_cycle_time_p50 - ai_assisted_cycle_time_p50); dollar_value = estimated_hours_saved * blended_hourly_rate; roi_multiple = dollar_value / total_ai_spend. blended_hourly_rate and attribution method are org-configurable assumptions shown alongside the figure -- never a hidden constant.",
+      "type": "feature",
+      "priority": "high",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "At least one assistant yields a dollar ROI figure and an roi_multiple",
+        "blended_hourly_rate and attribution method are configurable and shown alongside the figure",
+        "Assumptions are never presented as hidden constants"
+      ]
+    },
+    {
+      "day": 29,
+      "ticketId": "AIE-D29-01",
+      "title": "AI code-review agent: advisory first-pass comments (per-repo toggle)",
+      "description": "On PR open, an isolated agent service posts advisory comments (style, likely bugs, security) clearly attributed to the agent -- humans remain the deciders. This is the one allowed exception to the analytics-layer-only rule (it writes PR comments). It must be enable/disable per repository and default off. Requires an ADR before adoption of the LLM framework.",
+      "type": "feature",
+      "priority": "low",
+      "estimatedHours": 8,
+      "acceptanceCriteria": [
+        "On PR open the agent posts advisory, clearly-attributed comments; humans remain the deciders",
+        "The agent is enable/disable per repository and defaults off",
+        "An ADR records the LLM framework decision before adoption"
+      ]
+    },
+    {
+      "day": 30,
+      "ticketId": "AIE-D30-01",
+      "title": "Pre-built report library (no query language required)",
+      "description": "Ship a library of pre-built reports covering the most common use cases (cycle time, bug resolution, DORA workflow) that are filterable and exportable with no query language required. Reports respect access scope and attach metric definitions. Close out the 30-day pack by verifying the documentation checklist: architecture doc current, ADRs written, READMEs current, OpenAPI current, metric definitions current, CHANGELOG updated.",
+      "type": "feature",
+      "priority": "medium",
+      "estimatedHours": 7,
+      "acceptanceCriteria": [
+        "Common-use-case reports are available, filterable, and exportable without any query language",
+        "Reports respect access scope and attach metric definitions",
+        "The documentation definition-of-done checklist passes for all shipped work"
+      ]
+    }
+  ],
+
+  "dsaProblems": [
+    {
+      "day": 1,
+      "id": "AIE-DSA-01",
+      "title": "Two Sum",
+      "difficulty": "Easy",
+      "topics": ["Array", "Hash Map"],
+      "prompt": "Given an array of integers nums and an integer target, return the indices of the two numbers that add up to target. Each input has exactly one solution and you may not use the same element twice. Aim for O(n) time using a hash map.",
+      "example": "nums = [2,7,11,15], target = 9 -> [0,1] (nums[0] + nums[1] == 9)"
+    },
+    {
+      "day": 2,
+      "id": "AIE-DSA-02",
+      "title": "Valid HMAC Window (Two Pointers)",
+      "difficulty": "Easy",
+      "topics": ["Two Pointers", "String"],
+      "prompt": "Given a string, determine whether it is a palindrome considering only alphanumeric characters and ignoring case. Return true or false. Use two pointers from both ends. (Models constant-time-ish header comparison intuition.)",
+      "example": "s = 'A man, a plan, a canal: Panama' -> true"
+    },
+    {
+      "day": 3,
+      "id": "AIE-DSA-03",
+      "title": "Group Events by Type",
+      "difficulty": "Medium",
+      "topics": ["Hash Map", "String"],
+      "prompt": "Given a list of event-type strings, group anagrams... instead: given a list of envelope keys of the form 'source:eventType', group and return the sourceIds grouped by (source, eventType). Order within a group does not matter. Practice building composite-key maps like the ingestion envelope.",
+      "example": "['github:pr:1','github:pr:2','jira:issue:9'] grouped by 'github:pr' -> ['1','2'], 'jira:issue' -> ['9']"
+    },
+    {
+      "day": 4,
+      "id": "AIE-DSA-04",
+      "title": "Deduplicate by Composite Key",
+      "difficulty": "Easy",
+      "topics": ["Hash Set", "Array"],
+      "prompt": "Given a stream of records each with (source, sourceId, eventType), return the records with duplicates removed, keeping first occurrence order. This models idempotent staging inserts keyed on the triple.",
+      "example": "[(gh,1,pr),(gh,1,pr),(gh,2,pr)] -> [(gh,1,pr),(gh,2,pr)]"
+    },
+    {
+      "day": 5,
+      "id": "AIE-DSA-05",
+      "title": "Token-Bucket Rate Limiter",
+      "difficulty": "Medium",
+      "topics": ["Design", "Queue", "Simulation"],
+      "prompt": "Design a rate limiter that allows at most N requests per rolling window of W seconds. Implement allow(timestamp) returning true if the request is permitted. Use a queue of timestamps or a token-bucket. Models rate-limit-aware connector polling.",
+      "example": "N=2, W=1: allow(0)=true, allow(0.1)=true, allow(0.2)=false, allow(1.2)=true"
+    },
+    {
+      "day": 6,
+      "id": "AIE-DSA-06",
+      "title": "Merge Status-Change Intervals",
+      "difficulty": "Medium",
+      "topics": ["Sorting", "Intervals"],
+      "prompt": "Given a list of [start, end] intervals representing the periods a Jira ticket spent in 'in-progress' status, merge overlapping intervals and return the total in-progress duration. Sort by start, then sweep.",
+      "example": "[[1,4],[3,6],[8,10]] -> merged [[1,6],[8,10]], total = 5 + 2 = 7"
+    },
+    {
+      "day": 7,
+      "id": "AIE-DSA-07",
+      "title": "Union-Find Identity Merge",
+      "difficulty": "Medium",
+      "topics": ["Union-Find", "Graph"],
+      "prompt": "Given pairs of tool identities known to be the same person (e.g. ('git:vsharma','jira:VishalS')), group all identities into canonical contributors. Implement union-find with path compression and return the number of distinct people and their groups.",
+      "example": "pairs = [(a,b),(b,c),(d,e)] -> 2 people: {a,b,c} and {d,e}"
+    },
+    {
+      "day": 8,
+      "id": "AIE-DSA-08",
+      "title": "Org Hierarchy Rollup",
+      "difficulty": "Medium",
+      "topics": ["Tree", "DFS", "Recursion"],
+      "prompt": "Given an org > team > sub-team tree where each leaf team has a repo count, compute the total repo count for every node (a node's total = sum of its subtree). Return the totals via DFS. Models team-structure rollups.",
+      "example": "org[teamA[repos=2], teamB[sub1[repos=3]]] -> org=5, teamA=2, teamB=3"
+    },
+    {
+      "day": 9,
+      "id": "AIE-DSA-09",
+      "title": "Count Deploys Per Day",
+      "difficulty": "Easy",
+      "topics": ["Hash Map", "Bucketing"],
+      "prompt": "Given a list of successful-deploy epoch timestamps and a timezone offset, bucket them by calendar day and return a map of day -> count. Excludes nothing here; models deployment-frequency bucketing.",
+      "example": "ts=[0, 3600, 90000], offset=0 -> {1970-01-01: 2, 1970-01-02: 1}"
+    },
+    {
+      "day": 10,
+      "id": "AIE-DSA-10",
+      "title": "Running Median (Two Heaps)",
+      "difficulty": "Hard",
+      "topics": ["Heap", "Design"],
+      "prompt": "Implement a data structure that supports addNum(x) and findMedian() in O(log n) add and O(1) median, using a max-heap and min-heap. This is exactly how lead-time p50 is maintained over a stream of PR lead times.",
+      "example": "add 1, add 2 -> median 1.5; add 3 -> median 2"
+    },
+    {
+      "day": 11,
+      "id": "AIE-DSA-11",
+      "title": "Median of Combined Populations",
+      "difficulty": "Hard",
+      "topics": ["Statistics", "Binary Search"],
+      "prompt": "Given several sorted arrays of per-repo lead times, compute the true median of ALL values combined. Show that averaging the per-array medians can differ from the combined median. Return the correct combined median. Models the median-of-medians bug fix.",
+      "example": "[[1,2,3],[100]] combined median = 2.5; average of medians (2 and 100) = 51 -- wrong"
+    },
+    {
+      "day": 12,
+      "id": "AIE-DSA-12",
+      "title": "Match Hotfix to Deploy in Window",
+      "difficulty": "Medium",
+      "topics": ["Two Pointers", "Sorting"],
+      "prompt": "Given sorted deploy timestamps and sorted hotfix timestamps, for each deploy determine if a hotfix on the same repo occurs within 48h after it. Return the count of failed deploys. Use a two-pointer sweep. Each hotfix marks at most one earliest deploy.",
+      "example": "deploys=[10,20], hotfixes=[11] (window 48) -> deploy 10 failed; count=1"
+    },
+    {
+      "day": 13,
+      "id": "AIE-DSA-13",
+      "title": "Collapse Cascading Hotfix Chain",
+      "difficulty": "Medium",
+      "topics": ["Graph", "DFS"],
+      "prompt": "Given directed links deploy -> remediating-hotfix-deploy (which may itself be remediated), attribute each failure chain to the earliest deploy and compute the restore time = last_remediation_time - earliest_deploy_time. Traverse each chain once.",
+      "example": "A(t=0)->B(t=5)->C(t=9): earliest=A, restore time = 9"
+    },
+    {
+      "day": 14,
+      "id": "AIE-DSA-14",
+      "title": "Affected Windows on New Event",
+      "difficulty": "Medium",
+      "topics": ["Intervals", "Hash Set"],
+      "prompt": "Given a new event timestamp and a set of daily/weekly metric window definitions, return exactly the windows that must be recomputed (those containing the timestamp). Avoid recomputing untouched windows. Models incremental recompute.",
+      "example": "event at day-3 -> recompute {day-3, week-1} but not day-1, day-2"
+    },
+    {
+      "day": 15,
+      "id": "AIE-DSA-15",
+      "title": "LRU Cache",
+      "difficulty": "Medium",
+      "topics": ["Hash Map", "Doubly Linked List", "Design"],
+      "prompt": "Implement an LRU cache with O(1) get and put using a hash map + doubly linked list. Model caching of recently requested cockpit scope responses.",
+      "example": "capacity 2: put(1,1),put(2,2),get(1)=1,put(3,3) evicts 2,get(2)=-1"
+    },
+    {
+      "day": 16,
+      "id": "AIE-DSA-16",
+      "title": "Top-K Slowest Stages",
+      "difficulty": "Medium",
+      "topics": ["Heap", "Sorting"],
+      "prompt": "Given lead-time stage durations per team, return the top-K slowest stages overall using a min-heap of size K. Models emphasizing the slowest lead-time stage on the dashboard.",
+      "example": "stages={coding:2,reviewWait:9,review:4}, K=1 -> [reviewWait]"
+    },
+    {
+      "day": 17,
+      "id": "AIE-DSA-17",
+      "title": "Breadcrumb Path in Scope Tree",
+      "difficulty": "Easy",
+      "topics": ["Tree", "DFS"],
+      "prompt": "Given the org>team>sub-team tree and a target node id, return the path from the root to that node (the breadcrumb trail). Return empty if not found.",
+      "example": "target = sub1 -> [org, teamB, sub1]"
+    },
+    {
+      "day": 18,
+      "id": "AIE-DSA-18",
+      "title": "Role-Scope Access Filter",
+      "difficulty": "Medium",
+      "topics": ["Hash Map", "Simulation"],
+      "prompt": "Given a user's role and scope and a requested scope id, return whether access is allowed under the rules: ADMIN=all, ENG_LEADER=org+any team, MANAGER=own teams only, IC=self only, FINANCE_READONLY=aggregated only. Return allow/deny. Models RBAC visibility filtering.",
+      "example": "role=MANAGER, ownTeams={t1}, requested=t2 -> deny"
+    },
+    {
+      "day": 19,
+      "id": "AIE-DSA-19",
+      "title": "Hash-Chained Audit Log",
+      "difficulty": "Medium",
+      "topics": ["Hashing", "Design"],
+      "prompt": "Implement an append-only log where each entry stores hash(prev_hash + entry_data). Implement append(entry) and verify() that returns the index of the first tampered entry or -1 if intact. Models a tamper-evident audit log.",
+      "example": "append 3 entries, mutate entry 1 -> verify() returns 1"
+    },
+    {
+      "day": 20,
+      "id": "AIE-DSA-20",
+      "title": "Filter Export Rows by Scope",
+      "difficulty": "Easy",
+      "topics": ["Array", "Filtering"],
+      "prompt": "Given export rows each tagged with a scope id and a set of scopes the caller may see, return only the rows within the caller's scope. Ensures an export never contains out-of-scope data.",
+      "example": "rows scopes=[t1,t2,t3], allowed={t1,t3} -> keep t1,t3 rows"
+    },
+    {
+      "day": 21,
+      "id": "AIE-DSA-21",
+      "title": "Minutes-To-Value From Timestamps",
+      "difficulty": "Easy",
+      "topics": ["Array", "Aggregation"],
+      "prompt": "Given raw_event received_at timestamps (with source) and metric computed_at timestamps, compute minutesToValue = min(computed_at) - min(received_at where source in {github,jira}). Return null if either side is empty (never 0).",
+      "example": "connections=[10:00], firstMetric=[10:12] -> 12; no metrics -> null"
+    },
+    {
+      "day": 22,
+      "id": "AIE-DSA-22",
+      "title": "Balanced Reviewer Assignment",
+      "difficulty": "Medium",
+      "topics": ["Heap", "Greedy"],
+      "prompt": "Given open PRs and a set of reviewers with current loads, assign each PR to the least-loaded eligible reviewer using a min-heap, so load stays balanced (not ranked). Return the final load per reviewer.",
+      "example": "reviewers loads {a:0,b:0}, 3 PRs -> a:2,b:1 (or balanced equivalent)"
+    },
+    {
+      "day": 23,
+      "id": "AIE-DSA-23",
+      "title": "Flag Stale / Oversized PRs",
+      "difficulty": "Easy",
+      "topics": ["Array", "Filtering"],
+      "prompt": "Given open PRs with (ageDays, changedLines) and thresholds (staleDays, maxLines), return the PRs that should be flagged (age > staleDays OR lines > maxLines). Models proactive PR flagging.",
+      "example": "thresholds (7,400); PR(9,100)->flag(stale); PR(2,500)->flag(oversized); PR(1,50)->ok"
+    },
+    {
+      "day": 24,
+      "id": "AIE-DSA-24",
+      "title": "Classify Work by Linkage",
+      "difficulty": "Medium",
+      "topics": ["String", "Hash Map"],
+      "prompt": "Given PRs with branch names / titles, classify each as planned (references an epic key like PROJ-123), rework (branch matches hotfix/* or revert), or unplanned (no epic link). Unmatched goes to an 'unclassified' bucket. Return counts per category.",
+      "example": "'feature/PROJ-12'->planned, 'hotfix/x'->rework, 'quick-fix'->unplanned"
+    },
+    {
+      "day": 25,
+      "id": "AIE-DSA-25",
+      "title": "Goal Progress Trajectory",
+      "difficulty": "Easy",
+      "topics": ["Math", "Simulation"],
+      "prompt": "Given a goal (start value, target value, start date, end date) and the current value/date, classify progress as on-track, at-risk, or off-track by comparing actual vs the linear expected value for today. Return the status.",
+      "example": "0->100 over 10 days, day 5 value 40 -> expected 50 -> at-risk"
+    },
+    {
+      "day": 26,
+      "id": "AIE-DSA-26",
+      "title": "Adoption Rate Over Distinct Sets",
+      "difficulty": "Easy",
+      "topics": ["Hash Set", "Aggregation"],
+      "prompt": "Given commits tagged with author and an ai-attribution flag, compute adoption = |distinct authors with any AI-attributed commit| / |distinct active authors|. Return the ratio per team.",
+      "example": "authors active {a,b,c}, ai-attributed {a} -> 1/3"
+    },
+    {
+      "day": 27,
+      "id": "AIE-DSA-27",
+      "title": "Segmented Percentile Comparison",
+      "difficulty": "Medium",
+      "topics": ["Sorting", "Statistics"],
+      "prompt": "Given PR cycle times each flagged AI-assisted or not, compute the p50 cycle time for each segment independently and return the delta (nonAI_p50 - AI_p50). Do not pool the segments. Models the AI-vs-non-AI delta.",
+      "example": "AI=[2,4], nonAI=[6,10] -> AI_p50=3, nonAI_p50=8, delta=5"
+    },
+    {
+      "day": 28,
+      "id": "AIE-DSA-28",
+      "title": "ROI Estimator",
+      "difficulty": "Easy",
+      "topics": ["Math"],
+      "prompt": "Given ai_assisted_pr_count, nonAi_cycle_p50, ai_cycle_p50, blended_hourly_rate, and total_ai_spend, compute hours_saved = count*(nonAi-ai), dollar_value = hours_saved*rate, and roi_multiple = dollar_value/total_ai_spend. Return all three.",
+      "example": "count=100, delta=1h, rate=$80, spend=$2000 -> saved=100h, value=$8000, roi=4.0"
+    },
+    {
+      "day": 29,
+      "id": "AIE-DSA-29",
+      "title": "Rate-Limited Review Agent Dispatch",
+      "difficulty": "Medium",
+      "topics": ["Queue", "Simulation"],
+      "prompt": "PR-open events arrive faster than the review agent's per-minute LLM budget. Implement a bounded queue that dispatches up to B agent calls per minute and defers the rest to the next minute, preserving order. Return the minute each PR is processed.",
+      "example": "B=1, PRs at minute 0:[p1,p2,p3] -> p1@0, p2@1, p3@2"
+    },
+    {
+      "day": 30,
+      "id": "AIE-DSA-30",
+      "title": "Compose a Report from Saved Filters",
+      "difficulty": "Medium",
+      "topics": ["Hash Map", "Design"],
+      "prompt": "Given a report definition (metric, scope, date window, filters) and a metric-daily dataset, return the filtered, aggregated rows that back the report -- with no query language, just applying the structured filter object. Return empty-with-reason if nothing matches.",
+      "example": "report{metric:leadTime,scope:t1,window:7d} -> rows for t1 in last 7 days"
+    }
+  ],
+
+  "quizQuestions": [
+    {
+      "id": "AIE-QZ-01",
+      "topic": "DORA",
+      "difficulty": "Easy",
+      "question": "Which four metrics make up the DORA set?",
+      "options": [
+        "Velocity, story points, burndown, cycle time",
+        "Deployment frequency, lead time for changes, change failure rate, MTTR",
+        "Code coverage, defect density, churn, throughput",
+        "Uptime, latency, error rate, saturation"
+      ],
+      "correctIndex": 1,
+      "explanation": "DORA = deployment frequency, lead time for changes, change failure rate, and mean time to restore (MTTR)."
+    },
+    {
+      "id": "AIE-QZ-02",
+      "topic": "Product rules",
+      "difficulty": "Easy",
+      "question": "Which feature is explicitly and permanently forbidden in this platform?",
+      "options": [
+        "Role-based dashboards",
+        "Keystroke or idle-time surveillance tracking",
+        "Exportable executive reports",
+        "DORA metric computation"
+      ],
+      "correctIndex": 1,
+      "explanation": "No surveillance features (keystroke/idle-time/screen monitoring) may exist -- an explicit ethical exclusion (BRD 5.3)."
+    },
+    {
+      "id": "AIE-QZ-03",
+      "topic": "Metrics",
+      "difficulty": "Medium",
+      "question": "Why is lead time reported as a median (p50) rather than a mean?",
+      "options": [
+        "Medians are faster to compute than means",
+        "The mean is outlier-dominated and would misrepresent typical lead time",
+        "DORA forbids arithmetic means entirely",
+        "Postgres cannot compute an average"
+      ],
+      "correctIndex": 1,
+      "explanation": "Lead-time distributions are skewed; a few very long changes dominate the mean, so the median (p50, with p75/p90) is used."
+    },
+    {
+      "id": "AIE-QZ-04",
+      "topic": "Metrics correctness",
+      "difficulty": "Hard",
+      "question": "How must a team-scoped percentile metric (e.g. lead time) be computed?",
+      "options": [
+        "By averaging each repo's daily median",
+        "By taking the maximum repo median",
+        "From the raw per-event population joined via team-repo membership",
+        "By summing repo medians and dividing by repo count"
+      ],
+      "correctIndex": 2,
+      "explanation": "Averaging repo-day medians does not yield the team's true median; team percentiles must come from the raw per-event population joined via core.team_repo."
+    },
+    {
+      "id": "AIE-QZ-05",
+      "topic": "Architecture",
+      "difficulty": "Medium",
+      "question": "Why are connectors isolated behind a message queue?",
+      "options": [
+        "To let engineers write to Jira from the platform",
+        "So a vendor API outage degrades gracefully and never loses events",
+        "To avoid using PostgreSQL",
+        "Because REST is not allowed"
+      ],
+      "correctIndex": 1,
+      "explanation": "Queue isolation (retry/DLQ) means a vendor 429/5xx just queues events; nothing downstream notices the outage and no events are lost."
+    },
+    {
+      "id": "AIE-QZ-06",
+      "topic": "Ingestion",
+      "difficulty": "Medium",
+      "question": "On what key does the Ingestion Writer insert idempotently into staging?",
+      "options": [
+        "A random UUID per message",
+        "(source, sourceId, eventType)",
+        "The received_at timestamp",
+        "The connector version only"
+      ],
+      "correctIndex": 1,
+      "explanation": "Idempotent insert on (source, sourceId, eventType) makes webhook re-delivery and backfill replay safe -- no duplicate staging rows."
+    },
+    {
+      "id": "AIE-QZ-07",
+      "topic": "Stack",
+      "difficulty": "Easy",
+      "question": "What is the backend technology stack?",
+      "options": [
+        "Python + Django",
+        "Node.js + Express",
+        "Java 21 + Spring Boot 3",
+        "Go + Gin"
+      ],
+      "correctIndex": 2,
+      "explanation": "Backend is Java 21 + Spring Boot 3 (Web, Data JPA, Security) per ADR-0001."
+    },
+    {
+      "id": "AIE-QZ-08",
+      "topic": "Stack",
+      "difficulty": "Easy",
+      "question": "Which datastore backs the MVP, and how is it organized?",
+      "options": [
+        "MongoDB with one collection per tool",
+        "PostgreSQL 16 with staging, core, and mart schemas",
+        "ClickHouse from day one",
+        "MySQL with a single flat table"
+      ],
+      "correctIndex": 1,
+      "explanation": "A single PostgreSQL 16 instance with three schemas (staging/core/mart) per ADR-0002; the split preserves a migration path to a dedicated analytical store later."
+    },
+    {
+      "id": "AIE-QZ-09",
+      "topic": "Metrics",
+      "difficulty": "Medium",
+      "question": "In the MVP, how is a deployment marked as a 'failure' for change failure rate?",
+      "options": [
+        "A human manually tags the deploy as failed",
+        "A rollback or hotfix deploy on the same unit within 48h (heuristic, badged)",
+        "Any deploy that took longer than average",
+        "Any deploy outside business hours"
+      ],
+      "correctIndex": 1,
+      "explanation": "Until the incident connector ships, CFR uses rollback/hotfix heuristics within 48h and is shown with a heuristic-confidence badge -- no manual tagging."
+    },
+    {
+      "id": "AIE-QZ-10",
+      "topic": "Freshness",
+      "difficulty": "Easy",
+      "question": "What is the target end-to-end metric freshness (source event to materialized metric)?",
+      "options": [
+        "<= 1 minute",
+        "<= 15 minutes",
+        "<= 1 hour",
+        "<= 24 hours"
+      ],
+      "correctIndex": 1,
+      "explanation": "The freshness target is <=15 minutes from a source event to the metric being materialized in the mart."
+    },
+    {
+      "id": "AIE-QZ-11",
+      "topic": "Onboarding",
+      "difficulty": "Easy",
+      "question": "What is the time-to-first-insight target after connecting the first tools?",
+      "options": [
+        "Under 30 minutes",
+        "Under 3 hours",
+        "Under 1 day",
+        "Under 1 week"
+      ],
+      "correctIndex": 0,
+      "explanation": "After the first Git + ticketing connection, at least one populated dashboard should render within 30 minutes (E1-S5)."
+    },
+    {
+      "id": "AIE-QZ-12",
+      "topic": "RBAC",
+      "difficulty": "Medium",
+      "question": "Which are the five RBAC roles enforced in api-core?",
+      "options": [
+        "OWNER, EDITOR, VIEWER, GUEST, BILLING",
+        "ADMIN, ENG_LEADER, MANAGER, IC, FINANCE_READONLY",
+        "ROOT, DEV, QA, PM, SRE",
+        "SUPERUSER, STAFF, USER, ANON, BOT"
+      ],
+      "correctIndex": 1,
+      "explanation": "The five roles are ADMIN, ENG_LEADER, MANAGER, IC, and FINANCE_READONLY (ADR-0004)."
+    },
+    {
+      "id": "AIE-QZ-13",
+      "topic": "Security",
+      "difficulty": "Medium",
+      "question": "How does api-core authenticate requests?",
+      "options": [
+        "Session cookies stored in Postgres",
+        "As an RS256 JWT resource server (OIDC/JWT)",
+        "Basic auth with a shared password",
+        "IP allowlist only"
+      ],
+      "correctIndex": 1,
+      "explanation": "api-core is an RS256 JWT resource server (OIDC + JWT) enforcing RBAC on every request (ADR-0004)."
+    },
+    {
+      "id": "AIE-QZ-14",
+      "topic": "Product rules",
+      "difficulty": "Medium",
+      "question": "What is the one allowed exception to the 'never write back to external tools' rule?",
+      "options": [
+        "Updating Jira ticket statuses automatically",
+        "The Phase 3 AI review agent posting advisory PR comments",
+        "Closing stale GitHub PRs",
+        "Editing CI pipeline configs"
+      ],
+      "correctIndex": 1,
+      "explanation": "The platform is an analytics layer only; the sole exception is the Phase 3 AI review agent posting PR comments."
+    },
+    {
+      "id": "AIE-QZ-15",
+      "topic": "Metrics",
+      "difficulty": "Medium",
+      "question": "How is the start point of DORA-2 lead time defined in v1?",
+      "options": [
+        "When the ticket was created in Jira",
+        "The authored time of the earliest commit unique to the PR",
+        "When the PR was approved",
+        "When the deploy finished"
+      ],
+      "correctIndex": 1,
+      "explanation": "Lead time = deploy_finished_at minus min(authored_at of commits unique to the PR); the median is reported over the window."
+    },
+    {
+      "id": "AIE-QZ-16",
+      "topic": "Metrics edge cases",
+      "difficulty": "Hard",
+      "question": "For a squash merge, where should authored_at come from?",
+      "options": [
+        "The single squashed commit's timestamp",
+        "The PR's pre-merge commit history captured at ingestion",
+        "The merge commit's committer date",
+        "The deploy timestamp"
+      ],
+      "correctIndex": 1,
+      "explanation": "Squash/rebase lose original authored timestamps on the merged commit, so use the PR's own pre-merge commit history captured at ingestion."
+    },
+    {
+      "id": "AIE-QZ-17",
+      "topic": "Queue",
+      "difficulty": "Medium",
+      "question": "Which message queue does the MVP use, and why?",
+      "options": [
+        "Kafka, for maximum throughput",
+        "RabbitMQ, for out-of-the-box retry/DLQ semantics",
+        "SQS, because it is serverless",
+        "Redis Streams, for simplicity"
+      ],
+      "correctIndex": 1,
+      "explanation": "RabbitMQ is chosen for its retry/DLQ semantics out of the box (ADR-0002); Kafka is revisited at scale."
+    },
+    {
+      "id": "AIE-QZ-18",
+      "topic": "Auditability",
+      "difficulty": "Easy",
+      "question": "What is the minimum audit-log retention requirement?",
+      "options": [
+        "30 days",
+        "90 days",
+        "12+ months",
+        "Indefinite, in application logs"
+      ],
+      "correctIndex": 2,
+      "explanation": "Every config change, access grant, and export must be written to the audit log with 12+ month retention."
+    },
+    {
+      "id": "AIE-QZ-19",
+      "topic": "Documentation policy",
+      "difficulty": "Medium",
+      "question": "When must an Architecture Decision Record (ADR) be written?",
+      "options": [
+        "Only after a feature ships to production",
+        "Before or with any choice of framework, datastore, queue, protocol, or cross-cutting pattern",
+        "Only when a senior engineer requests one",
+        "Never; ADRs are optional"
+      ],
+      "correctIndex": 1,
+      "explanation": "Architectural decisions require an ADR recorded before or with the implementing change; accepted ADRs are superseded, never silently deviated from."
+    },
+    {
+      "id": "AIE-QZ-20",
+      "topic": "APIs",
+      "difficulty": "Easy",
+      "question": "What does 'APIs are contract-first' require?",
+      "options": [
+        "Write the code first, then generate docs",
+        "Update the OpenAPI spec before implementing endpoint changes",
+        "Skip specs for internal endpoints",
+        "Only document GET endpoints"
+      ],
+      "correctIndex": 1,
+      "explanation": "The OpenAPI spec must be updated before implementing endpoint changes."
+    },
+    {
+      "id": "AIE-QZ-21",
+      "topic": "Privacy",
+      "difficulty": "Medium",
+      "question": "How are individual-level views handled?",
+      "options": [
+        "Always visible to managers by default",
+        "Opt-in, access-gated, and framed around growth, never ranking",
+        "Disabled entirely and never built",
+        "Shown as a public leaderboard"
+      ],
+      "correctIndex": 1,
+      "explanation": "Individual views are opt-in, access-gated, and growth-framed; no metric ranks or shames an individual by default."
+    },
+    {
+      "id": "AIE-QZ-22",
+      "topic": "Metrics",
+      "difficulty": "Medium",
+      "question": "What default threshold marks a PR as 'oversized'?",
+      "options": [
+        "More than 50 changed lines",
+        "More than 400 changed lines (additions + deletions)",
+        "More than 5 files",
+        "More than 1000 changed lines"
+      ],
+      "correctIndex": 1,
+      "explanation": "PR size distribution flags oversized PRs at a default of >400 changed lines (additions + deletions)."
+    },
+    {
+      "id": "AIE-QZ-23",
+      "topic": "Frontend",
+      "difficulty": "Easy",
+      "question": "What is the frontend stack?",
+      "options": [
+        "Angular + RxJS",
+        "Vue 3 + Vuetify",
+        "React 18 + TypeScript + Tailwind + Recharts",
+        "Svelte + SvelteKit"
+      ],
+      "correctIndex": 2,
+      "explanation": "Frontend is React 18 + TypeScript + Tailwind with Recharts for visualization (ADR-0001)."
+    },
+    {
+      "id": "AIE-QZ-24",
+      "topic": "Performance",
+      "difficulty": "Easy",
+      "question": "What is the dashboard load-time target?",
+      "options": [
+        "< 3 seconds at ~1M events",
+        "< 30 seconds at any volume",
+        "< 10 milliseconds",
+        "No specific target"
+      ],
+      "correctIndex": 0,
+      "explanation": "Dashboards must load in under 3 seconds at roughly 1M events, served from pre-aggregated mart tables."
+    },
+    {
+      "id": "AIE-QZ-25",
+      "topic": "Identity",
+      "difficulty": "Medium",
+      "question": "How should an unresolved contributor identity be handled?",
+      "options": [
+        "Silently dropped to keep data clean",
+        "Counted under every possible match",
+        "Flagged for Admin review, never dropped or double-counted",
+        "Merged automatically with the closest name"
+      ],
+      "correctIndex": 2,
+      "explanation": "Unresolved identities are flagged for Admin review/confirm/merge/split; they are never silently dropped or double-counted."
+    },
+    {
+      "id": "AIE-QZ-26",
+      "topic": "Metrics",
+      "difficulty": "Easy",
+      "question": "Are bot accounts included in people-dimension metrics by default?",
+      "options": [
+        "Yes, always",
+        "No, they are excluded by default",
+        "Only in CFR",
+        "Only during backfill"
+      ],
+      "correctIndex": 1,
+      "explanation": "Bot accounts are detected and excluded from people-dimension metrics by default."
+    },
+    {
+      "id": "AIE-QZ-27",
+      "topic": "AI ROI",
+      "difficulty": "Hard",
+      "question": "In the AI ROI formula, how is estimated_hours_saved computed?",
+      "options": [
+        "total_ai_spend divided by blended_hourly_rate",
+        "ai_assisted_pr_count * (nonAi_cycle_time_p50 - ai_assisted_cycle_time_p50)",
+        "number of engineers * 8 hours",
+        "commits per day * days in month"
+      ],
+      "correctIndex": 1,
+      "explanation": "hours_saved = ai_assisted_pr_count * (nonAi_cycle_p50 - ai_cycle_p50); dollar value = hours_saved * blended_hourly_rate; roi_multiple = value / total_ai_spend."
+    },
+    {
+      "id": "AIE-QZ-28",
+      "topic": "AI ROI",
+      "difficulty": "Medium",
+      "question": "How must ROI calculation assumptions like blended_hourly_rate be handled?",
+      "options": [
+        "Hard-coded as hidden constants",
+        "Org-configurable and shown alongside the figure",
+        "Never displayed to any user",
+        "Set by the vendor of the AI tool"
+      ],
+      "correctIndex": 1,
+      "explanation": "Assumptions must be visible and adjustable, shown alongside the figure -- never presented as a hidden constant."
+    },
+    {
+      "id": "AIE-QZ-29",
+      "topic": "Git standards",
+      "difficulty": "Easy",
+      "question": "Which commit-message convention does the repo follow?",
+      "options": [
+        "Free-form messages",
+        "Conventional Commits (feat:, fix:, docs:, refactor:, test:, chore:)",
+        "Ticket number only",
+        "Gitmoji"
+      ],
+      "correctIndex": 1,
+      "explanation": "The repo uses Conventional Commits with trunk-based development and short-lived feature branches."
+    },
+    {
+      "id": "AIE-QZ-30",
+      "topic": "Testing",
+      "difficulty": "Medium",
+      "question": "Which code most requires unit tests, per the standards?",
+      "options": [
+        "CSS styling",
+        "Metric computations (DORA math)",
+        "README files",
+        "Log formatting"
+      ],
+      "correctIndex": 1,
+      "explanation": "Unit tests are required for all business logic, especially metric computations -- DORA math bugs destroy user trust."
+    },
+    {
+      "id": "AIE-QZ-31",
+      "topic": "Resilience",
+      "difficulty": "Medium",
+      "question": "When a vendor API returns 429/5xx, what should a connector do?",
+      "options": [
+        "Drop the events and move on",
+        "Back off (honoring Retry-After), queue-and-drain, and retry",
+        "Crash so an operator restarts it",
+        "Switch to writing directly to the mart"
+      ],
+      "correctIndex": 1,
+      "explanation": "Connectors back off honoring Retry-After and queue-and-drain; persistent failures raise a connector-health alert and poison messages go to the DLQ."
+    },
+    {
+      "id": "AIE-QZ-32",
+      "topic": "Architecture",
+      "difficulty": "Medium",
+      "question": "What is the correct five-layer data flow?",
+      "options": [
+        "Presentation -> API -> Metrics -> Ingestion -> Sources",
+        "Sources -> Ingestion -> Identity & Normalization -> Metrics/Semantic -> Application/API -> Presentation",
+        "Sources -> Metrics -> Ingestion -> API -> Presentation",
+        "Ingestion -> Sources -> API -> Metrics -> Presentation"
+      ],
+      "correctIndex": 1,
+      "explanation": "The flow is Sources -> Ingestion -> Identity & Normalization -> Metrics/Semantic -> Application/API -> Presentation."
+    },
+    {
+      "id": "AIE-QZ-33",
+      "topic": "Data privacy",
+      "difficulty": "Medium",
+      "question": "What data do connectors ingest about code?",
+      "options": [
+        "Full source code bodies for analysis",
+        "Metadata only -- no source-code bodies or message contents",
+        "Encrypted copies of every file",
+        "Screenshots of the IDE"
+      ],
+      "correctIndex": 1,
+      "explanation": "The platform ingests metadata only -- no source-code bodies and no message contents -- per the security standards."
+    },
+    {
+      "id": "AIE-QZ-34",
+      "topic": "Metrics",
+      "difficulty": "Medium",
+      "question": "How is a rollback deployment treated?",
+      "options": [
+        "Excluded from deployment frequency entirely",
+        "Counted as a deploy, and also flagged as a failure signal for CFR",
+        "Counted only in MTTR",
+        "Ignored completely"
+      ],
+      "correctIndex": 1,
+      "explanation": "A rollback is a real deploy (counts toward frequency) but is also a failure signal for CFR; as the remediation it is excluded from the CFR failure numerator itself."
+    },
+    {
+      "id": "AIE-QZ-35",
+      "topic": "Onboarding metric",
+      "difficulty": "Medium",
+      "question": "When no events or metrics exist yet, what should minutesToValue return?",
+      "options": [
+        "0",
+        "-1",
+        "null (not a misleading 0)",
+        "The current timestamp"
+      ],
+      "correctIndex": 2,
+      "explanation": "Both timestamps are null until data exists, so minutesToValue and withinTarget stay null rather than defaulting to a misleading 0."
+    },
+    {
+      "id": "AIE-QZ-36",
+      "topic": "Secrets",
+      "difficulty": "Easy",
+      "question": "Where may secrets and credentials be stored?",
+      "options": [
+        "In config files committed to the repo",
+        "Hard-coded in source for convenience",
+        "Env vars / secret manager only, encrypted at rest",
+        "In the audit log"
+      ],
+      "correctIndex": 2,
+      "explanation": "No secrets in code or config; use env vars / secret manager only, with encryption in transit and at rest."
+    },
+    {
+      "id": "AIE-QZ-37",
+      "topic": "Migrations",
+      "difficulty": "Easy",
+      "question": "Which tool manages database migrations, and in what style?",
+      "options": [
+        "Liquibase, bidirectional",
+        "Flyway, forward-only (expand/contract)",
+        "Hand-written SQL applied manually",
+        "Django migrations"
+      ],
+      "correctIndex": 1,
+      "explanation": "Flyway is used with forward-only, expand/contract migrations (ADR-0001)."
+    },
+    {
+      "id": "AIE-QZ-38",
+      "topic": "Reproducibility",
+      "difficulty": "Hard",
+      "question": "What makes metric numbers explainable and reproducible over time?",
+      "options": [
+        "Metrics are recomputed randomly and cached",
+        "Append-only raw staging data plus versioned metric logic recorded with each value",
+        "Only the latest value is ever stored",
+        "Metrics are edited manually when they look wrong"
+      ],
+      "correctIndex": 1,
+      "explanation": "Every metric is reproducible from immutable staging, and the metric logic version is recorded with each computed value so history stays explainable."
+    },
+    {
+      "id": "AIE-QZ-39",
+      "topic": "Drill-down",
+      "difficulty": "Medium",
+      "question": "What must be preserved when a user drills from org to team?",
+      "options": [
+        "Nothing; filters reset each level",
+        "The active filters and time range, plus breadcrumbs back up",
+        "Only the user's role",
+        "The raw SQL query"
+      ],
+      "correctIndex": 1,
+      "explanation": "Drill-down preserves active filters and time range and provides breadcrumbs to navigate back up (E4-S2)."
+    },
+    {
+      "id": "AIE-QZ-40",
+      "topic": "Empty states",
+      "difficulty": "Easy",
+      "question": "What should a metric view show when there is no data?",
+      "options": [
+        "A blank chart",
+        "An explanation (no data / out of range / still ingesting)",
+        "A random placeholder number",
+        "An error 500"
+      ],
+      "correctIndex": 1,
+      "explanation": "Empty/loading states must explain themselves -- never a blank chart -- e.g. no data, out of range, or still ingesting."
+    },
+    {
+      "id": "AIE-QZ-41",
+      "topic": "PR analytics",
+      "difficulty": "Medium",
+      "question": "How is reviewer workload presented?",
+      "options": [
+        "As an individual leaderboard ranking reviewers",
+        "As balance across the team, never an individual ranking",
+        "As a per-person shame list",
+        "It is not shown at all"
+      ],
+      "correctIndex": 1,
+      "explanation": "Reviewer load is shown as balance across the team, never as an individual leaderboard, respecting the non-surveillance principle."
+    },
+    {
+      "id": "AIE-QZ-42",
+      "topic": "Scopes",
+      "difficulty": "Medium",
+      "question": "What OAuth/API scopes should each connector request?",
+      "options": [
+        "Full admin scopes for flexibility",
+        "The minimum least-privilege read scopes needed",
+        "Write scopes so it can correct tool data",
+        "Whatever the vendor defaults to"
+      ],
+      "correctIndex": 1,
+      "explanation": "Least-privilege integrations: request the minimum read-only scopes needed per connector."
+    },
+    {
+      "id": "AIE-QZ-43",
+      "topic": "Definition of done",
+      "difficulty": "Medium",
+      "question": "When is a code change considered complete in this repo?",
+      "options": [
+        "When it compiles",
+        "When its documentation is updated in the same commit/PR",
+        "When a reviewer approves, docs optional",
+        "When it is merged, docs later"
+      ],
+      "correctIndex": 1,
+      "explanation": "Documentation is part of the definition of done -- no code change is complete until its docs are updated in the same commit/PR."
+    },
+    {
+      "id": "AIE-QZ-44",
+      "topic": "New metrics",
+      "difficulty": "Medium",
+      "question": "What must accompany any new metric?",
+      "options": [
+        "A marketing blog post",
+        "A metric definition (name, formula, sources, edge cases, BRD requirement)",
+        "Nothing, if it is internal",
+        "A patent filing"
+      ],
+      "correctIndex": 1,
+      "explanation": "New metrics require an entry in docs/01-product/metric-definitions.md -- metric transparency is a trust requirement, not nice-to-have."
+    },
+    {
+      "id": "AIE-QZ-45",
+      "topic": "Positioning",
+      "difficulty": "Medium",
+      "question": "What is the platform's deliberate positioning?",
+      "options": [
+        "A replacement for Jira and GitHub",
+        "Automated no-tagging DORA/SPACE analytics with leadership-friendly UX, avoiding surveillance and a mandatory query language",
+        "A keystroke-monitoring productivity tracker",
+        "An HR performance-review generator"
+      ],
+      "correctIndex": 1,
+      "explanation": "It occupies the middle ground: minware-style no-tagging analytics via Hivel-style leadership UX, avoiding surveillance and a mandatory query language."
+    },
+    {
+      "id": "AIE-QZ-46",
+      "topic": "CI/CD",
+      "difficulty": "Easy",
+      "question": "How are production deployments detected for DORA?",
+      "options": [
+        "An engineer clicks a 'deployed' button",
+        "From CI/CD events via a per-repo configurable deploy workflow pattern",
+        "By parsing Slack announcements",
+        "From calendar invites"
+      ],
+      "correctIndex": 1,
+      "explanation": "Deployments are detected from CI/CD events using a per-repo configurable pattern (METRICS_DEPLOY_WORKFLOW_PATTERN) -- no manual tagging."
+    },
+    {
+      "id": "AIE-QZ-47",
+      "topic": "Ticket lead time",
+      "difficulty": "Medium",
+      "question": "A ticket with no linked PR is handled how in ticket lead time?",
+      "options": [
+        "Counted with a lead time of zero",
+        "Excluded from the metric and reported in an 'unlinked work' quality indicator",
+        "Assigned the team average",
+        "Deleted from the database"
+      ],
+      "correctIndex": 1,
+      "explanation": "Tickets with no linked PR are excluded from ticket lead time and surfaced in an unlinked-work indicator feeding the Investment Profile."
+    },
+    {
+      "id": "AIE-QZ-48",
+      "topic": "Event envelope",
+      "difficulty": "Medium",
+      "question": "Which fields make up the standard event envelope (ADR-0003)?",
+      "options": [
+        "{id, body}",
+        "{source, sourceId, eventType, receivedAt, connectorVersion, payload}",
+        "{user, action, time}",
+        "{topic, offset, partition}"
+      ],
+      "correctIndex": 1,
+      "explanation": "Connectors wrap payloads as {source, sourceId, eventType, receivedAt, connectorVersion, payload} before publishing to the queue."
+    },
+    {
+      "id": "AIE-QZ-49",
+      "topic": "Investment Profile",
+      "difficulty": "Medium",
+      "question": "How is work classified as planned / unplanned / rework?",
+      "options": [
+        "Engineers manually select a category per commit",
+        "By correlating Git activity to Jira epics via linkage heuristics (branch names, PR titles, smart commits)",
+        "By asking managers each sprint",
+        "Randomly sampled"
+      ],
+      "correctIndex": 1,
+      "explanation": "Classification comes from Jira<->Git linkage heuristics; unclassifiable work is bucketed transparently, never silently dropped -- consistent with zero-tagging."
+    },
+    {
+      "id": "AIE-QZ-50",
+      "topic": "Multi-tenancy",
+      "difficulty": "Hard",
+      "question": "How is future multi-tenancy accommodated in the MVP schema?",
+      "options": [
+        "It is impossible without a rewrite",
+        "A tenant-ID scoping is reserved in the schema from day one",
+        "Each tenant gets a separate database immediately",
+        "Tenancy is handled only in the frontend"
+      ],
+      "correctIndex": 1,
+      "explanation": "Tenant-ID scoping is reserved in the schema from day one for Phase 4 multi-tenancy, so commercialization needs no re-architecture."
+    }
+  ]
+}
