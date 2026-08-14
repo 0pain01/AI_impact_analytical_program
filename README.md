@@ -60,41 +60,42 @@ AI Impact Evaluation is an AI-native **Software Engineering Intelligence (SEI)**
 
 The platform follows a **message-queue-isolated** microservices architecture:
 
-
+```
 ┌─────────────────────────────────────────────────────────────────┐
-│ Frontend (React) │
-│ Role-based Dashboards (UI) │
+│                         Frontend (React)                        │
+│                    Role-based Dashboards (UI)                   │
 └─────────────────────────────┬───────────────────────────────────┘
-│
-▼
+                              │
+                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ API Core (Spring Boot) │
-│ Auth, RBAC, Dashboards API, OpenAPI │
+│                      API Core (Spring Boot)                     │
+│               Auth, RBAC, Dashboards API, OpenAPI               │
 └─────────────────────────────┬───────────────────────────────────┘
-│
-▼
+                              │
+                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ Metrics Engine │
-│ DORA, Lead Time, Investment Profile, AI ROI │
+│                      Metrics Engine                             │
+│          DORA, Lead Time, Investment Profile, AI ROI            │
 └─────────────────────────────┬───────────────────────────────────┘
-│
+                              │
 ┌─────────────────────────────┼───────────────────────────────────┐
-│ Message Queue (RabbitMQ) │
+│                    Message Queue (RabbitMQ)                     │
 └───────────────┬─────────────┼─────────────┬─────────────────────┘
-│ │ │
-▼ ▼ ▼
+                │             │             │
+                ▼             ▼             ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────────────┐
-│ Connector: │ │ Connector: │ │ Connector: │
-│ GitHub │ │ Jira │ │ AI Telemetry │
+│  Connector:     │ │  Connector:     │ │  Connector:             │
+│  GitHub         │ │  Jira           │ │  AI Telemetry           │
 └─────────────────┘ └─────────────────┘ └─────────────────────────┘
-│ │ │
-└─────────────┼─────────────┘
-│
-▼
+                │             │             │
+                └─────────────┼─────────────┘
+                              │
+                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ PostgreSQL (Transactional) │
-│ Staging → Core → Mart schemas │
+│                    PostgreSQL (Transactional)                   │
+│              Staging → Core → Mart schemas                      │
 └─────────────────────────────────────────────────────────────────┘
+```
 
 > **Key Architectural Decisions:**
 > - Connectors are **isolated behind the queue** — vendor outages never lose data
@@ -136,120 +137,122 @@ For detailed C4 diagrams and data flows, see [System Architecture](docs/03-archi
    ```bash
    git clone https://github.com/0pain01/AI_impact_analytical_program.git
    cd AI_impact_analytical_program
+   ```
 
-Start local infrastructure (PostgreSQL + RabbitMQ):
-
+2. **Start local infrastructure (PostgreSQL + RabbitMQ):**
+   ```bash
    cd infra
    cp .env.example .env   # first time only
    docker compose up -d
+   ```
+   This provides:
+   - PostgreSQL 16 at `localhost:5442` (db: `aiimpacteval`)
+   - RabbitMQ 3 at `localhost:5672` (AMQP) and `localhost:15672` (management UI)
 
-This provides:
-
-PostgreSQL 16 at localhost:5442 (db: aiimpacteval)
-
-RabbitMQ 3 at localhost:5672 (AMQP) and localhost:15672 (management UI)
-
-Start the backend services:
-
+3. **Start the backend services:**
+   ```bash
    ./infra/start-backend.sh
+   ```
+   This builds and starts all 6 backend services.
 
-This builds and starts all 6 backend services.
-4. Start the frontend:
-
+4. **Start the frontend:**
+   ```bash
    cd frontend
    npm install
    npm run dev
+   ```
+   The UI will be available at `http://localhost:5173`
 
-The UI will be available at http://localhost:5173
-5. Stop services:
-
+5. **Stop services:**
+   ```bash
    ./infra/stop-backend.sh          # stops backend services only
    docker compose -f infra/docker-compose.yml down   # stops infrastructure too
+   ```
 
-Running a Single Service
+### Running a Single Service
 
 While iterating on a specific service (e.g., API core):
-
+```bash
 cd services
 mvn spring-boot:run -pl api-core
+```
+Local defaults are wired so no configuration is needed beyond `.env`.
 
-Local defaults are wired so no configuration is needed beyond .env.
-
-GitHub Connector
+### GitHub Connector
 
 To run the GitHub connector locally:
-
+```bash
 GITHUB_TOKEN=<your-token> mvn spring-boot:run -pl connectors/connector-github
+```
+> ⚠️ **Never commit `GITHUB_TOKEN`** — use environment variables or a secret manager.
 
-⚠️ **Never commit GITHUB_TOKEN — use environment variables or a secret manager.
+### Smoke Test
 
-Smoke Test
-
-After building with mvn package in services/:
-
+After building with `mvn package` in `services/`:
+```bash
 ./infra/smoke-e2e.sh
-
+```
 This verifies the FR-1.8 / PRD F1 validation path.
 
-💻 Development Guide
+---
 
-Backend
+## 💻 Development Guide
 
-Java 21 with Spring Boot
+### Backend
 
-Maven for build and dependency management
+- **Java 21** with **Spring Boot**
+- **Maven** for build and dependency management
+- **Flyway** for database migrations
+- **OpenAPI** for contract-first API development
 
-Flyway for database migrations
-
-OpenAPI for contract-first API development
-
-Build all services:
-
+**Build all services:**
+```bash
 cd services
 mvn clean package
+```
 
-Run tests:
-
+**Run tests:**
+```bash
 mvn test
+```
 
-Frontend
+### Frontend
 
-React 18 with TypeScript (strict mode)
+- **React 18** with **TypeScript** (strict mode)
+- **Tailwind CSS** for styling
+- **Vite** for build tooling
+- **OpenAPI-generated client** — no hand-written fetch types
 
-Tailwind CSS for styling
-
-Vite for build tooling
-
-OpenAPI-generated client — no hand-written fetch types
-
-Development:
-
+**Development:**
+```bash
 cd frontend
 npm install
 npm run dev        # starts dev server at :5173
+```
 
-Build:
-
+**Build:**
+```bash
 npm run build      # tsc -b (strict) + vite build
+```
 
-Lint:
-
+**Lint:**
+```bash
 npm run lint       # eslint
+```
 
-Standards
+### Standards
 
-Git: Trunk-based with short-lived feature branches
+- **Git:** Trunk-based with short-lived feature branches
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`)
+- **PRs:** Required — no direct pushes to `main`; keep PRs small (< ~400 lines where feasible)
+- **Testing:** Unit tests required for all business logic; integration tests for connectors
+- **Security:** No secrets in code — env vars / secret manager only; TLS in transit; OWASP Top 10 review
 
-Commits: Conventional Commits (feat:, fix:, docs:, refactor:, test:, chore:)
+---
 
-PRs: Required — no direct pushes to main; keep PRs small (< ~400 lines where feasible)
+## 📁 Project Structure
 
-Testing: Unit tests required for all business logic; integration tests for connectors
-
-Security: No secrets in code — env vars / secret manager only; TLS in transit; OWASP Top 10 review
-
-📁 Project Structure
-
+```
 AI_impact_analytical_program/
 ├── .claude/                     # AI agent rules and policies
 ├── docs/
@@ -282,119 +285,98 @@ AI_impact_analytical_program/
 ├── CLAUDE.md                    # Rules for AI agents (mandatory documentation policy)
 ├── README.md                    # This file
 └── .gitignore
+```
 
-📚 Documentation
+---
 
-All project documentation lives in the docs/ directory. Documentation is part of the definition of done.
+## 📚 Documentation
 
-Document
+All project documentation lives in the `docs/` directory. Documentation is **part of the definition of done**.
 
-Purpose
+| Document | Purpose |
+|----------|---------|
+| [BRD Summary](docs/01-product/brd-summary.md) | What we're building and why (condensed BRD) |
+| [PRD v1.0](docs/01-product/prd.md) | Product requirements (epics E1–E11 with acceptance criteria) |
+| [Metric Definitions](docs/01-product/metric-definitions.md) | Formulas, data sources, and edge cases for all metrics |
+| [Engineering Standards](docs/02-standards/engineering-standards.md) | Coding, git, testing, API, and data standards |
+| [Security & Privacy Standards](docs/02-standards/security-and-privacy-standards.md) | Security, privacy, and audit requirements |
+| [System Architecture](docs/03-architecture/system-architecture.md) | C4 diagrams, data flows, component tables |
+| [ADRs](docs/03-architecture/decisions/) | Architecture Decision Records — numbered sequentially |
+| [Runbooks](docs/04-operations/) | On-call runbooks for ingestion failures, connector outages, etc. |
+| [CHANGELOG](docs/CHANGELOG.md) | One-line log of user-visible / architecturally significant changes |
 
-BRD Summary
+### Documentation Policy (Enforced)
 
-What we're building and why (condensed BRD)
+1. **Code and docs change together** — same PR, or the PR is incomplete
+2. **Decisions get ADRs** — before/with implementation; never silently deviate
+3. **Every metric has a written definition** — formula, sources, edge cases
+4. **Every service has a README** — run, test, configure, API surface
+5. **Architecture diagrams reflect reality** — update them when topology changes
 
-PRD v1.0
+---
 
-Product requirements (epics E1–E11 with acceptance criteria)
+## 🥇 Golden Rules
 
-Metric Definitions
+1. **No surveillance features, ever** — This is an explicit ethical exclusion (BRD §5.3). Never implement keystroke tracking, idle-time monitoring, screen monitoring, or any individual-level surveillance metric. Individual activity views are opt-in and framed around growth, not monitoring.
 
-Formulas, data sources, and edge cases for all metrics
+2. **Metrics are computed automatically** — Engineers never change how they work for us. No manual tagging dependency. All metrics must be derived automatically from tool data.
 
-Engineering Standards
+3. **Docs change with code, in the same PR** — Decisions get ADRs. Documentation is part of the definition of done.
 
-Coding, git, testing, API, and data standards
+4. **Connectors are isolated behind the queue** — Vendor outages never lose data. Connectors must tolerate API failures with retry/backoff, dead-letter queues, and idempotent ingestion.
 
-Security & Privacy Standards
+5. **Least-privilege integrations** — Request the minimum OAuth/API scopes needed per connector.
 
-Security, privacy, and audit requirements
+6. **Auditability** — Every configuration change, access grant, and data export must be written to the audit log (12+ month retention).
 
-System Architecture
+---
 
-C4 diagrams, data flows, component tables
-
-ADRs
-
-Architecture Decision Records — numbered sequentially
-
-Runbooks
-
-On-call runbooks for ingestion failures, connector outages, etc.
-
-CHANGELOG
-
-One-line log of user-visible / architecturally significant changes
-
-Documentation Policy (Enforced)
-
-Code and docs change together — same PR, or the PR is incomplete
-
-Decisions get ADRs — before/with implementation; never silently deviate
-
-Every metric has a written definition — formula, sources, edge cases
-
-Every service has a README — run, test, configure, API surface
-
-Architecture diagrams reflect reality — update them when topology changes
-
-🥇 Golden Rules
-
-No surveillance features, ever — This is an explicit ethical exclusion (BRD §5.3). Never implement keystroke tracking, idle-time monitoring, screen monitoring, or any individual-level surveillance metric. Individual activity views are opt-in and framed around growth, not monitoring.
-
-Metrics are computed automatically — Engineers never change how they work for us. No manual tagging dependency. All metrics must be derived automatically from tool data.
-
-Docs change with code, in the same PR — Decisions get ADRs. Documentation is part of the definition of done.
-
-Connectors are isolated behind the queue — Vendor outages never lose data. Connectors must tolerate API failures with retry/backoff, dead-letter queues, and idempotent ingestion.
-
-Least-privilege integrations — Request the minimum OAuth/API scopes needed per connector.
-
-Auditability — Every configuration change, access grant, and data export must be written to the audit log (12+ month retention).
-
-🤝 Contributing
+## 🤝 Contributing
 
 We welcome contributions! Please follow these guidelines:
 
-Read the docs first — Start with BRD Summary and Engineering Standards. Code that contradicts them will be rejected.
+1. **Read the docs first** — Start with [BRD Summary](docs/01-product/brd-summary.md) and [Engineering Standards](docs/02-standards/engineering-standards.md). Code that contradicts them will be rejected.
 
-Create an issue — Discuss the change before implementing.
+2. **Create an issue** — Discuss the change before implementing.
 
-Create a feature branch — Use short-lived branches from main.
+3. **Create a feature branch** — Use short-lived branches from `main`.
 
-Write tests — Unit tests for business logic; integration tests for connectors.
+4. **Write tests** — Unit tests for business logic; integration tests for connectors.
 
-Update documentation — Docs change with code, in the same PR.
+5. **Update documentation** — Docs change with code, in the same PR.
 
-Add an ADR for decisions — Any choice of framework, datastore, queue, protocol, or third-party service must be recorded.
+6. **Add an ADR for decisions** — Any choice of framework, datastore, queue, protocol, or third-party service must be recorded.
 
-Open a PR — Keep PRs small (< ~400 lines where feasible).
+7. **Open a PR** — Keep PRs small (< ~400 lines where feasible).
 
-Reference requirements — Use requirement IDs (FR-x.x, BO-x) in PR descriptions.
+8. **Reference requirements** — Use requirement IDs (FR-x.x, BO-x) in PR descriptions.
 
-Pass CI — No merge with failing or skipped tests.
+9. **Pass CI** — No merge with failing or skipped tests.
 
-📄 License
+---
+
+## 📄 License
 
 This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
 
-📬 Contact
+---
 
-Author: 0pain01
+## 📬 Contact
 
-Repository: AI Impact Evaluation
+- **Author:** [0pain01](https://github.com/0pain01)
+- **Repository:** [AI Impact Evaluation](https://github.com/0pain01/AI_impact_analytical_program)
 
-🙏 Acknowledgments
+---
+
+## 🙏 Acknowledgments
 
 Built with:
+- [Spring Boot](https://spring.io/projects/spring-boot)
+- [React](https://react.dev/)
+- [PostgreSQL](https://www.postgresql.org/)
+- [RabbitMQ](https://www.rabbitmq.com/)
+- [Docker](https://www.docker.com/)
 
-Spring Boot
+---
 
-React
-
-PostgreSQL
-
-RabbitMQ
-
-Docker
+**Status:** Phase 0 complete — architecture, standards, PRD, metric definitions, and a buildable monorepo scaffold. Phase 1 MVP implementation is next (F1: GitHub connector).
