@@ -62,8 +62,22 @@ public class StagingEventWriter {
             WHERE EXCLUDED.last_received_at > staging.pull_request_state.last_received_at
             """;
 
+    // Reviews can be dismissed after submission (state changes to DISMISSED), so this is a
+    // guarded upsert like the others, not an insert-once.
+    private static final String UPSERT_PULL_REQUEST_REVIEW_SQL = """
+            INSERT INTO staging.pull_request_review_state
+                (repo, pr_number, review_id, reviewer_login, state, submitted_at, last_received_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (repo, review_id) DO UPDATE SET
+                reviewer_login = EXCLUDED.reviewer_login, state = EXCLUDED.state,
+                submitted_at = EXCLUDED.submitted_at, last_received_at = EXCLUDED.last_received_at
+            WHERE EXCLUDED.last_received_at > staging.pull_request_review_state.last_received_at
+            """;
+
     private static final Set<String> WORKFLOW_RUN_EVENT_TYPES = Set.of("workflow_run", "workflow_run.snapshot");
     private static final Set<String> PULL_REQUEST_EVENT_TYPES = Set.of("pull_request", "pull_request.snapshot");
+    private static final Set<String> PULL_REQUEST_REVIEW_EVENT_TYPES =
+            Set.of("pull_request_review", "pull_request_review.snapshot");
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
@@ -107,6 +121,8 @@ public class StagingEventWriter {
                 upsertWorkflowRunState(envelope);
             } else if (PULL_REQUEST_EVENT_TYPES.contains(envelope.eventType())) {
                 upsertPullRequestState(envelope);
+            } else if (PULL_REQUEST_REVIEW_EVENT_TYPES.contains(envelope.eventType())) {
+                upsertPullRequestReviewState(envelope);
             }
         }
         return true;
@@ -151,6 +167,49 @@ public class StagingEventWriter {
                 createdAt == null ? null : Timestamp.from(createdAt),
                 mergedAt == null ? null : Timestamp.from(mergedAt),
                 Timestamp.from(envelope.receivedAt()));
+    }
+
+    private void upsertPullRequestReviewState(EventEnvelope envelope) {
+        JsonNode review = envelope.payload();
+
+        String reviewId = textOrNull(review, "id");
+        String prUrl = textOrNull(review, "pull_request_url");
+        if (reviewId == null || prUrl == null) {
+            return;
+        }
+        RepoAndPrNumber location = parsePullRequestUrl(prUrl);
+        if (location == null) {
+            log.warn("Could not parse repo/PR number from pull_request_url '{}' — skipping review {}",
+                    prUrl, reviewId);
+            return;
+        }
+        String reviewerLogin = textAtPath(review, "user", "login");
+        String state = textOrNull(review, "state");
+        Instant submittedAt = instantOrNull(textOrNull(review, "submitted_at"));
+
+        jdbcTemplate.update(UPSERT_PULL_REQUEST_REVIEW_SQL,
+                location.repo(), location.prNumber(), reviewId, reviewerLogin, state,
+                submittedAt == null ? null : Timestamp.from(submittedAt),
+                Timestamp.from(envelope.receivedAt()));
+    }
+
+    private record RepoAndPrNumber(String repo, long prNumber) {
+    }
+
+    // e.g. "https://api.github.com/repos/expressjs/express/pulls/7369" -> ("expressjs/express", 7369)
+    private static RepoAndPrNumber parsePullRequestUrl(String url) {
+        int reposIdx = url.indexOf("/repos/");
+        int pullsIdx = url.indexOf("/pulls/");
+        if (reposIdx < 0 || pullsIdx < 0 || pullsIdx <= reposIdx) {
+            return null;
+        }
+        String repo = url.substring(reposIdx + "/repos/".length(), pullsIdx);
+        String numberStr = url.substring(pullsIdx + "/pulls/".length());
+        try {
+            return new RepoAndPrNumber(repo, Long.parseLong(numberStr));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private static String textOrNull(JsonNode node, String field) {
