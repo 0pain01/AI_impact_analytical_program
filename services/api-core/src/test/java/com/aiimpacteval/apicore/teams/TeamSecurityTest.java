@@ -3,7 +3,6 @@ package com.aiimpacteval.apicore.teams;
 import com.aiimpacteval.apicore.security.JwtConfig;
 import com.aiimpacteval.apicore.security.Role;
 import com.aiimpacteval.apicore.security.SecurityConfig;
-import com.aiimpacteval.apicore.teams.TeamQueryService.TeamSummary;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

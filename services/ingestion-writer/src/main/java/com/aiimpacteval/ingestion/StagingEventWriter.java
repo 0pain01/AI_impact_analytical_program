@@ -13,7 +13,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,7 +31,10 @@ import java.util.Set;
  * {@code pull_request.snapshot} events. {@code staging.raw_event} stays the source of truth;
  * these projections exist purely so metrics-engine doesn't have to re-derive "latest state per
  * run/PR" from JSONB via DISTINCT ON on every recompute (see V5 migration for the one-time
- * backfill of pre-existing events, and the perf history that motivated this).
+ * backfill of pre-existing events, and the perf history that motivated this). V7 extended
+ * {@code pull_request_state} with number/title/author/html_url/state/requested_reviewers so the
+ * Code Review tab can read it directly, and so it can be joined against
+ * {@code pull_request_review_state} (V6) on {@code (repo, number)}.
  */
 @Component
 public class StagingEventWriter {
@@ -54,9 +60,14 @@ public class StagingEventWriter {
             """;
 
     private static final String UPSERT_PULL_REQUEST_SQL = """
-            INSERT INTO staging.pull_request_state (repo, pr_id, created_at, merged_at, last_received_at)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO staging.pull_request_state
+                (repo, pr_id, number, title, author, html_url, state, requested_reviewers,
+                 created_at, merged_at, last_received_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (repo, pr_id) DO UPDATE SET
+                number = EXCLUDED.number, title = EXCLUDED.title, author = EXCLUDED.author,
+                html_url = EXCLUDED.html_url, state = EXCLUDED.state,
+                requested_reviewers = EXCLUDED.requested_reviewers,
                 created_at = EXCLUDED.created_at, merged_at = EXCLUDED.merged_at,
                 last_received_at = EXCLUDED.last_received_at
             WHERE EXCLUDED.last_received_at > staging.pull_request_state.last_received_at
@@ -159,14 +170,36 @@ public class StagingEventWriter {
             return;
         }
         String repo = firstNonBlank(textAtPath(pr, "base", "repo", "full_name"), "unknown");
+        Long number = longOrNull(textOrNull(pr, "number"));
+        String title = textOrNull(pr, "title");
+        String author = textAtPath(pr, "user", "login");
+        String htmlUrl = textOrNull(pr, "html_url");
+        String state = textOrNull(pr, "state");
+        String[] requestedReviewers = extractLogins(pr.get("requested_reviewers"));
         Instant createdAt = instantOrNull(textOrNull(pr, "created_at"));
         Instant mergedAt = instantOrNull(textOrNull(pr, "merged_at"));
 
-        jdbcTemplate.update(UPSERT_PULL_REQUEST_SQL,
-                repo, prId,
-                createdAt == null ? null : Timestamp.from(createdAt),
-                mergedAt == null ? null : Timestamp.from(mergedAt),
-                Timestamp.from(envelope.receivedAt()));
+        // Plain jdbcTemplate.update(...) can't portably bind a text[] parameter, so this one
+        // needs a PreparedStatementCreator to call Connection.createArrayOf ourselves.
+        jdbcTemplate.update(con -> {
+            var ps = con.prepareStatement(UPSERT_PULL_REQUEST_SQL);
+            ps.setString(1, repo);
+            ps.setString(2, prId);
+            if (number == null) {
+                ps.setNull(3, Types.BIGINT);
+            } else {
+                ps.setLong(3, number);
+            }
+            ps.setString(4, title);
+            ps.setString(5, author);
+            ps.setString(6, htmlUrl);
+            ps.setString(7, state);
+            ps.setArray(8, con.createArrayOf("text", requestedReviewers));
+            ps.setTimestamp(9, createdAt == null ? null : Timestamp.from(createdAt));
+            ps.setTimestamp(10, mergedAt == null ? null : Timestamp.from(mergedAt));
+            ps.setTimestamp(11, Timestamp.from(envelope.receivedAt()));
+            return ps;
+        });
     }
 
     private void upsertPullRequestReviewState(EventEnvelope envelope) {
@@ -247,5 +280,31 @@ public class StagingEventWriter {
             log.warn("Unparseable timestamp '{}' — leaving null", iso);
             return null;
         }
+    }
+
+    private static Long longOrNull(String s) {
+        if (s == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    // requested_reviewers is an array of GitHub user objects — we only need their logins.
+    private static String[] extractLogins(JsonNode arrayNode) {
+        if (arrayNode == null || !arrayNode.isArray()) {
+            return new String[0];
+        }
+        List<String> logins = new ArrayList<>();
+        for (JsonNode item : arrayNode) {
+            String login = textOrNull(item, "login");
+            if (login != null) {
+                logins.add(login);
+            }
+        }
+        return logins.toArray(new String[0]);
     }
 }

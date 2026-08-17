@@ -2,11 +2,9 @@
 // TODO(standards §3): replace with a client generated from the OpenAPI spec once codegen
 // tooling lands in CI — do not let these drift by hand.
 //
-// DEMO MODE (investor/demo deployment — no backend): every exported function below is
-// backed by deterministic mock data instead of a real `fetch` to api-core. Shapes and
-// signatures match the real contract exactly, so swapping back to live network calls
-// later is a drop-in change — see the `// LIVE:` comments for what each function used to
-// do. Do not wire this into a production build with real customer data.
+// Functions marked `// LIVE:` call the real api-core backend. A few views (Investment Profile,
+// AI Cost Track) are still backed by deterministic mock data pending the Jira/AI-assistant
+// connectors — see `frontend/src/mock/mockData.ts` and each view's own import for which.
 
 const API_BASE_URL = 'http://localhost:8080'
 
@@ -81,6 +79,40 @@ export interface AuditEntry {
   occurredAt: string
 }
 
+export interface PrCycleStage {
+  stage: string
+  hoursP50: number | null
+}
+
+export interface ReviewerLoad {
+  reviewer: string
+  reviews: number
+}
+
+export interface AgingPr {
+  id: string
+  title: string
+  repo: string
+  author: string
+  ageHours: number
+  reviewers: string[]
+  sizeLines: number | null
+}
+
+export interface AgingPrsPage {
+  items: AgingPr[]
+  page: number
+  pageSize: number
+  totalCount: number
+}
+
+export interface CodeReviewResponse {
+  windowLabel: string
+  cycleStages: PrCycleStage[]
+  reviewLoad: ReviewerLoad[]
+  agingPrs: AgingPrsPage
+}
+
 export type Role = 'ADMIN' | 'ENG_LEADER' | 'MANAGER' | 'IC' | 'FINANCE_READONLY'
 
 export interface Session {
@@ -109,21 +141,26 @@ export function getSession(): Session | null {
   return readSession()
 }
 
-// LIVE: POST /api/v1/auth/dev-token — issues a short-lived role-scoped JWT (ADR-0004).
-export async function login(email: string, role: Role): Promise<Session> {
-  const cleanEmail = (email ?? '').trim() || 'demo@ai-impact-evaluation.dev'
-  const safeRole: Role = role ?? 'ENG_LEADER'
-
-  const params = new URLSearchParams({ email: cleanEmail, role: safeRole })
+// LIVE: POST /api/v1/auth/dev-token — issues a JWT whose role/scope come from core.app_user
+// (ADR-0004). No longer accepts a `role` — that used to be a client-supplied param, which meant
+// anyone could self-declare ADMIN for any email. An admin now has to add the account first (see
+// the Admin console's Users panel); login for an unknown email genuinely fails.
+export async function login(email: string): Promise<Session> {
+  const cleanEmail = (email ?? '').trim()
+  if (!cleanEmail) {
+    throw new Error('Enter your email to sign in.')
+  }
+  const params = new URLSearchParams({ email: cleanEmail })
   const res = await fetch(`${API_BASE_URL}/api/v1/auth/dev-token?${params.toString()}`, {
     method: 'POST',
   })
   if (!res.ok) {
-    throw new Error(`Login failed: ${res.status} ${res.statusText}`)
+    const detail = await res.text().catch(() => '')
+    throw new Error(detail || `Login failed: ${res.status} ${res.statusText}`)
   }
   const issued: { token: string; role: string; expiresAt: string } = await res.json()
 
-  const session: Session = { email: cleanEmail, role: safeRole, token: issued.token }
+  const session: Session = { email: cleanEmail, role: issued.role as Role, token: issued.token }
   memorySession = session
   try {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
@@ -305,16 +342,22 @@ export const MOCK_AUDIT_LOG: AuditEntry[] = [
 /* Exported fetchers (same signatures as the live api-core client)     */
 /* ------------------------------------------------------------------ */
 
-async function authFetch(path: string): Promise<Response> {
+async function authFetch(path: string, init?: { method?: string; body?: unknown }): Promise<Response> {
   const session = readSession()
   if (!session?.token) {
     throw new Error('Not logged in — no token available')
   }
   const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { Authorization: `Bearer ${session.token}` },
+    method: init?.method ?? 'GET',
+    headers: {
+      Authorization: `Bearer ${session.token}`,
+      ...(init?.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+    },
+    body: init?.body !== undefined ? JSON.stringify(init.body) : undefined,
   })
   if (!res.ok) {
-    throw new Error(`Request failed: ${res.status} ${res.statusText}`)
+    const detail = await res.text().catch(() => '')
+    throw new Error(`Request failed: ${res.status} ${res.statusText}${detail ? ` — ${detail}` : ''}`)
   }
   return res
 }
@@ -348,5 +391,116 @@ export async function fetchAdminConnectors(): Promise<ConnectorHealth[]> {
 export async function fetchAuditLog(limit = 20): Promise<AuditEntry[]> {
   const params = new URLSearchParams({ limit: String(limit) })
   const res = await authFetch(`/api/v1/audit?${params.toString()}`)
+  return res.json()
+}
+
+// LIVE: GET /api/v1/metrics/code-review?days=&scope=&repo=&sortBy=&sortDir=&page=&pageSize=
+export interface CodeReviewParams {
+  days?: number
+  scope?: string
+  repo?: string
+  sortBy?: 'age' | 'repo'
+  sortDir?: 'asc' | 'desc'
+  page?: number
+  pageSize?: number
+}
+
+export async function fetchCodeReview(params: CodeReviewParams = {}): Promise<CodeReviewResponse> {
+  const { days = 30, scope = '*', repo, sortBy = 'age', sortDir = 'desc', page = 0, pageSize = 20 } = params
+  const query = new URLSearchParams({
+    days: String(days),
+    scope,
+    sortBy,
+    sortDir,
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+  if (repo) query.set('repo', repo)
+  const res = await authFetch(`/api/v1/metrics/code-review?${query.toString()}`)
+  return res.json()
+}
+
+// LIVE: GET/POST/PATCH /api/v1/admin/users/** — the real access-control record behind login()
+// and ScopeResolver's server-side scope enforcement.
+export interface AdminUser {
+  id: string
+  email: string
+  displayName: string
+  role: Role
+  teamId: string | null
+  teamName: string | null
+  githubLogin: string | null
+  active: boolean
+  lastLoginAt: string | null
+}
+
+export async function fetchAdminUsers(): Promise<AdminUser[]> {
+  const res = await authFetch('/api/v1/admin/users')
+  return res.json()
+}
+
+export async function createAdminUser(
+  email: string,
+  displayName: string,
+  role: Role,
+  teamId: string | null,
+  githubLogin: string | null,
+): Promise<AdminUser> {
+  const res = await authFetch('/api/v1/admin/users', {
+    method: 'POST',
+    body: { email, displayName, role, teamId, githubLogin },
+  })
+  return res.json()
+}
+
+export async function updateAdminUserRole(userId: string, role: Role, teamId: string | null): Promise<AdminUser> {
+  const res = await authFetch(`/api/v1/admin/users/${userId}/role`, {
+    method: 'PATCH',
+    body: { role, teamId },
+  })
+  return res.json()
+}
+
+export async function updateAdminUserGithubLogin(userId: string, githubLogin: string | null): Promise<AdminUser> {
+  const res = await authFetch(`/api/v1/admin/users/${userId}/github-login`, {
+    method: 'PATCH',
+    body: { githubLogin },
+  })
+  return res.json()
+}
+
+export async function setAdminUserActive(userId: string, active: boolean): Promise<AdminUser> {
+  const res = await authFetch(`/api/v1/admin/users/${userId}/active`, {
+    method: 'PATCH',
+    body: { active },
+  })
+  return res.json()
+}
+
+// LIVE: GET /api/v1/personal/activity — the IC role's self-scoped Personal Activity tab. No
+// scope/repo/team params exist for this one on purpose: the server resolves "you" from your
+// login, not from anything the client sends.
+export interface OwnPr {
+  id: string
+  title: string
+  repo: string
+  ageHours: number
+}
+
+export interface ReviewGiven {
+  repo: string
+  prId: string
+  state: string
+  submittedAt: string | null
+}
+
+export interface PersonalActivity {
+  githubLogin: string | null
+  openPrs: OwnPr[]
+  recentReviewsGiven: ReviewGiven[]
+}
+
+export async function fetchPersonalActivity(): Promise<PersonalActivity> {
+  const res = await authFetch('/api/v1/personal/activity')
   return res.json()
 }

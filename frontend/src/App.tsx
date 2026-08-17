@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import { getSession, logout, type Session } from './api'
+import { TAB_ACCESS, defaultViewFor, type View } from './roleAccess'
 import aiImpactEvaluationLogo from './assets/ai-impact-evaluation-logo.png'
 import Cockpit from './views/Cockpit'
 import Teams from './views/Teams'
 import InvestmentProfile from './views/InvestmentProfile'
 import CodeReview from './views/CodeReview'
 import AiCostTrack from './views/AiCostTrack'
+import Personal from './views/Personal'
 import Admin from './views/Admin'
 import Setup from './views/Setup'
 import Landing from './views/Landing'
 import Login from './views/Login'
-
-type View = 'cockpit' | 'teams' | 'investment' | 'code-review' | 'ai-cost' | 'admin' | 'setup'
 
 function NavIcon({ id }: { id: View }) {
   const common = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', strokeWidth: 1.75, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
@@ -55,6 +55,13 @@ function NavIcon({ id }: { id: View }) {
           <path d="M12 8.5v7M9.8 15h3.1a1.6 1.6 0 0 0 0-3.2h-1.8a1.6 1.6 0 0 1 0-3.2h3" />
         </svg>
       )
+    case 'personal':
+      return (
+        <svg {...common} stroke="currentColor">
+          <circle cx="12" cy="8" r="3.5" />
+          <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+        </svg>
+      )
     case 'admin':
       return (
         <svg {...common} stroke="currentColor">
@@ -72,15 +79,16 @@ function NavIcon({ id }: { id: View }) {
   }
 }
 
-const NAV: { id: View; label: string }[] = [
-  { id: 'cockpit', label: 'Cockpit' },
-  { id: 'teams', label: 'Teams' },
-  { id: 'investment', label: 'Investment Profile' },
-  { id: 'code-review', label: 'Code Review' },
-  { id: 'ai-cost', label: 'AI Cost Track' },
-  { id: 'setup', label: 'Setup' },
-  { id: 'admin', label: 'Admin' },
-]
+const NAV_LABELS: Record<View, string> = {
+  cockpit: 'Cockpit',
+  teams: 'Teams',
+  investment: 'Investment Profile',
+  'code-review': 'Code Review',
+  'ai-cost': 'AI Cost Track',
+  personal: 'Personal Activity',
+  setup: 'Setup',
+  admin: 'Admin',
+}
 
 const ROLE_STYLES: Record<string, string> = {
   ADMIN: 'bg-rose-50 text-rose-600 ring-rose-200',
@@ -100,7 +108,11 @@ function initialsFor(email: string) {
 type Stage = 'landing' | 'login' | 'app'
 
 function AppShell({ session, onLogout }: { session: Session; onLogout: () => void }) {
-  const [view, setView] = useState<View>('cockpit')
+  // Role-aware navigation (PRD §8) — previously every tab rendered for every role, including
+  // Admin for a MANAGER (the backend already blocked their API calls with a 403, but the tab
+  // itself had no business being visible at all).
+  const allowedViews = TAB_ACCESS[session.role] ?? []
+  const [view, setView] = useState<View>(() => defaultViewFor(session.role))
   const roleLabel = session.role.replace('_', ' ')
   const roleStyle = ROLE_STYLES[session.role] ?? 'bg-slate-100 text-slate-600 ring-slate-200'
 
@@ -134,12 +146,12 @@ function AppShell({ session, onLogout }: { session: Session; onLogout: () => voi
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Menu</p>
           </div>
           <nav className="flex-1 space-y-0.5 p-3">
-            {NAV.map((item) => {
-              const active = view === item.id
+            {allowedViews.map((id) => {
+              const active = view === id
               return (
                 <button
-                  key={item.id}
-                  onClick={() => setView(item.id)}
+                  key={id}
+                  onClick={() => setView(id)}
                   className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13.5px] font-medium transition-colors ${
                     active
                       ? 'bg-[#00338D] text-white shadow-sm'
@@ -147,9 +159,9 @@ function AppShell({ session, onLogout }: { session: Session; onLogout: () => voi
                   }`}
                 >
                   <span className={active ? 'text-white' : 'text-slate-400'}>
-                    <NavIcon id={item.id} />
+                    <NavIcon id={id} />
                   </span>
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{NAV_LABELS[id]}</span>
                 </button>
               )
             })}
@@ -182,13 +194,20 @@ function AppShell({ session, onLogout }: { session: Session; onLogout: () => voi
         </aside>
 
         <main className="flex-1 overflow-y-auto bg-slate-50 p-8">
-          {view === 'cockpit' && <Cockpit />}
-          {view === 'teams' && <Teams />}
-          {view === 'investment' && <InvestmentProfile />}
-          {view === 'code-review' && <CodeReview />}
-          {view === 'ai-cost' && <AiCostTrack />}
-          {view === 'setup' && <Setup />}
-          {view === 'admin' && <Admin />}
+          {!allowedViews.includes(view) ? (
+            <p className="text-sm text-slate-400">Nothing here for your role yet.</p>
+          ) : (
+            <>
+              {view === 'cockpit' && <Cockpit />}
+              {view === 'teams' && <Teams />}
+              {view === 'investment' && <InvestmentProfile />}
+              {view === 'code-review' && <CodeReview />}
+              {view === 'ai-cost' && <AiCostTrack />}
+              {view === 'personal' && <Personal />}
+              {view === 'setup' && <Setup />}
+              {view === 'admin' && <Admin />}
+            </>
+          )}
         </main>
       </div>
     </div>

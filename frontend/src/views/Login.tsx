@@ -1,17 +1,8 @@
 import { useState } from 'react'
-import { login, type Role } from '../api'
-
-const ROLES: { value: Role; label: string; blurb: string }[] = [
-  { value: 'ENG_LEADER', label: 'CTO / VP Engineering', blurb: 'Org-wide access' },
-  { value: 'MANAGER', label: 'Engineering Manager', blurb: 'Team scope' },
-  { value: 'IC', label: 'Individual Contributor', blurb: 'Self only' },
-  { value: 'FINANCE_READONLY', label: 'Finance / Procurement', blurb: 'Read-only, aggregated' },
-  { value: 'ADMIN', label: 'Admin', blurb: 'Connector & access console' },
-]
+import { login } from '../api'
 
 export default function Login({ onSuccess, onBack }: { onSuccess: () => void; onBack: () => void }) {
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState<Role>('ENG_LEADER')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -19,15 +10,14 @@ export default function Login({ onSuccess, onBack }: { onSuccess: () => void; on
     e.preventDefault()
     setError(null)
     setLoading(true)
-    // Demo mode: login() never rejects, but guard anyway so this screen can never get stuck
-    // showing an error in front of investors.
     try {
-      await login(email.trim() || 'demo@ai-impact-evaluation.dev', role)
-    } catch {
-      // no-op — fall through to onSuccess regardless
+      await login(email)
+      onSuccess()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign-in failed.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
-    onSuccess()
   }
 
   return (
@@ -51,7 +41,8 @@ export default function Login({ onSuccess, onBack }: { onSuccess: () => void; on
           </button>
           <h1 className="text-2xl font-bold tracking-tight">Log in to AI Impact Evaluation</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Pilot auth bridge — role-scoped demo tokens (ADR-0004). Production uses SSO/OIDC.
+            Pilot auth bridge (ADR-0004). Your role and access come from your account — an admin sets those up
+            in the Admin console, not you at sign-in. Production uses SSO/OIDC.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -66,33 +57,6 @@ export default function Login({ onSuccess, onBack }: { onSuccess: () => void; on
               />
             </div>
 
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Role</label>
-              <div className="space-y-2">
-                {ROLES.map((r) => (
-                  <label
-                    key={r.value}
-                    className={`flex cursor-pointer items-center justify-between rounded-lg border px-3 py-2 text-sm transition ${
-                      role === r.value ? 'border-kpmg-400 bg-kpmg-50' : 'border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <span>
-                      <span className="font-medium text-slate-900">{r.label}</span>
-                      <span className="ml-2 text-xs text-slate-400">{r.blurb}</span>
-                    </span>
-                    <input
-                      type="radio"
-                      name="role"
-                      value={r.value}
-                      checked={role === r.value}
-                      onChange={() => setRole(r.value)}
-                      className="accent-[#00338D]"
-                    />
-                  </label>
-                ))}
-              </div>
-            </div>
-
             {error && (
               <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
             )}
@@ -102,8 +66,13 @@ export default function Login({ onSuccess, onBack }: { onSuccess: () => void; on
               disabled={loading}
               className="w-full rounded-lg bg-[#00338D] px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-kpmg-900/15 hover:bg-kpmg-700 disabled:opacity-50"
             >
-              {loading ? 'Signing in…' : 'Continue to Cockpit'}
+              {loading ? 'Signing in…' : 'Continue'}
             </button>
+
+            <p className="text-center text-xs text-slate-400">
+              First time setting this up? Signing in with the very first email on a fresh install makes that
+              account an Admin automatically.
+            </p>
           </form>
         </div>
       </div>

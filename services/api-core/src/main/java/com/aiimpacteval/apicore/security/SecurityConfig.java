@@ -27,10 +27,14 @@ import java.util.List;
  * audited).</li>
  * <li>{@code /api/v1/audit/**} — {@code ADMIN} only (E8-S3).</li>
  * <li>{@code /api/v1/admin/**} — {@code ADMIN} only (Admin console: connector
- * health, E1-S4/E8).</li>
+ * health, user/role management, E1-S4/E8).</li>
  * <li>{@code /api/v1/metrics/**}, {@code /api/v1/teams/**} — analytical roles
  * only;
- * {@code IC} is self-only and denied org/team metrics (E8-S1/S2).</li>
+ * {@code IC} is denied — these aren't self-scoped, so IC has
+ * {@code /api/v1/personal/**} instead (E8-S1/S2).</li>
+ * <li>{@code /api/v1/personal/**} — any authenticated role. Safe to leave
+ * un-role-gated: it's inherently self-scoped (a caller's own PRs/reviews
+ * only), so there's no privilege to restrict.</li>
  * <li>{@code /api/v1/setup/**} — {@code ADMIN}/{@code ENG_LEADER} only
  * (onboarding
  * checklist, E1-S5).</li>
@@ -54,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/metrics/**", "/api/v1/teams/**").hasAnyRole(
                                 Role.ADMIN.name(), Role.ENG_LEADER.name(),
                                 Role.MANAGER.name(), Role.FINANCE_READONLY.name())
+                        .requestMatchers("/api/v1/personal/**").authenticated()
                         .requestMatchers("/api/v1/setup/**")
                         .hasAnyRole(Role.ADMIN.name(), Role.ENG_LEADER.name())
                         .anyRequest().authenticated())
@@ -64,7 +69,7 @@ public class SecurityConfig {
     private CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
