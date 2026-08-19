@@ -7,18 +7,28 @@ import com.aiimpacteval.connector.jira.events.EventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
  * Backfills issues (with changelogs, feeding status-transition history for ticket lead time —
  * FR-8.2.3) for a Jira project. Idempotency via ADR-0003 sourceId scheme: re-runs re-ingest
  * only issues updated since their last staged version.
+ *
+ * <p>Uses {@code POST /rest/api/3/search/jql} — Atlassian removed the older
+ * {@code GET /rest/api/3/search} entirely (CHANGE-2046) in favor of this, and switched
+ * pagination from {@code startAt}/offset to a {@code nextPageToken} cursor. Atlassian's own
+ * {@code isLast} field on this endpoint is unreliable in practice (a known, widely-reported bug
+ * — JRACLOUD-94632: it doesn't reliably flip to true), so termination here uses "the page came
+ * back with no token, or came back short of a full page" instead of trusting {@code isLast}.
  */
 @Service
 public class JiraBackfillService {
@@ -61,19 +71,41 @@ public class JiraBackfillService {
         Instant since = Instant.now(clock).minus(Duration.ofDays(backfillDays));
         String jql = "project = " + projectKey + " AND updated >= -" + backfillDays + "d ORDER BY updated DESC";
         int published = 0;
-        for (int startAt = 0; ; startAt += PAGE_SIZE) {
-            final int offset = startAt;
-            JsonNode page = fetchPage(() -> restClient.get()
-                    .uri("/rest/api/3/search?jql={jql}&expand=changelog&maxResults={max}&startAt={start}",
-                            jql, PAGE_SIZE, offset)
+        String nextPageToken = null;
+
+        while (true) {
+            Map<String, Object> requestBody = new LinkedHashMap<>();
+            requestBody.put("jql", jql);
+            requestBody.put("maxResults", PAGE_SIZE);
+            requestBody.put("expand", "changelog");
+            // Unlike the old /search endpoint, /search/jql returns bare id/key only unless
+            // fields are explicitly requested — omitting this was what caused fields to come
+            // back null and NPE downstream.
+            requestBody.put("fields", java.util.List.of("*all"));
+            if (nextPageToken != null) {
+                requestBody.put("nextPageToken", nextPageToken);
+            }
+
+            JsonNode page = fetchPage(() -> restClient.post()
+                    .uri("/rest/api/3/search/jql")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
                     .retrieve()
                     .body(String.class));
+
             JsonNode issues = page == null ? null : page.get("issues");
             if (issues == null || issues.isEmpty()) {
                 break;
             }
             for (JsonNode issue : issues) {
-                String updated = issue.get("fields").get("updated").asText();
+                JsonNode fields = issue.get("fields");
+                JsonNode updatedNode = fields == null ? null : fields.get("updated");
+                if (updatedNode == null || updatedNode.isNull()) {
+                    log.warn("Issue {} came back with no 'fields.updated' — skipping",
+                            issue.has("key") ? issue.get("key").asText() : issue.get("id").asText());
+                    continue;
+                }
+                String updated = updatedNode.asText();
                 publisher.publish(new EventEnvelope(
                         "jira",
                         "issue:" + issue.get("id").asText() + ":" + updated,
@@ -83,10 +115,15 @@ public class JiraBackfillService {
                         issue));
                 published++;
             }
-            if (issues.size() < PAGE_SIZE) {
+
+            JsonNode tokenNode = page.get("nextPageToken");
+            String returnedToken = (tokenNode == null || tokenNode.isNull()) ? null : tokenNode.asText();
+            if (returnedToken == null || issues.size() < PAGE_SIZE) {
                 break;
             }
+            nextPageToken = returnedToken;
         }
+
         log.info("Backfill project {} complete: {} issues since {}", projectKey, published, since);
         return new BackfillResult(published, since);
     }

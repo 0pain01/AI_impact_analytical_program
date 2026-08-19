@@ -15,8 +15,11 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -26,15 +29,15 @@ import java.util.Set;
  * redeliveries and replays are no-ops. Unrecoverable messages are rejected without requeue,
  * which routes them to the DLQ — never silently dropped (FR-1.8).
  *
- * <p>Also maintains {@code staging.workflow_run_state} / {@code staging.pull_request_state} —
- * typed, indexed "latest known state" projections of {@code workflow_run.snapshot} /
- * {@code pull_request.snapshot} events. {@code staging.raw_event} stays the source of truth;
- * these projections exist purely so metrics-engine doesn't have to re-derive "latest state per
- * run/PR" from JSONB via DISTINCT ON on every recompute (see V5 migration for the one-time
- * backfill of pre-existing events, and the perf history that motivated this). V7 extended
- * {@code pull_request_state} with number/title/author/html_url/state/requested_reviewers so the
- * Code Review tab can read it directly, and so it can be joined against
- * {@code pull_request_review_state} (V6) on {@code (repo, number)}.
+ * <p>Also maintains {@code staging.workflow_run_state} / {@code staging.pull_request_state} /
+ * {@code staging.pull_request_review_state} / {@code staging.jira_issue_state} — typed, indexed
+ * "latest known state" projections of the corresponding snapshot/webhook events. {@code
+ * staging.raw_event} stays the source of truth; these projections exist purely so query
+ * services don't have to re-derive "latest state per run/PR/issue" from JSONB via DISTINCT ON on
+ * every request (see V5 migration for the one-time backfill of pre-existing events, and the perf
+ * history that motivated this). V10 added {@code jira_issue_state} — connector-jira had been
+ * publishing issue events since it was built, but nothing ever read them back out until
+ * Investment Profile needed to classify git activity against Jira issue types.
  */
 @Component
 public class StagingEventWriter {
@@ -85,10 +88,33 @@ public class StagingEventWriter {
             WHERE EXCLUDED.last_received_at > staging.pull_request_review_state.last_received_at
             """;
 
+    // reopened is sticky (OR-merged, never cleared) because a webhook update event only carries
+    // the changelog delta for that one change, not full history — only backfill's
+    // expand=changelog scan sees the whole history at once. See wasReopened().
+    private static final String UPSERT_JIRA_ISSUE_SQL = """
+            INSERT INTO staging.jira_issue_state
+                (issue_key, issue_id, project_key, issue_type, status, summary, assignee,
+                 created_at, resolved_at, reopened, last_received_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (issue_key) DO UPDATE SET
+                issue_id = EXCLUDED.issue_id, project_key = EXCLUDED.project_key,
+                issue_type = EXCLUDED.issue_type, status = EXCLUDED.status,
+                summary = EXCLUDED.summary, assignee = EXCLUDED.assignee,
+                created_at = EXCLUDED.created_at, resolved_at = EXCLUDED.resolved_at,
+                reopened = staging.jira_issue_state.reopened OR EXCLUDED.reopened,
+                last_received_at = EXCLUDED.last_received_at
+            WHERE EXCLUDED.last_received_at > staging.jira_issue_state.last_received_at
+            """;
+
     private static final Set<String> WORKFLOW_RUN_EVENT_TYPES = Set.of("workflow_run", "workflow_run.snapshot");
     private static final Set<String> PULL_REQUEST_EVENT_TYPES = Set.of("pull_request", "pull_request.snapshot");
     private static final Set<String> PULL_REQUEST_REVIEW_EVENT_TYPES =
             Set.of("pull_request_review", "pull_request_review.snapshot");
+    // jira:issue_deleted is deliberately not in this set — no reliable fields left to project,
+    // and dropping the row on delete isn't worth the added complexity for a rare event.
+    private static final Set<String> JIRA_ISSUE_EVENT_TYPES =
+            Set.of("issue.snapshot", "jira:issue_created", "jira:issue_updated");
+    private static final Set<String> TERMINAL_STATUS_NAMES = Set.of("done", "closed", "resolved");
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
@@ -135,6 +161,8 @@ public class StagingEventWriter {
             } else if (PULL_REQUEST_REVIEW_EVENT_TYPES.contains(envelope.eventType())) {
                 upsertPullRequestReviewState(envelope);
             }
+        } else if ("jira".equals(envelope.source()) && JIRA_ISSUE_EVENT_TYPES.contains(envelope.eventType())) {
+            upsertJiraIssueState(envelope);
         }
         return true;
     }
@@ -226,6 +254,76 @@ public class StagingEventWriter {
                 Timestamp.from(envelope.receivedAt()));
     }
 
+    private void upsertJiraIssueState(EventEnvelope envelope) {
+        JsonNode payload = envelope.payload();
+        // Backfill (issue.snapshot): payload IS the issue object. Webhook (jira:issue_created/
+        // _updated): payload wraps it under "issue", with "changelog" as a sibling, not nested.
+        JsonNode issue = payload.has("issue") ? payload.get("issue") : payload;
+        JsonNode fields = issue.get("fields");
+        String issueKey = textOrNull(issue, "key");
+        String issueId = textOrNull(issue, "id");
+        if (issueKey == null || issueId == null || fields == null) {
+            return;
+        }
+        String projectKey = firstNonBlank(textAtPath(fields, "project", "key"), "unknown");
+        String issueType = textAtPath(fields, "issuetype", "name");
+        String status = textAtPath(fields, "status", "name");
+        String summary = textOrNull(fields, "summary");
+        String assignee = textAtPath(fields, "assignee", "displayName");
+        Instant createdAt = jiraInstantOrNull(textOrNull(fields, "created"));
+        Instant resolvedAt = jiraInstantOrNull(textOrNull(fields, "resolutiondate"));
+
+        JsonNode changelog = payload.has("changelog") ? payload.get("changelog") : issue.get("changelog");
+        boolean reopened = wasReopened(changelog);
+
+        jdbcTemplate.update(UPSERT_JIRA_ISSUE_SQL,
+                issueKey, issueId, projectKey, issueType, status, summary, assignee,
+                createdAt == null ? null : Timestamp.from(createdAt),
+                resolvedAt == null ? null : Timestamp.from(resolvedAt),
+                reopened,
+                Timestamp.from(envelope.receivedAt()));
+    }
+
+    /**
+     * Heuristic, not authoritative (see V10 migration comment): flags a status transition away
+     * from one of Jira's default terminal status names (Done/Closed/Resolved). Projects on
+     * custom workflows with differently-named terminal statuses won't be caught — this
+     * undercounts rework rather than overcounting it, which is the safer direction to be wrong
+     * in for a metric people will make decisions from.
+     */
+    private static boolean wasReopened(JsonNode changelog) {
+        if (changelog == null) {
+            return false;
+        }
+        JsonNode histories = changelog.get("histories");
+        if (histories != null && histories.isArray()) {
+            // Backfill's expand=changelog: full history, one entry per past change.
+            for (JsonNode history : histories) {
+                if (statusItemsShowReopen(history.get("items"))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        // Webhook update delta: a single changelog entry shaped {"items": [...]}, no wrapper.
+        return statusItemsShowReopen(changelog.get("items"));
+    }
+
+    private static boolean statusItemsShowReopen(JsonNode items) {
+        if (items == null || !items.isArray()) {
+            return false;
+        }
+        for (JsonNode item : items) {
+            if ("status".equals(textOrNull(item, "field"))) {
+                String from = textOrNull(item, "fromString");
+                if (from != null && TERMINAL_STATUS_NAMES.contains(from.toLowerCase(Locale.ROOT))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private record RepoAndPrNumber(String repo, long prNumber) {
     }
 
@@ -279,6 +377,29 @@ public class StagingEventWriter {
         } catch (Exception e) {
             log.warn("Unparseable timestamp '{}' — leaving null", iso);
             return null;
+        }
+    }
+
+    // Jira sends "2024-01-15T10:30:00.000+0000" (no colon in the offset) rather than GitHub's
+    // proper ISO-8601 "...Z" — Instant.parse rejects that format outright, so this tries it
+    // first (harmless if Jira ever does send a real 'Z'/colon offset) and falls back to Jira's
+    // actual format rather than silently losing the date on every single issue.
+    private static final DateTimeFormatter JIRA_TIMESTAMP_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+    private static Instant jiraInstantOrNull(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return Instant.parse(raw);
+        } catch (Exception isoFailed) {
+            try {
+                return OffsetDateTime.parse(raw, JIRA_TIMESTAMP_FORMAT).toInstant();
+            } catch (Exception e) {
+                log.warn("Unparseable Jira timestamp '{}' — leaving null", raw);
+                return null;
+            }
         }
     }
 

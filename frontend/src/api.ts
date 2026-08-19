@@ -504,3 +504,38 @@ export async function fetchPersonalActivity(): Promise<PersonalActivity> {
   const res = await authFetch('/api/v1/personal/activity')
   return res.json()
 }
+
+// LIVE: GET /api/v1/metrics/investment-profile?days=&scope=
+export interface CategoryCount {
+  category: string
+  count: number
+}
+
+export interface MonthlyBreakdown {
+  month: string
+  planned: number
+  unplanned: number
+  rework: number
+  unclassifiable: number
+}
+
+export interface TeamBreakdown {
+  team: string
+  planned: number
+  unplanned: number
+  rework: number
+  unclassifiable: number
+}
+
+export interface InvestmentProfileResponse {
+  windowLabel: string
+  breakdown: CategoryCount[]
+  trend: MonthlyBreakdown[]
+  byTeam: TeamBreakdown[]
+}
+
+export async function fetchInvestmentProfile(days = 90, scope = '*'): Promise<InvestmentProfileResponse> {
+  const params = new URLSearchParams({ days: String(days), scope })
+  const res = await authFetch(`/api/v1/metrics/investment-profile?${params.toString()}`)
+  return res.json()
+}
