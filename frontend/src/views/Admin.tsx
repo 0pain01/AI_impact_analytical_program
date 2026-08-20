@@ -80,7 +80,7 @@ function ConnectorsPanel() {
     <div className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="mb-3 flex items-center gap-2">
         <p className="text-sm text-slate-500">Connectors</p>
-        <InfoTooltip text="Health of each tool integration (GitHub, GitHub Actions, Jira, Jenkins) — status, last-sync time, and events ingested, all derived from the raw event log, never a manually-maintained flag." />
+        <InfoTooltip text="Health of each tool integration (GitHub, GitHub Actions, Jira, Jenkins). Status is based on Last checked, not Last data change — a connector that runs fine but simply has nothing new to report (e.g. no Jira issues touched since the last check) still shows Connected, not Stale." />
         <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Live</span>
       </div>
       {error && (
@@ -95,7 +95,18 @@ function ConnectorsPanel() {
               <th className="pb-2 pr-4">Type</th>
               <th className="pb-2 pr-4">Status</th>
               <th className="pb-2 pr-4">Events ingested</th>
-              <th className="pb-2">Last sync</th>
+              <th className="pb-2 pr-4">
+                <span className="inline-flex items-center gap-1">
+                  Last checked
+                  <InfoTooltip text="Last time this connector reported in at all, including a re-check that found nothing new. This is what Status is based on." />
+                </span>
+              </th>
+              <th className="pb-2">
+                <span className="inline-flex items-center gap-1">
+                  Last data change
+                  <InfoTooltip text="Last time something actually new landed (a genuinely new PR, issue, build, etc). Can lag behind Last checked when a connector is healthy but its source has been quiet." />
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -109,7 +120,8 @@ function ConnectorsPanel() {
                   </span>
                 </td>
                 <td className="py-2 pr-4 text-slate-600">{c.eventCount.toLocaleString()}</td>
-                <td className="py-2 text-slate-600">{formatTimestamp(c.lastSyncAt)}</td>
+                <td className="py-2 pr-4 text-slate-600">{formatTimestamp(c.lastCheckedAt)}</td>
+                <td className="py-2 text-slate-600">{formatTimestamp(c.lastDataChangeAt)}</td>
               </tr>
             ))}
           </tbody>

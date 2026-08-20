@@ -367,10 +367,20 @@ components:
           type: string
           enum: [CONNECTED, STALE, NOT_CONNECTED]
           description: >
-            CONNECTED = event within the last 24h; STALE = has synced before but not in 24h;
-            NOT_CONNECTED = no event ever ingested.
-        lastSyncAt:
+            Derived from lastCheckedAt (V11), not lastDataChangeAt — a connector that runs fine
+            but finds nothing new to report must not look stale. CONNECTED = checked within the
+            last 24h; STALE = has checked in before but not in 24h; NOT_CONNECTED = never checked.
+        lastDataChangeAt:
           type: [string, "null"]
           format: date-time
-          description: Most recent event received_at for this connector; null if never connected.
+          description: >
+            Most recent event that actually landed a NEW staging.raw_event row (source of "did
+            anything change"); null if nothing has ever changed. Distinct from lastCheckedAt —
+            an idempotent redelivery/re-check with nothing new to report doesn't move this.
+        lastCheckedAt:
+          type: [string, "null"]
+          format: date-time
+          description: >
+            Most recent time this connector reported in at all, duplicates included (source of
+            "is this connector actually working"); null if never connected. staging.connector_activity, V11.
         eventCount: { type: integer, description: Total events ingested for this connector. }

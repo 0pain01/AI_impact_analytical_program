@@ -53,11 +53,21 @@ class StagingEventWriterIntegrationTest {
                     CONSTRAINT uq_raw_event_natural_key UNIQUE (source, source_id, event_type)
                 )
                 """);
+        // Mirrors api-core's V11 migration — write() unconditionally upserts this on every
+        // event, duplicates included, so it must exist even for tests that only exercise
+        // raw_event.
+        jdbc.execute("""
+                CREATE TABLE staging.connector_activity (
+                    source           TEXT PRIMARY KEY,
+                    last_checked_at  TIMESTAMPTZ NOT NULL
+                )
+                """);
     }
 
     @BeforeEach
     void setUp() {
         jdbc.update("DELETE FROM staging.raw_event");
+        jdbc.update("DELETE FROM staging.connector_activity");
         writer = new StagingEventWriter(jdbc, MAPPER);
     }
 

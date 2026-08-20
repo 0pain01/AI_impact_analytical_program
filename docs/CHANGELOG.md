@@ -2,6 +2,20 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-08-21 (3)
+- Fixed a real UX bug: the Admin Connectors panel's "last sync" came solely from
+  `MAX(staging.raw_event.received_at)`, which only advances when a genuinely NEW row lands —
+  a connector that runs successfully but finds nothing changed (e.g. Jira re-checking issues
+  nobody has touched) correctly writes zero new rows, so it looked stale/dead even though it was
+  working fine. Added `staging.connector_activity` (V11 migration): `StagingEventWriter` now
+  unconditionally upserts a per-source `last_checked_at` on every event it processes, duplicates
+  included — a genuinely separate "did we hear from this source at all" signal from raw_event's
+  "did anything actually change." The Admin console now shows both **Last checked** and **Last
+  data change** as distinct columns, and CONNECTED/STALE status is derived from Last checked, not
+  Last data change. Verified live: re-triggering Jira's sync now correctly shows
+  `status: CONNECTED`, Last checked: now, Last data change: unchanged (Aug 17, since nothing in
+  Jira actually changed).
+
 ## 2026-08-21 (2)
 - Fixed a real bug: no outbound HTTP client in the system (connector-github/jira/jenkins →
   their vendor APIs, api-core → connector-github) had a connect/read timeout configured, so a

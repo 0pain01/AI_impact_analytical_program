@@ -66,7 +66,12 @@ export interface ConnectorHealth {
   name: string
   type: string
   status: 'CONNECTED' | 'STALE' | 'NOT_CONNECTED'
-  lastSyncAt: string | null
+  /** Last time something actually changed (a new raw_event row landed) — null if never. */
+  lastDataChangeAt: string | null
+  /** Last time this connector reported in at all, duplicates included — null if never connected.
+   *  `status` is derived from this, not lastDataChangeAt, so a healthy connector with nothing
+   *  new to report doesn't look stale. */
+  lastCheckedAt: string | null
   eventCount: number
 }
 
@@ -314,15 +319,15 @@ export const MOCK_SETUP_STATUS: SetupStatus = {
 }
 
 export const MOCK_CONNECTORS: ConnectorHealth[] = [
-  { key: 'github', name: 'GitHub', type: 'Git host', status: 'CONNECTED', lastSyncAt: '2026-07-31T07:55:00Z', eventCount: 48213 },
-  { key: 'jira', name: 'Jira', type: 'Ticketing', status: 'CONNECTED', lastSyncAt: '2026-07-31T07:50:00Z', eventCount: 9820 },
-  { key: 'gha', name: 'GitHub Actions', type: 'CI/CD', status: 'CONNECTED', lastSyncAt: '2026-07-31T07:48:00Z', eventCount: 15230 },
-  { key: 'jenkins', name: 'Jenkins', type: 'CI/CD', status: 'CONNECTED', lastSyncAt: '2026-07-31T07:40:00Z', eventCount: 3110 },
-  { key: 'sonarqube', name: 'SonarQube', type: 'Code quality', status: 'STALE', lastSyncAt: '2026-07-29T06:10:00Z', eventCount: 6120 },
-  { key: 'pagerduty', name: 'PagerDuty', type: 'Incidents', status: 'NOT_CONNECTED', lastSyncAt: null, eventCount: 0 },
-  { key: 'copilot', name: 'GitHub Copilot', type: 'AI telemetry', status: 'CONNECTED', lastSyncAt: '2026-07-31T07:35:00Z', eventCount: 4021 },
-  { key: 'cursor', name: 'Cursor', type: 'AI telemetry', status: 'NOT_CONNECTED', lastSyncAt: null, eventCount: 0 },
-  { key: 'claude-code', name: 'Claude Code', type: 'AI telemetry', status: 'CONNECTED', lastSyncAt: '2026-07-31T07:37:00Z', eventCount: 8890 },
+  { key: 'github', name: 'GitHub', type: 'Git host', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T07:55:00Z', lastCheckedAt: '2026-07-31T07:55:00Z', eventCount: 48213 },
+  { key: 'jira', name: 'Jira', type: 'Ticketing', status: 'CONNECTED', lastDataChangeAt: '2026-07-30T09:10:00Z', lastCheckedAt: '2026-07-31T07:50:00Z', eventCount: 9820 },
+  { key: 'gha', name: 'GitHub Actions', type: 'CI/CD', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T07:48:00Z', lastCheckedAt: '2026-07-31T07:48:00Z', eventCount: 15230 },
+  { key: 'jenkins', name: 'Jenkins', type: 'CI/CD', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T07:40:00Z', lastCheckedAt: '2026-07-31T07:40:00Z', eventCount: 3110 },
+  { key: 'sonarqube', name: 'SonarQube', type: 'Code quality', status: 'STALE', lastDataChangeAt: '2026-07-29T06:10:00Z', lastCheckedAt: '2026-07-29T06:10:00Z', eventCount: 6120 },
+  { key: 'pagerduty', name: 'PagerDuty', type: 'Incidents', status: 'NOT_CONNECTED', lastDataChangeAt: null, lastCheckedAt: null, eventCount: 0 },
+  { key: 'copilot', name: 'GitHub Copilot', type: 'AI telemetry', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T07:35:00Z', lastCheckedAt: '2026-07-31T07:35:00Z', eventCount: 4021 },
+  { key: 'cursor', name: 'Cursor', type: 'AI telemetry', status: 'NOT_CONNECTED', lastDataChangeAt: null, lastCheckedAt: null, eventCount: 0 },
+  { key: 'claude-code', name: 'Claude Code', type: 'AI telemetry', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T07:37:00Z', lastCheckedAt: '2026-07-31T07:37:00Z', eventCount: 8890 },
 ]
 
 export const MOCK_AUDIT_LOG: AuditEntry[] = [

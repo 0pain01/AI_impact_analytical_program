@@ -48,6 +48,14 @@ import java.util.Set;
  * every Jenkins build would have silently vanished from deployment-frequency/MTTR/CFR metrics
  * with no error. {@link #normalizeJenkinsResult} maps Jenkins' vocabulary onto the same lowercase
  * one GitHub already uses, so metrics-engine needed zero changes.
+ *
+ * <p>V11 added {@code staging.connector_activity} (source, last_checked_at) — a plain, always-
+ * advancing upsert on every event this class processes, duplicates included. The Admin console's
+ * "last sync" used to come solely from {@code MAX(raw_event.received_at)}, which only advances
+ * when a NEW row actually lands — a connector that runs fine but finds nothing changed (e.g.
+ * Jira re-checking issues nobody touched) correctly writes zero new rows, so that timestamp sat
+ * frozen and made a healthy connector look stale. This table answers "did we hear from this
+ * source at all," independent of "did anything change."
  */
 @Component
 public class StagingEventWriter {
@@ -58,6 +66,17 @@ public class StagingEventWriter {
             INSERT INTO staging.raw_event (source, source_id, event_type, received_at, connector_version, payload)
             VALUES (?, ?, ?, ?, ?, ?::jsonb)
             ON CONFLICT ON CONSTRAINT uq_raw_event_natural_key DO NOTHING
+            """;
+
+    // Unconditional upsert (unlike INSERT_SQL above) — this must advance on every event this
+    // source sends, including exact-duplicate redeliveries the raw_event insert above correctly
+    // skips. It's the "did we hear from this connector at all" signal, separate from raw_event's
+    // "did anything actually change" signal (see V11 migration).
+    private static final String UPSERT_CONNECTOR_ACTIVITY_SQL = """
+            INSERT INTO staging.connector_activity (source, last_checked_at)
+            VALUES (?, ?)
+            ON CONFLICT (source) DO UPDATE SET last_checked_at = EXCLUDED.last_checked_at
+            WHERE EXCLUDED.last_checked_at > staging.connector_activity.last_checked_at
             """;
 
     // last_received_at guard: if events ever arrive out of order (retry/requeue), an older
@@ -150,6 +169,8 @@ public class StagingEventWriter {
             // Malformed beyond repair — reject without requeue so it lands in the DLQ.
             throw new AmqpRejectAndDontRequeueException("Unserializable payload for " + envelope.sourceId(), e);
         }
+
+        jdbcTemplate.update(UPSERT_CONNECTOR_ACTIVITY_SQL, envelope.source(), Timestamp.from(envelope.receivedAt()));
 
         int inserted = jdbcTemplate.update(INSERT_SQL,
                 envelope.source(),
