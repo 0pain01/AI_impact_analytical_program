@@ -25,7 +25,11 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-aiimpacteval_local}
     ports:
       - "5672:5672"
-      - "15672:15672"
+      # Host port 25672 by default — the whole 15476-15975 range falls inside a Windows
+      # Hyper-V/WSL dynamic port-exclusion block on some machines, which blocks Docker from
+      # binding anywhere in it (see `netsh interface ipv4 show excludedportrange protocol=tcp`).
+      # Only the management UI is affected; connectors use AMQP (5672), unaffected.
+      - "${RABBITMQ_MGMT_PORT:-25672}:15672"
     volumes:
       - mqdata:/var/lib/rabbitmq
     healthcheck:
