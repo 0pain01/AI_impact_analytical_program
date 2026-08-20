@@ -72,6 +72,12 @@ function TimeToValuePanel({ status }: { status: SetupStatus }) {
           style={{ width: `${pct}%` }}
         />
       </div>
+      <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-400">
+        This is a one-time pilot-onboarding record, not a live/recurring metric — it's fixed to the gap between the
+        very first event this deployment ever ingested and the very first dashboard value it ever computed, both
+        back at initial setup. Connecting more repos or teams later won't move this number; check the Sync status
+        table on the Admin page for progress on anything you connect now.
+      </p>
     </div>
   )
 }

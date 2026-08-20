@@ -107,12 +107,36 @@ function initialsFor(email: string) {
 
 type Stage = 'landing' | 'login' | 'app'
 
+// Persists the active tab across a browser refresh — view used to be plain useState, so
+// reloading the page always dropped you back on Cockpit (its position in TAB_ACCESS as the
+// first tab for most roles) regardless of where you actually were.
+const VIEW_KEY = 'ai-impact-evaluation.view'
+
+function initialViewFor(role: Session['role'], allowedViews: View[]): View {
+  try {
+    const saved = sessionStorage.getItem(VIEW_KEY) as View | null
+    if (saved && allowedViews.includes(saved)) return saved
+  } catch {
+    // sessionStorage unavailable (private browsing, disabled storage) — fall back to default.
+  }
+  return defaultViewFor(role)
+}
+
 function AppShell({ session, onLogout }: { session: Session; onLogout: () => void }) {
   // Role-aware navigation (PRD §8) — previously every tab rendered for every role, including
   // Admin for a MANAGER (the backend already blocked their API calls with a 403, but the tab
   // itself had no business being visible at all).
   const allowedViews = TAB_ACCESS[session.role] ?? []
-  const [view, setView] = useState<View>(() => defaultViewFor(session.role))
+  const [view, setViewState] = useState<View>(() => initialViewFor(session.role, allowedViews))
+
+  function setView(next: View) {
+    setViewState(next)
+    try {
+      sessionStorage.setItem(VIEW_KEY, next)
+    } catch {
+      // sessionStorage unavailable — the tab still switches, it just won't survive a refresh.
+    }
+  }
   const roleLabel = session.role.replace('_', ' ')
   const roleStyle = ROLE_STYLES[session.role] ?? 'bg-slate-100 text-slate-600 ring-slate-200'
 
@@ -239,6 +263,11 @@ export default function App() {
       session={session}
       onLogout={() => {
         logout()
+        try {
+          sessionStorage.removeItem(VIEW_KEY)
+        } catch {
+          // sessionStorage unavailable — nothing to clean up.
+        }
         setSession(null)
         setStage('landing')
       }}

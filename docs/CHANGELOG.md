@@ -13,6 +13,17 @@ One line per user-visible or architecturally significant change. Newest first.
 - Admin UI bug fixed: connecting a repo with a team assigned via the top form only refreshed the
   sync-status table, never the Teams data, so team repo-counts sat stale until a full reload —
   also added an explicit Refresh button to the Admin Teams overview as a manual fallback.
+- Setup page: added a caption clarifying that "Time to value" is a one-time pilot-onboarding
+  record (gap between this deployment's very first ingested event and its very first computed
+  dashboard value, both from initial setup) — not a live metric that reacts to repos/teams
+  connected later. Was confusing since it reads as a fixed ~50h no matter what you do now;
+  check the Admin Sync status table for live progress on anything you connect today instead.
+
+## 2026-08-20 (4)
+- Frontend: the active sidebar tab was plain `useState` with no persistence, so any page refresh
+  always dropped back to Cockpit regardless of where you were — now persisted in `sessionStorage`
+  (same pattern the login session already uses), cleared on logout. Also added a matching manual
+  Refresh button to the standalone Teams sidebar tab.
 
 ## 2026-08-20 (3)
 - Admin console: redesigned the repo/team connect UI after it shipped confusing — one panel now

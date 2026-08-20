@@ -36,22 +36,15 @@ export default function Teams() {
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Team | null>(null)
 
-  useEffect(() => {
-    let cancelled = false
+  function load() {
+    setError(null)
     fetchTeams()
-      .then((t) => {
-        if (!cancelled) setTeams(t)
-      })
-      .catch((e: Error) => {
-        if (!cancelled) setError(e.message)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+      .then(setTeams)
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(load, [])
 
   if (selected) {
     return (
@@ -69,11 +62,19 @@ export default function Teams() {
 
   return (
     <section>
-      <div className="mb-1 flex items-center gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-kpmg-600 to-cobalt-600 text-sm text-white">
-          ◆
-        </span>
-        <h2 className="text-xl font-bold tracking-tight text-slate-900">Teams</h2>
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-kpmg-600 to-cobalt-600 text-sm text-white">
+            ◆
+          </span>
+          <h2 className="text-xl font-bold tracking-tight text-slate-900">Teams</h2>
+        </div>
+        <button
+          onClick={load}
+          className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-500 hover:border-slate-300 hover:text-slate-900"
+        >
+          Refresh
+        </button>
       </div>
       <p className="mb-6 text-sm text-slate-500">
         {loading && 'Loading teams…'}
