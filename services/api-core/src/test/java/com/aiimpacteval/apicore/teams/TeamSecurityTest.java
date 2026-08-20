@@ -2,6 +2,7 @@ package com.aiimpacteval.apicore.teams;
 
 import com.aiimpacteval.apicore.security.JwtConfig;
 import com.aiimpacteval.apicore.security.Role;
+import com.aiimpacteval.apicore.security.ScopeResolver;
 import com.aiimpacteval.apicore.security.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** RBAC for the teams list (E4-S2) mirrors the Cockpit endpoint's analytical-role gate. */
 @WebMvcTest(TeamController.class)
-@Import({SecurityConfig.class, JwtConfig.class})
+@Import({SecurityConfig.class, JwtConfig.class, ScopeResolver.class})
 class TeamSecurityTest {
 
     @TestConfiguration
@@ -30,7 +31,7 @@ class TeamSecurityTest {
         TeamQueryService teamQueryService() {
             return new TeamQueryService(null) {
                 @Override
-                public List<TeamSummary> listTeams() {
+                public List<TeamSummary> listTeams(String scope) {
                     return List.of(new TeamSummary(UUID.randomUUID(), "Platform Team", 2));
                 }
             };
