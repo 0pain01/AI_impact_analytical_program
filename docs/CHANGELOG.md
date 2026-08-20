@@ -2,6 +2,43 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-08-21
+- Admin console: added a Delete action to the Sync status table (`DELETE
+  /api/v1/admin/connectors/repos?repo=`) — removes a repo's rows from the three typed
+  projections (`pull_request_state`/`workflow_run_state`/`pull_request_review_state`) and any
+  team mapping, so it drops out of Cockpit/Admin. Deliberately leaves `staging.raw_event`
+  untouched (the immutable audit/replay source of truth) — this is a "stop showing it"
+  operation, not an erasure; reconnecting later re-derives the same data. Audited as
+  `REPO_DISCONNECTED`.
+- Admin UI bug fixed: connecting a repo with a team assigned via the top form only refreshed the
+  sync-status table, never the Teams data, so team repo-counts sat stale until a full reload —
+  also added an explicit Refresh button to the Admin Teams overview as a manual fallback.
+
+## 2026-08-20 (3)
+- Admin console: redesigned the repo/team connect UI after it shipped confusing — one panel now
+  drives create-team → connect-repo-with-team-assignment → bulk org-import as a numbered flow
+  instead of three disconnected forms, with a hover "ⓘ" tooltip on every panel/section explaining
+  what it does. Added a live Sync status table (repo, assigned team(s), Syncing/Synced/Failed
+  badge, last-synced time, event count, per-repo Refresh button) backed by a new in-memory
+  tracker in `ConnectorAdminService` so "did my connect actually work" doesn't require guessing
+  from timestamps alone; polls every 15s only while something is actively syncing. Explicitly
+  notes that Cockpit's DORA numbers lag a connected repo by up to 5 minutes (metrics-engine's
+  real recompute interval) rather than updating instantly.
+
+## 2026-08-20 (2)
+- Admin console: connect a repo or team from the UI instead of a terminal call (PRD E1-S4/E8).
+  New `POST /api/v1/admin/connectors/repos` and `/github-teams` (api-core) trigger
+  connector-github's existing internal backfill endpoints asynchronously and audit the trigger
+  (`REPO_CONNECT_TRIGGERED`/`GITHUB_TEAMS_CONNECT_TRIGGERED`); the Admin Connectors panel above
+  already reflects progress once events land, so no separate job-status endpoint was needed.
+  Also surfaced the previously-unused manual team/repo-membership API
+  (`TeamAdminController`/`TeamAdminService`, `/api/v1/admin/teams/**`) in a new Teams panel —
+  create a team by hand and map/unmap repos to it, alongside GitHub's automatic team import.
+  Fixed a real bug found while wiring this up: `removeRepo`'s repo was a path variable, but a
+  real repo name ("owner/repo") contains a slash a single path segment can't hold — changed to
+  a query param. OpenAPI spec updated for all of the above (new + previously-undocumented
+  `/admin/teams/**`).
+
 ## 2026-08-20
 - New `connector-jenkins` service (PRD E1-S3, alt. CI/CD source alongside connector-github's
   GitHub Actions handling): polls a Jenkins job's build history and publishes `build.snapshot`

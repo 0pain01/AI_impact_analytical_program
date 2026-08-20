@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -48,8 +49,10 @@ public class TeamAdminController {
         return adminService.listRepos(teamId);
     }
 
-    @DeleteMapping("/{teamId}/repos/{repo}")
-    public List<String> removeRepo(@PathVariable UUID teamId, @PathVariable String repo) {
+    // repo (not a path variable): real repo names are "owner/name" — a single path segment
+    // can't hold the slash without hitting Tomcat's encoded-slash rejection.
+    @DeleteMapping("/{teamId}/repos")
+    public List<String> removeRepo(@PathVariable UUID teamId, @RequestParam String repo) {
         adminService.removeRepo(teamId, repo);
         return adminService.listRepos(teamId);
     }

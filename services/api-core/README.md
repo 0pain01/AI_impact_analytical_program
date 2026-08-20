@@ -28,6 +28,7 @@ Health: `GET http://localhost:8080/actuator/health`
 | `DB_URL` | `jdbc:postgresql://localhost:5432/aiimpacteval` | Postgres JDBC URL |
 | `DB_USERNAME` / `DB_PASSWORD` | `aiimpacteval` / `aiimpacteval_local` | DB credentials (local defaults only) |
 | `SERVER_PORT` | `8080` | HTTP port |
+| `CONNECTOR_GITHUB_BASE_URL` | `http://localhost:8081` | Where `ConnectorAdminService` calls connector-github's internal backfill endpoints when an ADMIN connects a repo/org from the Admin console |
 
 ## Tests
 

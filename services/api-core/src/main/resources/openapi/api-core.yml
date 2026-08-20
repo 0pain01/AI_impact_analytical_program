@@ -139,6 +139,143 @@ paths:
                 type: array
                 items: { $ref: "#/components/schemas/ConnectorHealth" }
         "403": { description: Caller is not ADMIN. }
+  /admin/connectors/repos:
+    post:
+      operationId: connectRepo
+      summary: Connect a GitHub repo from the Admin console — ADMIN only
+      description: >
+        Triggers connector-github's backfill for one repo (PRs, commits, workflow runs) — the
+        same call a terminal `curl` against the connector's internal endpoint used to make.
+        Runs asynchronously (large repos can take several minutes); the Connectors panel's
+        event count / last-sync reflects progress, there is no separate job-status endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [owner, repo]
+              properties:
+                owner: { type: string, example: octocat }
+                repo: { type: string, example: hello-world }
+      responses:
+        "202": { description: Backfill triggered. }
+        "400": { description: Missing owner/repo. }
+        "403": { description: Caller is not ADMIN. }
+    delete:
+      operationId: disconnectRepo
+      summary: Remove a repo from Cockpit/Admin — ADMIN only
+      description: >
+        Deletes the repo's rows from the three typed projections (pull_request_state,
+        workflow_run_state, pull_request_review_state) and any core.team_repo mapping — NOT
+        staging.raw_event, which stays untouched as the immutable audit/replay source of truth.
+        Re-connecting the same repo later re-derives the same data; nothing is permanently lost.
+      parameters:
+        - { name: repo, in: query, required: true, schema: { type: string }, example: octocat/hello-world }
+      responses:
+        "204": { description: Repo removed. }
+        "400": { description: Missing repo. }
+        "403": { description: Caller is not ADMIN. }
+  /admin/connectors/github-teams:
+    post:
+      operationId: connectGithubOrgTeams
+      summary: Import a GitHub org's teams from the Admin console — ADMIN only
+      description: >
+        Triggers connector-github's org team import (repos + members), consumed by
+        identity-service into core.team/core.team_repo/core.team_member. Async, same pattern
+        as connectRepo above.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [org]
+              properties:
+                org: { type: string, example: my-org }
+      responses:
+        "202": { description: Team import triggered. }
+        "400": { description: Missing org. }
+        "403": { description: Caller is not ADMIN. }
+  /admin/teams:
+    post:
+      operationId: upsertTeam
+      summary: Create (or rename/re-parent) a manually-defined team — ADMIN only
+      description: >
+        Teams created here are tagged source='manual', kept separate from any team a real
+        GitHub org sync (POST /admin/connectors/github-teams above) would upsert under
+        source='github' — both feed the same core.team table and Teams drill-down/DORA rollups.
+        Idempotent on team name (a slug derived from it): calling again with the same name
+        updates that team in place rather than creating a duplicate.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, example: Platform Team }
+                parentTeamId: { type: string, format: uuid, nullable: true }
+      responses:
+        "200":
+          description: The team's id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { id: { type: string, format: uuid } }
+        "403": { description: Caller is not ADMIN. }
+  /admin/teams/{teamId}/repos:
+    get:
+      operationId: listTeamRepos
+      summary: List repos mapped to a team — ADMIN only
+      parameters:
+        - { name: teamId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Repo full names (owner/repo) mapped to this team.
+          content:
+            application/json:
+              schema: { type: array, items: { type: string } }
+    post:
+      operationId: addTeamRepo
+      summary: Map a repo to a team — ADMIN only
+      description: Idempotent — mapping the same repo to the same team twice is a no-op.
+      parameters:
+        - { name: teamId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [repo]
+              properties: { repo: { type: string, example: octocat/hello-world } }
+      responses:
+        "200":
+          description: The team's repo list after the addition.
+          content:
+            application/json:
+              schema: { type: array, items: { type: string } }
+        "403": { description: Caller is not ADMIN. }
+    delete:
+      operationId: removeTeamRepo
+      summary: Unmap a repo from a team — ADMIN only
+      description: >
+        repo is a query param, not a path segment — a real repo name ("owner/repo") contains a
+        slash, which a single path variable can't hold without hitting Tomcat's encoded-slash
+        rejection.
+      parameters:
+        - { name: teamId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: repo, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: The team's repo list after the removal.
+          content:
+            application/json:
+              schema: { type: array, items: { type: string } }
+        "403": { description: Caller is not ADMIN. }
 components:
   securitySchemes:
     bearerAuth:

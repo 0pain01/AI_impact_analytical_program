@@ -39,7 +39,8 @@ public class AdminConnectorService {
                 health("github_actions", "GitHub Actions", "CI/CD",
                         "source = 'github' AND (event_type LIKE 'workflow_run%' OR event_type LIKE 'deployment_status%')",
                         now),
-                health("jira", "Jira", "Ticketing", "source = 'jira'", now));
+                health("jira", "Jira", "Ticketing", "source = 'jira'", now),
+                health("jenkins", "Jenkins", "CI/CD", "source = 'jenkins'", now));
     }
 
     private ConnectorHealth health(String key, String name, String type, String whereClause, Instant now) {

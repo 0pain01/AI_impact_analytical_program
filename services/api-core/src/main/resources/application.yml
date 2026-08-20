@@ -24,6 +24,13 @@ auth:
   # where an OIDC/SSO flow replaces it.
   dev-token-enabled: ${AUTH_DEV_TOKEN_ENABLED:true}
 
+connectors:
+  github:
+    # Used by ConnectorAdminService to trigger backfill when an ADMIN connects a repo/org from
+    # the Admin console — api-core calls the connector's internal endpoint, same as a terminal
+    # curl would, just server-to-server.
+    base-url: ${CONNECTOR_GITHUB_BASE_URL:http://localhost:8081}
+
 management:
   endpoints:
     web:

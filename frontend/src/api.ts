@@ -477,6 +477,68 @@ export async function setAdminUserActive(userId: string, active: boolean): Promi
   return res.json()
 }
 
+// LIVE: POST /api/v1/admin/connectors/repos — triggers connector-github's backfill for one
+// repo (what a terminal `curl -X POST .../internal/backfill?owner=&repo=` did manually before),
+// optionally assigning it to a team in the same call. Runs async server-side; poll
+// fetchRepoSyncStatus() for live progress.
+export async function connectRepo(owner: string, repo: string, teamId: string | null): Promise<void> {
+  await authFetch('/api/v1/admin/connectors/repos', { method: 'POST', body: { owner, repo, teamId } })
+}
+
+// LIVE: GET /api/v1/admin/connectors/repos — live sync status for every repo that's ever
+// synced or was just triggered: last sync time, event count, IN_PROGRESS/COMPLETED/FAILED,
+// and which team(s) it's mapped to.
+export interface RepoSyncStatus {
+  repo: string
+  lastSyncAt: string | null
+  eventCount: number
+  syncState: 'IN_PROGRESS' | 'COMPLETED' | 'FAILED'
+  syncError: string | null
+  teams: string[]
+}
+
+export async function fetchRepoSyncStatus(): Promise<RepoSyncStatus[]> {
+  const res = await authFetch('/api/v1/admin/connectors/repos')
+  return res.json()
+}
+
+// LIVE: DELETE /api/v1/admin/connectors/repos?repo= — removes a repo from Cockpit/Admin (the
+// typed projection tables + any team mapping). Does NOT touch the immutable raw event log —
+// re-connecting the same repo later re-derives the same data.
+export async function disconnectRepo(repo: string): Promise<void> {
+  const params = new URLSearchParams({ repo })
+  await authFetch(`/api/v1/admin/connectors/repos?${params.toString()}`, { method: 'DELETE' })
+}
+
+// LIVE: POST /api/v1/admin/connectors/github-teams — triggers connector-github's org team
+// import (repos + members), same as connectRepo but for `/internal/backfill-teams?org=`.
+export async function connectGithubOrgTeams(org: string): Promise<void> {
+  await authFetch('/api/v1/admin/connectors/github-teams', { method: 'POST', body: { org } })
+}
+
+// LIVE: POST/GET/DELETE /api/v1/admin/teams/** — manual team/repo-structure administration
+// (complements automatic GitHub team import above): create a team by hand and map repos to it.
+export async function createOrUpdateTeam(name: string, parentTeamId: string | null): Promise<{ id: string }> {
+  const res = await authFetch('/api/v1/admin/teams', { method: 'POST', body: { name, parentTeamId } })
+  return res.json()
+}
+
+export async function listTeamRepos(teamId: string): Promise<string[]> {
+  const res = await authFetch(`/api/v1/admin/teams/${teamId}/repos`)
+  return res.json()
+}
+
+export async function addTeamRepo(teamId: string, repo: string): Promise<string[]> {
+  const res = await authFetch(`/api/v1/admin/teams/${teamId}/repos`, { method: 'POST', body: { repo } })
+  return res.json()
+}
+
+export async function removeTeamRepo(teamId: string, repo: string): Promise<string[]> {
+  const params = new URLSearchParams({ repo })
+  const res = await authFetch(`/api/v1/admin/teams/${teamId}/repos?${params.toString()}`, { method: 'DELETE' })
+  return res.json()
+}
+
 // LIVE: GET /api/v1/personal/activity — the IC role's self-scoped Personal Activity tab. No
 // scope/repo/team params exist for this one on purpose: the server resolves "you" from your
 // login, not from anything the client sends.
