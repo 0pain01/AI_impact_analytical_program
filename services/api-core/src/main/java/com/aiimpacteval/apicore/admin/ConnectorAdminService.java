@@ -2,6 +2,7 @@ package com.aiimpacteval.apicore.admin;
 
 import com.aiimpacteval.apicore.audit.AuditLog;
 import com.aiimpacteval.apicore.audit.AuditLog.AuditEvent;
+import com.aiimpacteval.common.http.TimeoutRestClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,10 +62,23 @@ public class ConnectorAdminService {
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final Map<String, Trigger> triggers = new ConcurrentHashMap<>();
 
+    // This call blocks for the connector's ENTIRE backfill (large repos genuinely take several
+    // minutes — the N+1 per-PR review fetch in GithubBackfillService, see its javadoc). 30
+    // minutes is a backstop against a truly stuck connector call (e.g. GithubRestClients' own
+    // 60s-per-request timeout somehow not firing), not a normal-case constraint — without it, a
+    // hung connector-github call left this trigger stuck showing "Syncing" in the Admin console
+    // forever, which is exactly the bug that surfaced this whole timeout gap.
+    private static final Duration GITHUB_CLIENT_READ_TIMEOUT = Duration.ofMinutes(30);
+
+    /** listRepoSyncStatus() treats an IN_PROGRESS trigger older than this as failed, not syncing. */
+    private static final Duration STUCK_AFTER = Duration.ofMinutes(35);
+
     public ConnectorAdminService(RestClient.Builder restClientBuilder,
                                  @Value("${connectors.github.base-url}") String githubBaseUrl,
                                  AuditLog auditLog, JdbcTemplate jdbcTemplate, TeamAdminService teamAdminService) {
-        this.githubClient = restClientBuilder.baseUrl(githubBaseUrl).build();
+        this.githubClient = TimeoutRestClients.withTimeouts(restClientBuilder, Duration.ofSeconds(10), GITHUB_CLIENT_READ_TIMEOUT)
+                .baseUrl(githubBaseUrl)
+                .build();
         this.auditLog = auditLog;
         this.jdbcTemplate = jdbcTemplate;
         this.teamAdminService = teamAdminService;
@@ -185,7 +200,16 @@ public class ConnectorAdminService {
 
             SyncState state;
             String error = null;
-            if (trigger != null && trigger.state() == SyncState.IN_PROGRESS) {
+            if (trigger != null && trigger.state() == SyncState.IN_PROGRESS
+                    && trigger.at().isBefore(Instant.now().minus(STUCK_AFTER))) {
+                // Belt-and-suspenders: GITHUB_CLIENT_READ_TIMEOUT above should make this
+                // unreachable in practice, but a repo genuinely stuck showing "Syncing" forever
+                // in the UI — with no way to tell a slow backfill from a dead one — is exactly
+                // the bug this whole timeout pass exists to fix. Surface it as failed rather
+                // than trust the in-memory state blindly.
+                state = SyncState.FAILED;
+                error = "No response after " + STUCK_AFTER.toMinutes() + " minutes — connector may be stuck; try Refresh.";
+            } else if (trigger != null && trigger.state() == SyncState.IN_PROGRESS) {
                 state = SyncState.IN_PROGRESS;
             } else if (trigger != null && trigger.state() == SyncState.FAILED
                     && (lastSyncAt == null || trigger.at().isAfter(lastSyncAt))) {

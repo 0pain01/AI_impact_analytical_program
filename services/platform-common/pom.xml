@@ -19,6 +19,13 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
+    <!-- TimeoutRestClients: shared RestClient.Builder timeout config every connector +
+         api-core's connector-admin client uses (ADR-0002-style shared infra, not per-module
+         copy-paste). Version comes from spring-boot-starter-parent's BOM via the parent chain. -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>

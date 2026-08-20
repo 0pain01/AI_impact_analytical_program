@@ -3,6 +3,7 @@ package com.aiimpacteval.connector.jira.backfill;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.aiimpacteval.common.events.EventEnvelope;
+import com.aiimpacteval.common.http.TimeoutRestClients;
 import com.aiimpacteval.connector.jira.events.EventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,10 @@ public class JiraBackfillService {
                                @Value("${jira.email}") String email,
                                @Value("${jira.api-token}") String apiToken,
                                @Value("${jira.backfill-days}") int backfillDays) {
-        this.restClient = restClientBuilder
+        // No timeout on this client used to mean a dropped connection could hang a backfill call
+        // forever instead of failing and letting the retry loop below actually run — see
+        // TimeoutRestClients' javadoc.
+        this.restClient = TimeoutRestClients.withTimeouts(restClientBuilder, Duration.ofSeconds(10), Duration.ofSeconds(60))
                 .baseUrl(baseUrl == null || baseUrl.isBlank() ? "http://unconfigured.invalid" : baseUrl)
                 .defaultHeaders(headers -> {
                     if (email != null && !email.isBlank()) {

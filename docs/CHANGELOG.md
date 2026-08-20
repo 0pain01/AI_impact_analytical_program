@@ -2,6 +2,22 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-08-21 (2)
+- Fixed a real bug: no outbound HTTP client in the system (connector-github/jira/jenkins →
+  their vendor APIs, api-core → connector-github) had a connect/read timeout configured, so a
+  dropped connection mid-request left the call — and with it the whole backfill, and the Admin
+  console's sync-status tracker waiting on it — hung indefinitely instead of failing and
+  retrying. Found via a real repo connect (`santifer/career-ops`) that got stuck "Syncing"
+  after the user's internet dropped mid-sync. Added a shared `TimeoutRestClients` helper in
+  `platform-common` (new dependency: api-core now depends on platform-common, which now depends
+  on spring-web) and applied it everywhere the same gap existed: 10s connect / 60s read on each
+  connector's vendor calls, 10s connect / 30min read on api-core's connector-github client
+  (generous — a legitimate large-repo backfill can take several minutes). Also added a
+  belt-and-suspenders check in `ConnectorAdminService.listRepoSyncStatus()`: an IN_PROGRESS
+  trigger older than 35 minutes now surfaces as Failed rather than trusting in-memory state
+  forever. Re-triggered `santifer/career-ops` after the fix — completed cleanly (1503 PRs, 3213
+  reviews, 1237 commits, 1000 workflow runs).
+
 ## 2026-08-21
 - Admin console: added a Delete action to the Sync status table (`DELETE
   /api/v1/admin/connectors/repos?repo=`) — removes a repo's rows from the three typed
