@@ -38,6 +38,16 @@ import java.util.Set;
  * history that motivated this). V10 added {@code jira_issue_state} — connector-jira had been
  * publishing issue events since it was built, but nothing ever read them back out until
  * Investment Profile needed to classify git activity against Jira issue types.
+ *
+ * <p>{@code workflow_run_state} is fed by two independent sources now: GitHub Actions (via
+ * connector-github) and Jenkins (via connector-jenkins, PRD E1-S3's alt. CI/CD source). Both
+ * write into the same table/columns — the schema was already provider-agnostic (repo/run_id/
+ * conclusion/name/ts, nothing GitHub-specific). The one thing that had to be handled carefully:
+ * metrics-engine's DORA queries hardcode {@code conclusion = 'success'} (lowercase), but Jenkins
+ * reports {@code SUCCESS}/{@code FAILURE}/{@code UNSTABLE}/{@code ABORTED} — stored verbatim,
+ * every Jenkins build would have silently vanished from deployment-frequency/MTTR/CFR metrics
+ * with no error. {@link #normalizeJenkinsResult} maps Jenkins' vocabulary onto the same lowercase
+ * one GitHub already uses, so metrics-engine needed zero changes.
  */
 @Component
 public class StagingEventWriter {
@@ -115,6 +125,8 @@ public class StagingEventWriter {
     private static final Set<String> JIRA_ISSUE_EVENT_TYPES =
             Set.of("issue.snapshot", "jira:issue_created", "jira:issue_updated");
     private static final Set<String> TERMINAL_STATUS_NAMES = Set.of("done", "closed", "resolved");
+    private static final Set<String> JENKINS_BUILD_EVENT_TYPES = Set.of("build.snapshot");
+    private static final String JENKINS_GIT_BUILD_DATA_CLASS = "hudson.plugins.git.util.BuildData";
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
@@ -163,6 +175,8 @@ public class StagingEventWriter {
             }
         } else if ("jira".equals(envelope.source()) && JIRA_ISSUE_EVENT_TYPES.contains(envelope.eventType())) {
             upsertJiraIssueState(envelope);
+        } else if ("jenkins".equals(envelope.source()) && JENKINS_BUILD_EVENT_TYPES.contains(envelope.eventType())) {
+            upsertJenkinsBuildState(envelope);
         }
         return true;
     }
@@ -322,6 +336,86 @@ public class StagingEventWriter {
             }
         }
         return false;
+    }
+
+    private void upsertJenkinsBuildState(EventEnvelope envelope) {
+        JsonNode build = envelope.payload();
+
+        String buildNumber = textOrNull(build, "number");
+        String jobName = textOrNull(build, "job_name");
+        if (buildNumber == null || jobName == null) {
+            return;
+        }
+        // Build numbers only reset per-job in Jenkins, not globally — two different jobs could
+        // both have a "build #5". Namespacing by job here keeps (repo, run_id) unique.
+        String runId = "jenkins:" + jobName + ":" + buildNumber;
+
+        String repo = extractJenkinsRepo(build.get("actions"));
+        String conclusion = normalizeJenkinsResult(textOrNull(build, "result"));
+        Long timestampMillis = longOrNull(build, "timestamp");
+        Instant ts = timestampMillis == null ? null : Instant.ofEpochMilli(timestampMillis);
+
+        jdbcTemplate.update(UPSERT_WORKFLOW_RUN_SQL,
+                repo == null ? "unknown" : repo,
+                runId,
+                conclusion,
+                jobName,
+                ts == null ? null : Timestamp.from(ts),
+                Timestamp.from(envelope.receivedAt()));
+    }
+
+    /**
+     * Jenkins doesn't put the git repo on the build object directly — it's inside a
+     * {@code hudson.plugins.git.util.BuildData} entry in the (otherwise mostly-empty-object)
+     * {@code actions} array. Verified against a real local Jenkins instance, not assumed from
+     * docs — the shape genuinely is this scattered.
+     */
+    private static String extractJenkinsRepo(JsonNode actions) {
+        if (actions == null || !actions.isArray()) {
+            return null;
+        }
+        for (JsonNode action : actions) {
+            if (!JENKINS_GIT_BUILD_DATA_CLASS.equals(textOrNull(action, "_class"))) {
+                continue;
+            }
+            JsonNode remoteUrls = action.get("remoteUrls");
+            if (remoteUrls != null && remoteUrls.isArray() && !remoteUrls.isEmpty()) {
+                return normalizeGitUrl(remoteUrls.get(0).asText());
+            }
+        }
+        return null;
+    }
+
+    // "https://github.com/0pain01/AI_impact_analytical_program.git" -> "0pain01/AI_impact_analytical_program"
+    // Falls back to returning the trimmed URL as-is for non-GitHub git hosts rather than
+    // dropping the data — better an unfamiliar-looking repo value than a silently missing one.
+    private static String normalizeGitUrl(String url) {
+        String trimmed = url.trim();
+        if (trimmed.endsWith(".git")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 4);
+        }
+        int idx = trimmed.indexOf("github.com/");
+        return idx >= 0 ? trimmed.substring(idx + "github.com/".length()) : trimmed;
+    }
+
+    // metrics-engine's DORA queries hardcode `conclusion = 'success'` (lowercase) — Jenkins
+    // reports SUCCESS/FAILURE/UNSTABLE/ABORTED. Without this mapping, every Jenkins build would
+    // silently never match those queries; see class javadoc.
+    private static String normalizeJenkinsResult(String rawResult) {
+        if (rawResult == null) {
+            return null; // still building — no result yet, same as an in-progress GitHub run
+        }
+        return switch (rawResult) {
+            case "SUCCESS" -> "success";
+            case "FAILURE", "UNSTABLE" -> "failure";
+            case "ABORTED" -> "cancelled";
+            default -> rawResult.toLowerCase(Locale.ROOT);
+        };
+    }
+
+    private static Long longOrNull(JsonNode node, String field) {
+        JsonNode v = node.get(field);
+        return v == null || v.isNull() ? null : v.asLong();
     }
 
     private record RepoAndPrNumber(String repo, long prNumber) {

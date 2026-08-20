@@ -76,9 +76,9 @@ flowchart TB
   end
 
   subgraph Ingestion["Ingestion Layer"]
-    CGH["Connector: GitHub/GitLab"]
+    CGH["Connector: GitHub/GitLab<br/>(also carries GH Actions CI/CD)"]
     CJR["Connector: Jira"]
-    CCI["Connector: CI/CD"]
+    CJK["Connector: Jenkins<br/>(alt. CI/CD source, PRD E1-S3)"]
     CSQ["Connector: SonarQube (P2)"]
     CIN["Connector: Incidents (P2)"]
     CAI["Connector: AI Telemetry"]
@@ -89,8 +89,8 @@ flowchart TB
   STG[("Staging Store<br/>(Postgres schema: immutable raw events)")]
   CORE[("Core DB<br/>(Postgres schema: normalized entities,<br/>users, teams, RBAC, config, audit)")]
 
-  SRC["External tool APIs & webhooks"] --> CGH & CJR & CCI & CSQ & CIN & CAI
-  CGH & CJR & CCI & CSQ & CIN & CAI --> MQ
+  SRC["External tool APIs & webhooks"] --> CGH & CJR & CJK & CSQ & CIN & CAI
+  CGH & CJR & CJK & CSQ & CIN & CAI --> MQ
   MQ --> IW
   IW --> STG
   MQ --> IDN

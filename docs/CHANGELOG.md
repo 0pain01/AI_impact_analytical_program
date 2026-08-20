@@ -2,6 +2,20 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-08-20
+- New `connector-jenkins` service (PRD E1-S3, alt. CI/CD source alongside connector-github's
+  GitHub Actions handling): polls a Jenkins job's build history and publishes `build.snapshot`
+  events; `StagingEventWriter` now projects them into the existing provider-agnostic
+  `staging.workflow_run_state` table (no schema change), normalizing Jenkins'
+  `SUCCESS`/`FAILURE`/`UNSTABLE`/`ABORTED` vocabulary to the lowercase `success`/`failure`/
+  `cancelled` metrics-engine's DORA queries already expect. Backfill/polling only, no webhook
+  support yet. Verified end-to-end against a real local Jenkins instance (job `aie-pipeline`):
+  5 builds backfilled, correct repo attribution and lowercase conclusions in
+  `staging.workflow_run_state`. Also fixed local dev infra: `infra/docker-compose.yml`'s
+  RabbitMQ management-UI port moved from 15672 to 25672 (host-port only) — 15672 sits inside a
+  Windows Hyper-V/WSL dynamic port-exclusion range on some machines, blocking Docker from
+  binding it; AMQP (5672, what the connectors actually use) was unaffected.
+
 ## 2026-08-10
 - Security: removed two leaked GitHub PATs that had been committed in `README.md`'s local-dev
   notes; stopped tracking `.claude/settings.local.json` (machine-specific local paths) and added

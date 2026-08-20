@@ -33,6 +33,6 @@
     <module>identity-service</module>
     <module>connectors/connector-github</module>
     <module>connectors/connector-jira</module>
+    <module>connectors/connector-jenkins</module>
   </modules>
-  <!-- CI/CD (GitHub Actions) flows through connector-github; a Jenkins connector would be a new module -->
 </project>

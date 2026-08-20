@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: connector-jenkins
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:aiimpacteval}
+    password: ${RABBITMQ_PASSWORD:aiimpacteval_local}
+    publisher-confirm-type: correlated
+
+server:
+  port: ${SERVER_PORT:8086}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+jenkins:
+  base-url: ${JENKINS_BASE_URL:}
+  username: ${JENKINS_USERNAME:}
+  # Jenkins API token (user profile -> Configure -> API Token), used as the Basic-auth password.
+  api-token: ${JENKINS_API_TOKEN:}
