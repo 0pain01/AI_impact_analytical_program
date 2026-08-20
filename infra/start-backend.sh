@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Single-command local dev startup: infra (Postgres + RabbitMQ) + all six backend services.
+# Single-command local dev startup: infra (Postgres + RabbitMQ) + all seven backend services.
 # Builds once, starts each service detached, waits for /actuator/health, then returns control
 # to the shell (services keep running in the background — use stop-backend.sh to tear down).
 set -euo pipefail
@@ -29,6 +29,7 @@ start connector-github         connectors/connector-github     8081
 start connector-jira           connectors/connector-jira       8083
 start metrics-engine           metrics-engine                  8084
 start identity-service         identity-service                8085
+start connector-jenkins        connectors/connector-jenkins    8086
 
 wait_healthy() { # url, name
   for _ in $(seq 1 60); do
@@ -45,8 +46,9 @@ wait_healthy http://localhost:8081/actuator/health "connector-github"
 wait_healthy http://localhost:8083/actuator/health "connector-jira"
 wait_healthy http://localhost:8084/actuator/health "metrics-engine"
 wait_healthy http://localhost:8085/actuator/health "identity-service"
+wait_healthy http://localhost:8086/actuator/health "connector-jenkins"
 
 echo
-echo "All 6 backend services + infra are up. PIDs recorded in $PID_FILE."
+echo "All 7 backend services + infra are up. PIDs recorded in $PID_FILE."
 echo "Frontend: cd frontend && npm install && npm run dev"
 echo "Stop everything: ./infra/stop-backend.sh"

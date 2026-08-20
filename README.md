@@ -2,7 +2,7 @@
 
 > **Engineering Intelligence & Analytics Platform**
 
-[![Status](https://img.shields.io/badge/status-Phase%200%20Complete-blue)](https://github.com/0pain01/AI_impact_analytical_program)
+[![Status](https://img.shields.io/badge/status-Phase%201%20MVP%20in%20progress-blue)](https://github.com/0pain01/AI_impact_analytical_program)
 [![Java](https://img.shields.io/badge/Java-21%2B-orange)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)](https://spring.io/projects/spring-boot)
 [![React](https://img.shields.io/badge/React-18-blue)](https://react.dev/)
@@ -30,24 +30,24 @@ AI Impact Evaluation is an AI-native **Software Engineering Intelligence (SEI)**
 
 ## ✨ Features
 
-### Data Integration
-- **Source Control:** GitHub / GitLab connectors
-- **Project Management:** Jira integration
-- **CI/CD:** GitHub Actions / Jenkins
-- **Code Quality:** SonarQube
-- **Incident Management:** PagerDuty
-- **AI Coding Assistants:** Copilot, Cursor, Claude Code telemetry
+### Data Integration — 3 connectors live
+- **Source Control:** GitHub — signature-verified webhooks + PR/commit backfill (`connector-github`)
+- **Project Management:** Jira — token-verified webhooks + issue backfill with changelogs (`connector-jira`)
+- **CI/CD:** GitHub Actions (via `connector-github`) **and** Jenkins (`connector-jenkins`) — both write into the same provider-agnostic `workflow_run_state` table, so DORA metrics see either source the same way
+- **Planned:** SonarQube (code quality), PagerDuty (incidents), AI-assistant telemetry (Copilot/Cursor/Claude Code) — named in the BRD, not yet built
 
-### Analytics & Metrics
-- **DORA Metrics:** Deployment frequency, Lead time, Change failure rate, Mean time to restore
-- **Investment & Time Allocation Analytics**
-- **Pull Request Review Analytics**
-- **AI ROI Reporting** — measure the impact of AI coding assistants
+### Analytics & Metrics — live end-to-end
+- **All four DORA metrics:** deployment frequency, lead time for changes, change failure rate, MTTR — computed at repo, org, and team scope from real ingested data, not mocks
+- **PR analytics:** PR velocity and cycle-time p50
+- **Investment & Time Allocation Analytics** and **AI ROI Reporting** — UI-first against mock data, pending their backend connectors
 
-### Role-Based Dashboards
-- **Executive:** High-level organizational health and ROI
-- **Manager:** Team-level delivery and productivity insights
-- **IC (Individual Contributor):** Personal growth and contribution metrics
+### Role-Based Dashboards — real RBAC, server-enforced
+Five roles (RS256 JWT resource server, ADR-0004): **Admin**, **Engineering Leader** (org-wide, exec/leader access), **Manager** (team-scoped — pinned server-side, not just client-side), **Individual Contributor** (opt-in personal activity only — no org/team surveillance surface), **Finance (read-only)**.
+
+### Admin Console — connector & team management from the UI
+- Live connector health per source (GitHub, GitHub Actions, Jira, Jenkins) with two distinct signals: **Last checked** (did we hear from it at all) vs **Last data change** (did anything actually change) — so a healthy connector with nothing new to report never looks stale
+- **Connect a repo or a whole GitHub org's teams from the UI** — no more manual `curl` against a connector's internal backfill endpoint — with a live per-repo Sync status table (Syncing/Synced/Failed, Refresh, Delete)
+- User/role administration, append-only audit log (12+ month retention)
 
 ### Core Principles
 - ✅ **Zero surveillance** — No keystroke tracking, idle-time monitoring, or individual surveillance metrics
@@ -63,44 +63,42 @@ The platform follows a **message-queue-isolated** microservices architecture:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Frontend (React)                        │
-│                    Role-based Dashboards (UI)                   │
+│         Cockpit · Teams · Investment Profile · Code Review ·    │
+│         AI Cost Track · Personal · Setup · Admin (role-gated)   │
 └─────────────────────────────┬───────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      API Core (Spring Boot)                     │
-│               Auth, RBAC, Dashboards API, OpenAPI               │
-└─────────────────────────────┬───────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      Metrics Engine                             │
-│          DORA, Lead Time, Investment Profile, AI ROI            │
-└─────────────────────────────┬───────────────────────────────────┘
-                              │
-┌─────────────────────────────┼───────────────────────────────────┐
-│                    Message Queue (RabbitMQ)                     │
-└───────────────┬─────────────┼─────────────┬─────────────────────┘
-                │             │             │
-                ▼             ▼             ▼
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────────────┐
-│  Connector:     │ │  Connector:     │ │  Connector:             │
-│  GitHub         │ │  Jira           │ │  AI Telemetry           │
-└─────────────────┘ └─────────────────┘ └─────────────────────────┘
-                │             │             │
-                └─────────────┼─────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    PostgreSQL (Transactional)                   │
-│              Staging → Core → Mart schemas                      │
-└─────────────────────────────────────────────────────────────────┘
+│         Auth (RBAC, JWT), Dashboards API, Admin API, OpenAPI    │
+└───────┬─────────────────────┬───────────────────────┬───────────┘
+        │                     │                       │
+        ▼                     ▼                       ▼
+┌───────────────┐   ┌───────────────────┐   ┌─────────────────────┐
+│ Metrics Engine │   │ Identity Service   │   │ Ingestion Writer     │
+│ DORA / PR      │   │ Contributor +      │   │ Idempotent staging   │
+│ analytics      │   │ team resolution    │   │ persistence + DLQ    │
+└───────┬────────┘   └─────────┬──────────┘   └───────────┬──────────┘
+        │                      │                          │
+        │                      └────────────┬─────────────┘
+        ▼                                   ▼
+┌─────────────────────┐        ┌─────────────────────────────────┐
+│  PostgreSQL          │        │        Message Queue (RabbitMQ)  │
+│  staging → core →    │◀───────┤                                  │
+│  mart schemas         │        └───────┬──────────┬──────────┬────┘
+└─────────────────────┘                 │          │          │
+                                          ▼          ▼          ▼
+                                ┌────────────┐ ┌──────────┐ ┌──────────┐
+                                │ Connector:  │ │Connector:│ │Connector:│
+                                │ GitHub      │ │ Jira     │ │ Jenkins  │
+                                └────────────┘ └──────────┘ └──────────┘
 ```
 
 > **Key Architectural Decisions:**
-> - Connectors are **isolated behind the queue** — vendor outages never lose data
+> - Connectors are **isolated behind the queue** — vendor outages never lose data, retried with backoff and a dead-letter queue
 > - **Contract-first API** — OpenAPI specs are the source of truth
 > - All metrics are **computed from tool data** — no manual tagging required
+> - CI/CD sources are **provider-agnostic at the schema level** — GitHub Actions and Jenkins both write into the same `staging.workflow_run_state` table, so DORA queries don't need to know which tool built a given commit
 
 For detailed C4 diagrams and data flows, see [System Architecture](docs/03-architecture/system-architecture.md).
 
@@ -117,7 +115,7 @@ For detailed C4 diagrams and data flows, see [System Architecture](docs/03-archi
 | **Infrastructure** | Docker Compose (local), IaC (production) |
 | **Build** | Maven (backend), npm (frontend) |
 | **API** | OpenAPI 3 (contract-first) |
-| **Testing** | JUnit + Mockito (backend), Vitest (frontend) |
+| **Testing** | JUnit + Mockito + Testcontainers (backend), `tsc --strict` (frontend) |
 | **CI/CD** | GitHub Actions (planned) |
 
 ---
@@ -147,13 +145,23 @@ For detailed C4 diagrams and data flows, see [System Architecture](docs/03-archi
    ```
    This provides:
    - PostgreSQL 16 at `localhost:5442` (db: `aiimpacteval`)
-   - RabbitMQ 3 at `localhost:5672` (AMQP) and `localhost:15672` (management UI)
+   - RabbitMQ 3 at `localhost:5672` (AMQP) and `localhost:25672` (management UI)
+   > The management UI defaults to port 25672, not RabbitMQ's usual 15672 — on some Windows
+   > machines 15672 falls inside a Hyper-V/WSL reserved port range that blocks Docker from
+   > binding it. Override with `RABBITMQ_MGMT_PORT` if you don't hit that issue. AMQP (what the
+   > services actually connect over) is unaffected either way.
 
 3. **Start the backend services:**
    ```bash
    ./infra/start-backend.sh
    ```
-   This builds and starts all 6 backend services.
+   Builds and starts all 7 backend services: `api-core`, `ingestion-writer`, `connector-github`,
+   `connector-jira`, `connector-jenkins`, `metrics-engine`, `identity-service`.
+   > `connector-github`/`connector-jira`/`connector-jenkins` start fine with no credentials —
+   > they just won't be able to reach GitHub/Jira/Jenkins until you export their tokens first
+   > (see each connector's README under `services/connectors/*/README.md` for the exact env
+   > vars). Once running, connect a repo/project/job either via each connector's
+   > `/internal/backfill` endpoint, or from the app's **Admin** tab once the frontend is up.
 
 4. **Start the frontend:**
    ```bash
@@ -178,13 +186,15 @@ mvn spring-boot:run -pl api-core
 ```
 Local defaults are wired so no configuration is needed beyond `.env`.
 
-### GitHub Connector
+### Connectors
 
-To run the GitHub connector locally:
+Each connector needs its own vendor credentials as environment variables — see
+`services/connectors/*/README.md` for the exact list per connector (GitHub PAT, Jira email +
+API token, Jenkins username + API token). Example for GitHub:
 ```bash
 GITHUB_TOKEN=<your-token> mvn spring-boot:run -pl connectors/connector-github
 ```
-> ⚠️ **Never commit `GITHUB_TOKEN`** — use environment variables or a secret manager.
+> ⚠️ **Never commit a connector token** — use environment variables or a secret manager.
 
 ### Smoke Test
 
@@ -221,7 +231,6 @@ mvn test
 - **React 18** with **TypeScript** (strict mode)
 - **Tailwind CSS** for styling
 - **Vite** for build tooling
-- **OpenAPI-generated client** — no hand-written fetch types
 
 **Development:**
 ```bash
@@ -263,23 +272,28 @@ AI_impact_analytical_program/
 │   └── CHANGELOG.md             # User-visible / architecturally significant changes
 ├── frontend/                    # React + TypeScript dashboard app
 │   ├── src/
+│   │   ├── views/                # Cockpit, Teams, InvestmentProfile, CodeReview,
+│   │   │                         # AiCostTrack, Personal, Setup, Admin, Login, Landing
+│   │   └── api.ts                # Typed client mirroring api-core's OpenAPI contract
 │   ├── public/
 │   └── package.json
 ├── infra/                       # Infrastructure as Code, Docker Compose
-│   ├── docker-compose.yml
+│   ├── docker-compose.yml       # Postgres + RabbitMQ
 │   ├── .env.example
-│   ├── start-backend.sh
-│   └── smoke-e2e.sh
+│   ├── start-backend.sh         # Builds + starts all 7 backend services
+│   ├── stop-backend.sh
+│   └── smoke-e2e.sh             # End-to-end ingestion pipeline smoke test
 ├── services/                    # Backend microservices
-│   ├── api-core/                # Spring Boot API layer (auth, RBAC, dashboards)
-│   ├── metrics-engine/          # DORA, lead time, investment profile computation
-│   ├── identity-service/        # Contributor identity & team normalization
-│   ├── ingestion-writer/        # Event ingestion and persistence
+│   ├── api-core/                # Spring Boot API layer (auth, RBAC, dashboards, admin)
+│   ├── metrics-engine/          # DORA, PR analytics computation (mart.metric_daily)
+│   ├── identity-service/        # Contributor identity & team-structure normalization
+│   ├── ingestion-writer/        # Idempotent event ingestion + staging projections
 │   ├── connectors/              # One service per external tool
-│   │   ├── connector-github/
-│   │   ├── connector-jira/
-│   │   └── ...
-│   ├── platform-common/         # Shared libraries and utilities
+│   │   ├── connector-github/    # Source control + GitHub Actions CI/CD
+│   │   ├── connector-jira/      # Ticketing
+│   │   └── connector-jenkins/   # Alt. CI/CD source
+│   ├── platform-common/         # Shared contracts: event envelope, queue topology,
+│   │                            # outbound HTTP client timeout config
 │   └── pom.xml                  # Maven parent POM
 ├── templates/                   # Project templates
 ├── CLAUDE.md                    # Rules for AI agents (mandatory documentation policy)
@@ -296,7 +310,7 @@ All project documentation lives in the `docs/` directory. Documentation is **par
 | Document | Purpose |
 |----------|---------|
 | [BRD Summary](docs/01-product/brd-summary.md) | What we're building and why (condensed BRD) |
-| [PRD v1.0](docs/01-product/prd.md) | Product requirements (epics E1–E11 with acceptance criteria) |
+| [PRD v1.0](docs/01-product/prd.md) | Product requirements (epics E1–E11 with acceptance criteria + delivery status appendix) |
 | [Metric Definitions](docs/01-product/metric-definitions.md) | Formulas, data sources, and edge cases for all metrics |
 | [Engineering Standards](docs/02-standards/engineering-standards.md) | Coding, git, testing, API, and data standards |
 | [Security & Privacy Standards](docs/02-standards/security-and-privacy-standards.md) | Security, privacy, and audit requirements |
@@ -304,6 +318,8 @@ All project documentation lives in the `docs/` directory. Documentation is **par
 | [ADRs](docs/03-architecture/decisions/) | Architecture Decision Records — numbered sequentially |
 | [Runbooks](docs/04-operations/) | On-call runbooks for ingestion failures, connector outages, etc. |
 | [CHANGELOG](docs/CHANGELOG.md) | One-line log of user-visible / architecturally significant changes |
+
+Each service also has its own README (`services/*/README.md`, `services/connectors/*/README.md`) covering purpose, local run instructions, config/env vars, and API surface.
 
 ### Documentation Policy (Enforced)
 
@@ -379,4 +395,9 @@ Built with:
 
 ---
 
-**Status:** Phase 0 complete — architecture, standards, PRD, metric definitions, and a buildable monorepo scaffold. Phase 1 MVP implementation is next (F1: GitHub connector).
+**Status:** Phase 1 MVP well underway — 3 live connectors (GitHub, Jira, Jenkins), all four DORA
+metrics computed end-to-end at repo/org/team scope, server-enforced RBAC across 5 roles, and a
+live Admin console (connector health, repo/team connect + sync-status management, user
+administration, audit log). See the [PRD's delivery status appendix](docs/01-product/prd.md) for
+epic-by-epic detail and what's still pending (SonarQube/PagerDuty/AI-telemetry connectors,
+OIDC login, Phase 2/3 epics E5–E7/E9–E11).
