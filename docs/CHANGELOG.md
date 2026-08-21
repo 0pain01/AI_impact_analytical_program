@@ -2,6 +2,15 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-08-21 (8)
+- Docs: refreshed root `README.md` and `frontend/README.md`, both stale since before this
+  session's work — root README now lists 4 live connectors (added AI Telemetry), AI Cost Track
+  as live (AI-01..AI-05) instead of "UI-first against mock data," Cockpit's 30/90-day
+  toggle/export, and team deletion in the Admin console section; architecture diagram and
+  service counts updated 7→8. `frontend/README.md` no longer describes the app as an unwired
+  skeleton with empty DORA tiles — it hadn't been touched since the very first scaffold and was
+  describing a state the app left behind long ago.
+
 ## 2026-08-21 (7)
 - Admin console: added a delete action for teams (Teams overview pill → ×), alongside the
   existing repo delete. New `DELETE /api/v1/admin/teams/{teamId}` cascades the team's own

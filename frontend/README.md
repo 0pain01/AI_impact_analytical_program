@@ -2,9 +2,13 @@
 
 React + TypeScript (strict) + Tailwind dashboard app (C4 container "Web App").
 
-**Status:** skeleton — app shell with Cockpit / Teams / Admin navigation and empty DORA
-tiles. No API wiring yet (the typed client will be generated from api-core's OpenAPI spec —
-contract-first, see engineering standards §5).
+**Status:** live and wired to api-core's real endpoints — Cockpit (DORA metrics, 30/90-day
+window, CSV export), Teams drill-down, Investment Profile, Code Review Analytics, AI Cost Track
+(spend/adoption/impact/ROI), Personal Activity, Setup/onboarding, and the Admin console
+(connectors, repo/team management with delete, user administration, audit log), behind a
+role-gated login. `src/api.ts` is a hand-written typed client mirroring api-core's OpenAPI
+contract (`services/api-core/src/main/resources/openapi/api-core.yml`) — not code-generated;
+keep it in sync by hand when the contract changes, per engineering standards §5.
 
 ## Run
 
@@ -25,4 +29,5 @@ npm run lint       # eslint (config arrives with first real feature)
 - `strict: true`; no `any` without inline justification.
 - Every dashboard widget implements loading / error / empty states.
 - WCAG 2.1 AA; charts get accessible data-table fallbacks.
-- No hand-written fetch types — generate from OpenAPI.
+- `src/api.ts` types are kept in sync with `openapi/api-core.yml` by hand — update the spec first
+  (contract-first), then mirror the change here.

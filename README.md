@@ -30,16 +30,18 @@ AI Impact Evaluation is an AI-native **Software Engineering Intelligence (SEI)**
 
 ## ✨ Features
 
-### Data Integration — 3 connectors live
+### Data Integration — 4 connectors live
 - **Source Control:** GitHub — signature-verified webhooks + PR/commit backfill (`connector-github`)
 - **Project Management:** Jira — token-verified webhooks + issue backfill with changelogs (`connector-jira`)
 - **CI/CD:** GitHub Actions (via `connector-github`) **and** Jenkins (`connector-jenkins`) — both write into the same provider-agnostic `workflow_run_state` table, so DORA metrics see either source the same way
-- **Planned:** SonarQube (code quality), PagerDuty (incidents), AI-assistant telemetry (Copilot/Cursor/Claude Code) — named in the BRD, not yet built
+- **AI coding assistants:** Claude Code and GitHub Copilot usage ingestion (`connector-ai-telemetry`) — reads usage-report files shaped exactly like each vendor's real Admin API response, architected so a genuine enterprise export is a drop-in swap later
+- **Planned:** SonarQube (code quality), PagerDuty (incidents) — named in the BRD, not yet built
 
 ### Analytics & Metrics — live end-to-end
-- **All four DORA metrics:** deployment frequency, lead time for changes, change failure rate, MTTR — computed at repo, org, and team scope from real ingested data, not mocks
+- **All four DORA metrics:** deployment frequency, lead time for changes, change failure rate, MTTR — computed at repo, org, and team scope from real ingested data, not mocks; Cockpit's window is togglable (30/90 days) with a CSV export of everything on screen
 - **PR analytics:** PR velocity and cycle-time p50
-- **Investment & Time Allocation Analytics** and **AI ROI Reporting** — UI-first against mock data, pending their backend connectors
+- **AI Cost Track (E9, AI-01..AI-05):** total AI spend, cost per PR/dev-day, adoption rate, AI-assisted-vs-non-AI cycle-time delta, and a dollar ROI figure — all computed by real formulas against connected usage/PR data (currently sample usage-report data + real connected-repo PRs; the UI says "Demo data · real API schema" rather than "Live" until a genuine enterprise usage export is connected). Never fabricates a headline number: figures show `null`/"Not available yet" rather than a guess when the underlying sample is too small
+- **Investment Profile:** classifies PRs as Planned/Unplanned/Rework by joining a Jira issue key parsed from the PR title against `staging.jira_issue_state` — genuinely "Unclassifiable" for repos with no matching Jira project, not a bug
 
 ### Role-Based Dashboards — real RBAC, server-enforced
 Five roles (RS256 JWT resource server, ADR-0004): **Admin**, **Engineering Leader** (org-wide, exec/leader access), **Manager** (team-scoped — pinned server-side, not just client-side), **Individual Contributor** (opt-in personal activity only — no org/team surveillance surface), **Finance (read-only)**.
@@ -47,7 +49,8 @@ Five roles (RS256 JWT resource server, ADR-0004): **Admin**, **Engineering Leade
 ### Admin Console — connector & team management from the UI
 - Live connector health per source (GitHub, GitHub Actions, Jira, Jenkins) with two distinct signals: **Last checked** (did we hear from it at all) vs **Last data change** (did anything actually change) — so a healthy connector with nothing new to report never looks stale
 - **Connect a repo or a whole GitHub org's teams from the UI** — no more manual `curl` against a connector's internal backfill endpoint — with a live per-repo Sync status table (Syncing/Synced/Failed, Refresh, Delete)
-- User/role administration, append-only audit log (12+ month retention)
+- **Team management** — create teams by hand or import a GitHub org's teams automatically, assign/unassign repos, and delete a team (blocked with a clear error if a user account or another team still depends on it, rather than silently breaking their access)
+- Real per-user RBAC role/team/GitHub-login assignment, append-only audit log (12+ month retention)
 
 ### Core Principles
 - ✅ **Zero surveillance** — No keystroke tracking, idle-time monitoring, or individual surveillance metrics
@@ -82,16 +85,16 @@ The platform follows a **message-queue-isolated** microservices architecture:
         │                      │                          │
         │                      └────────────┬─────────────┘
         ▼                                   ▼
-┌─────────────────────┐        ┌─────────────────────────────────┐
-│  PostgreSQL          │        │        Message Queue (RabbitMQ)  │
-│  staging → core →    │◀───────┤                                  │
-│  mart schemas         │        └───────┬──────────┬──────────┬────┘
-└─────────────────────┘                 │          │          │
-                                          ▼          ▼          ▼
-                                ┌────────────┐ ┌──────────┐ ┌──────────┐
-                                │ Connector:  │ │Connector:│ │Connector:│
-                                │ GitHub      │ │ Jira     │ │ Jenkins  │
-                                └────────────┘ └──────────┘ └──────────┘
+┌─────────────────────┐        ┌───────────────────────────────────────────┐
+│  PostgreSQL          │        │           Message Queue (RabbitMQ)         │
+│  staging → core →    │◀───────┤                                             │
+│  mart schemas         │        └───────┬──────────┬──────────┬───────────┬──┘
+└─────────────────────┘                 │          │          │           │
+                                          ▼          ▼          ▼           ▼
+                                ┌───────────┐┌──────────┐┌──────────┐┌────────────┐
+                                │Connector: ││Connector:││Connector:││ Connector:  │
+                                │ GitHub    ││ Jira     ││ Jenkins  ││ AI Telemetry│
+                                └───────────┘└──────────┘└──────────┘└────────────┘
 ```
 
 > **Key Architectural Decisions:**
@@ -155,13 +158,16 @@ For detailed C4 diagrams and data flows, see [System Architecture](docs/03-archi
    ```bash
    ./infra/start-backend.sh
    ```
-   Builds and starts all 7 backend services: `api-core`, `ingestion-writer`, `connector-github`,
-   `connector-jira`, `connector-jenkins`, `metrics-engine`, `identity-service`.
+   Builds and starts all 8 backend services: `api-core`, `ingestion-writer`, `connector-github`,
+   `connector-jira`, `connector-jenkins`, `connector-ai-telemetry`, `metrics-engine`,
+   `identity-service`.
    > `connector-github`/`connector-jira`/`connector-jenkins` start fine with no credentials —
    > they just won't be able to reach GitHub/Jira/Jenkins until you export their tokens first
    > (see each connector's README under `services/connectors/*/README.md` for the exact env
-   > vars). Once running, connect a repo/project/job either via each connector's
-   > `/internal/backfill` endpoint, or from the app's **Admin** tab once the frontend is up.
+   > vars). `connector-ai-telemetry` similarly needs `CLAUDE_CODE_USAGE_FILE`/`COPILOT_USAGE_FILE`
+   > pointed at `infra/sample-data/*` (or a real usage export) to have anything to backfill. Once
+   > running, connect a repo/project/job either via each connector's `/internal/backfill`
+   > endpoint, or from the app's **Admin** tab once the frontend is up.
 
 4. **Start the frontend:**
    ```bash
@@ -280,7 +286,9 @@ AI_impact_analytical_program/
 ├── infra/                       # Infrastructure as Code, Docker Compose
 │   ├── docker-compose.yml       # Postgres + RabbitMQ
 │   ├── .env.example
-│   ├── start-backend.sh         # Builds + starts all 7 backend services
+│   ├── sample-data/             # Realistic Claude Code / Copilot usage-report samples,
+│   │                            # shaped like each vendor's real Admin API response
+│   ├── start-backend.sh         # Builds + starts all 8 backend services
 │   ├── stop-backend.sh
 │   └── smoke-e2e.sh             # End-to-end ingestion pipeline smoke test
 ├── services/                    # Backend microservices
@@ -291,7 +299,8 @@ AI_impact_analytical_program/
 │   ├── connectors/              # One service per external tool
 │   │   ├── connector-github/    # Source control + GitHub Actions CI/CD
 │   │   ├── connector-jira/      # Ticketing
-│   │   └── connector-jenkins/   # Alt. CI/CD source
+│   │   ├── connector-jenkins/   # Alt. CI/CD source
+│   │   └── connector-ai-telemetry/  # Claude Code + GitHub Copilot usage ingestion
 │   ├── platform-common/         # Shared contracts: event envelope, queue topology,
 │   │                            # outbound HTTP client timeout config
 │   └── pom.xml                  # Maven parent POM
@@ -395,9 +404,12 @@ Built with:
 
 ---
 
-**Status:** Phase 1 MVP well underway — 3 live connectors (GitHub, Jira, Jenkins), all four DORA
-metrics computed end-to-end at repo/org/team scope, server-enforced RBAC across 5 roles, and a
-live Admin console (connector health, repo/team connect + sync-status management, user
-administration, audit log). See the [PRD's delivery status appendix](docs/01-product/prd.md) for
-epic-by-epic detail and what's still pending (SonarQube/PagerDuty/AI-telemetry connectors,
-OIDC login, Phase 2/3 epics E5–E7/E9–E11).
+**Status:** Phase 1 MVP well underway, with an E9 (AI Adoption & ROI) slice already live —
+4 connectors (GitHub, Jira, Jenkins, AI Telemetry), all four DORA metrics computed end-to-end at
+repo/org/team scope with a 30/90-day toggle and CSV export, AI Cost Track computing real
+spend/adoption/impact/ROI (AI-01..AI-05) from connected usage and PR data, server-enforced RBAC
+across 5 roles, and a live Admin console (connector health, repo/team connect + sync-status +
+delete, user administration, audit log). See the
+[PRD's delivery status appendix](docs/01-product/prd.md) for epic-by-epic detail and what's still
+pending (SonarQube/PagerDuty connectors, OIDC login, team-level AI adoption breakdown, Phase 2/3
+epics E5–E7/E10–E11).
