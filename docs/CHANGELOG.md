@@ -2,6 +2,18 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-08-21 (7)
+- Admin console: added a delete action for teams (Teams overview pill → ×), alongside the
+  existing repo delete. New `DELETE /api/v1/admin/teams/{teamId}` cascades the team's own
+  `core.team_repo`/`core.team_member` mappings, but blocks with a 409 (message names the count)
+  if any `core.app_user` is pinned to the team via `team_id`, or another team references it as
+  `parent_team_id` — a MANAGER account's token would otherwise fall back to org-wide scope on
+  their next login if its `team_id` silently went null, which is a real privilege change, not
+  something a team delete should cause as a side effect. Audited as `TEAM_DELETED`. Verified live:
+  created a throwaway team via both the API and the UI, deleted it cleanly each time (audit row
+  confirmed); confirmed the 409 path against a team a real MANAGER account is pinned to, and the
+  404 path against a nonexistent team id.
+
 ## 2026-08-21 (6)
 - Cockpit: added the 30/90-day window toggle Code Review already had (`GET /api/v1/metrics/cockpit`
   already accepted `days` up to 90 server-side — `CockpitController.MAX_WINDOW_DAYS` — this was

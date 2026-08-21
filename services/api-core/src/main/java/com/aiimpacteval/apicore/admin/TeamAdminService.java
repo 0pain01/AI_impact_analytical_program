@@ -1,5 +1,7 @@
 package com.aiimpacteval.apicore.admin;
 
+import com.aiimpacteval.apicore.audit.AuditLog;
+import com.aiimpacteval.apicore.audit.AuditLog.AuditEvent;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +26,11 @@ import java.util.UUID;
 public class TeamAdminService {
 
     private final JdbcTemplate jdbcTemplate;
+    private final AuditLog auditLog;
 
-    public TeamAdminService(JdbcTemplate jdbcTemplate) {
+    public TeamAdminService(JdbcTemplate jdbcTemplate, AuditLog auditLog) {
         this.jdbcTemplate = jdbcTemplate;
+        this.auditLog = auditLog;
     }
 
     /**
@@ -62,7 +66,61 @@ public class TeamAdminService {
                 "SELECT repo FROM core.team_repo WHERE team_id = ? ORDER BY repo", String.class, teamId);
     }
 
+    /**
+     * Blocks rather than silently cascading when the team is still load-bearing: a MANAGER
+     * account pinned to it via {@code core.app_user.team_id} would otherwise fall back to
+     * org-wide scope on their next login (see {@code ScopeResolver}) — a silent privilege
+     * change, not something a team delete should cause as a side effect. Same reasoning for
+     * sub-teams via {@code parent_team_id}. Repo/member mappings are safe to cascade — they're
+     * just this team's own rows, not another entity's access grant.
+     */
+    public void deleteTeam(String actorEmail, UUID teamId, String sourceIp) {
+        String name = jdbcTemplate.query("SELECT name FROM core.team WHERE id = ?",
+                        (rs, rowNum) -> rs.getString("name"), teamId)
+                .stream().findFirst()
+                .orElseThrow(() -> new NoSuchTeamException(teamId));
+
+        Integer pinnedUsers = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM core.app_user WHERE team_id = ?", Integer.class, teamId);
+        if (pinnedUsers != null && pinnedUsers > 0) {
+            throw new TeamHasDependentsException(pinnedUsers + " user account(s) are pinned to this team "
+                    + "— reassign them in User Management before deleting it.");
+        }
+        Integer childTeams = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM core.team WHERE parent_team_id = ?", Integer.class, teamId);
+        if (childTeams != null && childTeams > 0) {
+            throw new TeamHasDependentsException(childTeams + " sub-team(s) reference this team as their "
+                    + "parent — delete or reparent them first.");
+        }
+
+        Integer repoCount = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM core.team_repo WHERE team_id = ?", Integer.class, teamId);
+
+        jdbcTemplate.update("DELETE FROM core.team_repo WHERE team_id = ?", teamId);
+        jdbcTemplate.update("DELETE FROM core.team_member WHERE team_id = ?", teamId);
+        jdbcTemplate.update("DELETE FROM core.team WHERE id = ?", teamId);
+
+        auditLog.write(new AuditEvent(actorEmail, "TEAM_DELETED", "team", teamId.toString(),
+                "{\"name\":\"" + escapeJson(name) + "\",\"repoCount\":" + repoCount + "}", null, sourceIp));
+    }
+
     private String slugify(String name) {
         return name.trim().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
+    }
+
+    private static String escapeJson(String value) {
+        return value == null ? "" : value.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    public static class NoSuchTeamException extends RuntimeException {
+        public NoSuchTeamException(UUID id) {
+            super("No team with id " + id);
+        }
+    }
+
+    public static class TeamHasDependentsException extends RuntimeException {
+        public TeamHasDependentsException(String message) {
+            super(message);
+        }
     }
 }

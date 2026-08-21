@@ -1,6 +1,11 @@
 package com.aiimpacteval.apicore.admin;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,5 +65,22 @@ public class TeamAdminController {
     @GetMapping("/{teamId}/repos")
     public List<String> listRepos(@PathVariable UUID teamId) {
         return adminService.listRepos(teamId);
+    }
+
+    @DeleteMapping("/{teamId}")
+    public ResponseEntity<Void> deleteTeam(@PathVariable UUID teamId, Authentication auth,
+                                           HttpServletRequest servletRequest) {
+        adminService.deleteTeam(auth.getName(), teamId, servletRequest.getRemoteAddr());
+        return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(TeamAdminService.NoSuchTeamException.class)
+    public ResponseEntity<String> handleNotFound(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+    @ExceptionHandler(TeamAdminService.TeamHasDependentsException.class)
+    public ResponseEntity<String> handleConflict(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }
 }

@@ -5,6 +5,7 @@ import {
   connectRepo,
   createAdminUser,
   createOrUpdateTeam,
+  deleteTeam,
   disconnectRepo,
   fetchAdminConnectors,
   fetchAdminUsers,
@@ -537,6 +538,8 @@ function RepoTeamsPanel() {
   const [teams, setTeams] = useState<Team[]>([])
   const [teamsError, setTeamsError] = useState<string | null>(null)
   const [syncRefreshSignal, setSyncRefreshSignal] = useState(0)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   function reloadTeams() {
     fetchTeams()
@@ -545,6 +548,22 @@ function RepoTeamsPanel() {
   }
 
   useEffect(reloadTeams, [])
+
+  async function handleDeleteTeam(team: Team) {
+    if (!confirm(`Delete "${team.name}"? This unmaps its ${team.repoCount} repo(s) and any members — repo data itself is untouched.`)) {
+      return
+    }
+    setDeleteError(null)
+    setDeletingId(team.id)
+    try {
+      await deleteTeam(team.id)
+      reloadTeams()
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : `Could not delete "${team.name}".`)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
@@ -604,11 +623,22 @@ function RepoTeamsPanel() {
           </div>
           <ul className="flex flex-wrap gap-2">
             {teams.map((t) => (
-              <li key={t.id} className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">
-                {t.name} · {t.repoCount} repo{t.repoCount === 1 ? '' : 's'}
+              <li key={t.id} className="flex items-center gap-1.5 rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">
+                <span>
+                  {t.name} · {t.repoCount} repo{t.repoCount === 1 ? '' : 's'}
+                </span>
+                <button
+                  onClick={() => handleDeleteTeam(t)}
+                  disabled={deletingId === t.id}
+                  title="Delete team"
+                  className="text-slate-400 hover:text-red-600 disabled:opacity-50"
+                >
+                  {deletingId === t.id ? '…' : '×'}
+                </button>
               </li>
             ))}
           </ul>
+          {deleteError && <p className="mt-2 text-xs text-red-600">{deleteError}</p>}
         </div>
       )}
     </div>

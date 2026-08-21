@@ -626,6 +626,12 @@ export async function removeTeamRepo(teamId: string, repo: string): Promise<stri
   return res.json()
 }
 
+// Blocks with a 409 (surfaced as an Error with that message) if users are pinned to this team
+// or another team references it as parent — see TeamAdminService.deleteTeam's javadoc.
+export async function deleteTeam(teamId: string): Promise<void> {
+  await authFetch(`/api/v1/admin/teams/${teamId}`, { method: 'DELETE' })
+}
+
 // LIVE: GET /api/v1/personal/activity — the IC role's self-scoped Personal Activity tab. No
 // scope/repo/team params exist for this one on purpose: the server resolves "you" from your
 // login, not from anything the client sends.

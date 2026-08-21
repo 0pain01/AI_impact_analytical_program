@@ -303,6 +303,23 @@ paths:
             application/json:
               schema: { type: array, items: { type: string } }
         "403": { description: Caller is not ADMIN. }
+  /admin/teams/{teamId}:
+    delete:
+      operationId: deleteTeam
+      summary: Delete a team — ADMIN only
+      description: >
+        Cascades this team's own core.team_repo/core.team_member mappings, but blocks (409)
+        rather than silently cascading if any core.app_user is pinned to this team via team_id
+        (a MANAGER account would otherwise fall back to org-wide scope on their next login — a
+        silent privilege change) or if any other team references this one as its parent. Audited
+        as TEAM_DELETED.
+      parameters:
+        - { name: teamId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Team deleted. }
+        "403": { description: Caller is not ADMIN. }
+        "404": { description: No team with that id. }
+        "409": { description: Team has dependent users or sub-teams — response body explains which. }
 components:
   securitySchemes:
     bearerAuth:
