@@ -19,11 +19,16 @@ Provides:
 | Service | Endpoint | Credentials (local default) |
 |---|---|---|
 | PostgreSQL 16 | `localhost:5442` (host port; container 5432), db `aiimpacteval` | `aiimpacteval` / `aiimpacteval_local` |
-| RabbitMQ 3 | `localhost:5672` (AMQP), `localhost:15672` (management UI) | `aiimpacteval` / `aiimpacteval_local` |
+| RabbitMQ 3 | `localhost:5672` (AMQP), `localhost:25672` (management UI) | `aiimpacteval` / `aiimpacteval_local` |
+
+> Management UI defaults to 25672, not RabbitMQ's usual 15672 — 15672 falls inside a Windows
+> Hyper-V/WSL reserved port-exclusion range on some machines, blocking Docker from binding it.
+> Override with `RABBITMQ_MGMT_PORT` if that doesn't affect you. AMQP (5672, what the services
+> actually connect over) is unaffected either way.
 
 ## Run the platform
 
-All 6 backend services + infra in one command (builds with `mvn package`, starts each
+All 8 backend services + infra in one command (builds with `mvn package`, starts each
 service detached, waits for `/actuator/health`, logs to `/tmp/aiimpacteval-<service>.log`):
 
 ```bash

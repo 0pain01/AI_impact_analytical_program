@@ -39,6 +39,81 @@ export interface CockpitResponse {
   tiles: CockpitTile[]
 }
 
+// GET /api/v1/metrics/ai-cost-track — computed by real queries/formulas against sample Claude
+// Code + Copilot usage data (connector-ai-telemetry) and PR history shaped like each vendor's
+// real API schema, not hardcoded mock numbers. teamAllocationAvailable is always false today (no
+// contributor→team resolution for AI-telemetry actor keys yet). impact/roi are null when the
+// window's AI-assisted or non-AI-assisted PR sample is too small — see AiCostTrackDtos' javadoc
+// in api-core for the full methodology. The view shows an honest "not available yet" state for
+// whichever of these is actually missing, rather than falling back to fabricated numbers.
+export interface AiCostKpis {
+  totalSpend: number
+  costPerPr: number
+  costPerDevDay: number
+  adoptionRate: number
+}
+
+export interface AiCostSpendByTool {
+  tool: string
+  monthlySpend: number
+}
+
+export interface AiCostSpendTrendPoint {
+  month: string
+  spend: number
+  prsAssisted: number
+}
+
+export interface AiCostDailySpendPoint {
+  date: string
+  claudeCode: number
+  githubCopilot: number
+  cursor: number
+}
+
+export interface AiCostDeveloperAllocation {
+  developer: string
+  tool: string
+  spend: number
+  mergedPrs: number
+}
+
+export interface AiCostImpact {
+  aiAssistedMedianCycleHours: number
+  nonAiMedianCycleHours: number
+  aiAssistedPrCount: number
+  nonAiPrCount: number
+  aiAssistedShare: number
+}
+
+export interface AiCostRoi {
+  estimatedHoursSaved: number
+  dollarValueRecovered: number
+  roiMultiple: number
+  blendedHourlyRateUsd: number
+}
+
+export interface AiCostAssumptions {
+  copilotMonthlySeatCostUsd: number
+  licensedSeatsAssumed: number
+  blendedHourlyRateUsd: number
+  methodologyNote: string
+}
+
+export interface AiCostTrackResponse {
+  windowLabel: string
+  windowDays: number
+  kpis: AiCostKpis
+  spendByTool: AiCostSpendByTool[]
+  spendTrend: AiCostSpendTrendPoint[]
+  dailySpend: AiCostDailySpendPoint[]
+  developerAllocation: AiCostDeveloperAllocation[]
+  teamAllocationAvailable: boolean
+  impact: AiCostImpact | null
+  roi: AiCostRoi | null
+  assumptions: AiCostAssumptions
+}
+
 export interface Team {
   id: string
   name: string
@@ -371,6 +446,13 @@ async function authFetch(path: string, init?: { method?: string; body?: unknown 
 export async function fetchCockpit(days = 30, scope = '*'): Promise<CockpitResponse> {
   const params = new URLSearchParams({ days: String(days), scope })
   const res = await authFetch(`/api/v1/metrics/cockpit?${params.toString()}`)
+  return res.json()
+}
+
+// LIVE: GET /api/v1/metrics/ai-cost-track?days=
+export async function fetchAiCostTrack(days = 30): Promise<AiCostTrackResponse> {
+  const params = new URLSearchParams({ days: String(days) })
+  const res = await authFetch(`/api/v1/metrics/ai-cost-track?${params.toString()}`)
   return res.json()
 }
 

@@ -27,3 +27,11 @@ management:
     health:
       probes:
         enabled: true
+
+ai-cost:
+  copilot:
+    # Copilot's usage export carries no per-request dollar cost (flat-fee seat product) — this is
+    # the org-configurable per-seat monthly list price StagingEventWriter allocates across a
+    # user's ACTIVE days only (never charged on a day with zero activity). GitHub Copilot
+    # Business list price as of writing; override for Enterprise or a negotiated rate.
+    monthly-seat-cost-usd: ${COPILOT_MONTHLY_SEAT_COST_USD:19}

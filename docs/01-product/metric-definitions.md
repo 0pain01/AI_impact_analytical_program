@@ -144,12 +144,29 @@ Deploy/hotfix detection patterns are per-repo configurable (`METRICS_DEPLOY_WORK
 
 ---
 
-## AI adoption, spend & ROI — v1 (E9, UI-first demo)
+## AI adoption, spend & ROI — v1 (E9)
 
-> **Status:** frontend-only with mock data (`frontend/src/mock/mockData.ts` → `aiCostTrack`),
-> shipped as the "AI Cost Track" sidebar view ahead of the `ai-telemetry` connectors and
-> `metrics-engine` computation. Formulas below are the target computation once real usage data
-> lands; do not treat displayed figures as real spend until the connector/backend lands.
+> **Status (2026-08-21):** All five metrics are **live**. AI-01 (spend), AI-02 (cost per
+> PR/dev-day), and AI-03 (adoption rate) are computed by `AiCostTrackQueryService` in api-core
+> from `staging.ai_usage_state` (populated by `connector-ai-telemetry` reading Claude Code /
+> GitHub Copilot usage-report files — see that connector's README for the file→real-API swap
+> seam). AI-03's adoption rate is combined across tools, not per-tool, since Claude Code and
+> Copilot identities aren't cross-tool resolved yet (an engineer using both counts as two
+> distinct active users); the query service caps the computed rate at 100% to compensate.
+> **AI-04** (cycle-time delta, a reduced scope of the full AI-assisted-vs-non-AI delta — CFR and
+> rework segmentation aren't computed, since deploy↔PR linkage doesn't exist in the schema) and
+> **AI-05** (dollar ROI) went live the same day: `staging.pull_request_state.ai_assisted` (V13
+> migration) is detected from each PR's title/body/labels against known AI co-author trailer
+> conventions (Claude Code's `Co-authored-by: Claude` / `Generated with Claude Code`, GitHub
+> Copilot's equivalents) — the same heuristic the "AI-assisted commits" supporting metric above
+> already specified, applied to PRs since that's what's in the ingested payload. Both are `null`
+> in the API (not a fabricated zero) when a window has fewer than 3 merged PRs in either bucket.
+> All figures are computed by the real formula against sample usage/PR data shaped like each
+> vendor's real API schema — not a genuine enterprise export yet, and the UI says so via a
+> "Demo data · real API schema" badge rather than "Live". The methodology note (surfaced in both
+> the API response and the UI) explicitly caveats trailer-based attribution's undercount risk and
+> names all four org-configurable assumptions (Copilot seat cost, licensed seats, blended hourly
+> rate, and the 3-PR minimum-sample threshold).
 
 - **AI-01 Total AI spend:** `BRD:` BO-3, PG-3. **Definition:** sum of AI coding-assistant license
   and usage-based (token) cost across connected tools for the window. **Formula:**
@@ -182,6 +199,21 @@ Deploy/hotfix detection patterns are per-repo configurable (`METRICS_DEPLOY_WORK
 
 ## Changelog
 
+- 2026-08-21 (2) — AI-04/AI-05 went live: `staging.pull_request_state.ai_assisted` (V13
+  migration) detects AI co-author trailers on PR title/body/labels; `AiCostTrackQueryService`
+  segments merged-PR cycle time by that flag (AI-04) and derives hours-saved/dollar-value/ROI-
+  multiple from the delta (AI-05), both `null` below a 3-PR-per-bucket sample floor. Verified
+  against real data already in the dev DB: 5 genuinely AI-attributed PRs in a real connected
+  repo (`santifer/career-ops`, real `Co-authored-by: Claude` trailers) produced a real negative
+  ROI (-4.8×, AI-assisted PRs were slower in that small sample) — reported as-is, not floored,
+  with a small-sample caveat in the UI. AI Cost Track's "Live" badge changed to "Demo data · real
+  API schema" since the two usage-report files remain sample data shaped like each vendor's real
+  API, not a genuine enterprise export.
+- 2026-08-21 — AI-01/AI-02/AI-03 went live: new `connector-ai-telemetry` (Claude Code + Copilot
+  usage-report ingestion) and `staging.ai_usage_state` feed `AiCostTrackQueryService`; AI Cost
+  Track's Spend and Adoption tabs now show real computed figures instead of mock data. Fixed an
+  adoption-rate-over-100% bug (combined-across-tools double counting) by capping at 100% with an
+  in-UI methodology note. AI-04/AI-05 still pending PR-level AI-attribution.
 - 2026-07-14 — time-to-value (TTV) definition authored (E1-S5): `GET /api/v1/setup/status`
   serves the onboarding checklist + `minutesToValue`/`withinTarget`, derived from existing
   staging/mart timestamps.

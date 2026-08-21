@@ -11,6 +11,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,13 +63,37 @@ class StagingEventWriterIntegrationTest {
                     last_checked_at  TIMESTAMPTZ NOT NULL
                 )
                 """);
+        // Mirrors api-core's V12 migration — needed since the constructor now always requires a
+        // seat-cost value, even though these tests only exercise the raw_event/github path.
+        jdbc.execute("""
+                CREATE TABLE staging.ai_usage_state (
+                    source                TEXT NOT NULL,
+                    actor_key             TEXT NOT NULL,
+                    day                   DATE NOT NULL,
+                    sessions              INT,
+                    loc_added             INT,
+                    loc_removed           INT,
+                    commits               INT,
+                    prs                   INT,
+                    cost_usd              NUMERIC,
+                    tokens_input          BIGINT,
+                    tokens_output         BIGINT,
+                    prompts               INT,
+                    requests              INT,
+                    accepted_suggestions  INT,
+                    rejected_suggestions  INT,
+                    primary_surface       TEXT,
+                    last_received_at      TIMESTAMPTZ NOT NULL,
+                    PRIMARY KEY (source, actor_key, day)
+                )
+                """);
     }
 
     @BeforeEach
     void setUp() {
         jdbc.update("DELETE FROM staging.raw_event");
         jdbc.update("DELETE FROM staging.connector_activity");
-        writer = new StagingEventWriter(jdbc, MAPPER);
+        writer = new StagingEventWriter(jdbc, MAPPER, BigDecimal.valueOf(19));
     }
 
     @Test

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# Single-command local dev startup: infra (Postgres + RabbitMQ) + all seven backend services.
+# Single-command local dev startup: infra (Postgres + RabbitMQ) + all eight backend services.
+# connector-ai-telemetry needs CLAUDE_CODE_USAGE_FILE / COPILOT_USAGE_FILE exported before
+# running this script to actually backfill anything (it starts fine without them, same as
+# connector-github starts fine without GITHUB_TOKEN) — point them at
+# infra/sample-data/claude-code-usage-report.json / copilot-usage-report.ndjson locally.
 # Builds once, starts each service detached, waits for /actuator/health, then returns control
 # to the shell (services keep running in the background — use stop-backend.sh to tear down).
 set -euo pipefail
@@ -30,6 +34,7 @@ start connector-jira           connectors/connector-jira       8083
 start metrics-engine           metrics-engine                  8084
 start identity-service         identity-service                8085
 start connector-jenkins        connectors/connector-jenkins    8086
+start connector-ai-telemetry   connectors/connector-ai-telemetry 8087
 
 wait_healthy() { # url, name
   for _ in $(seq 1 60); do
@@ -47,8 +52,9 @@ wait_healthy http://localhost:8083/actuator/health "connector-jira"
 wait_healthy http://localhost:8084/actuator/health "metrics-engine"
 wait_healthy http://localhost:8085/actuator/health "identity-service"
 wait_healthy http://localhost:8086/actuator/health "connector-jenkins"
+wait_healthy http://localhost:8087/actuator/health "connector-ai-telemetry"
 
 echo
-echo "All 7 backend services + infra are up. PIDs recorded in $PID_FILE."
+echo "All 8 backend services + infra are up. PIDs recorded in $PID_FILE."
 echo "Frontend: cd frontend && npm install && npm run dev"
 echo "Stop everything: ./infra/stop-backend.sh"

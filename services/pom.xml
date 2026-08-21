@@ -34,5 +34,6 @@
     <module>connectors/connector-github</module>
     <module>connectors/connector-jira</module>
     <module>connectors/connector-jenkins</module>
+    <module>connectors/connector-ai-telemetry</module>
   </modules>
 </project>

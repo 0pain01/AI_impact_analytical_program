@@ -17,11 +17,12 @@ freshness alert), replay tooling.
 
 ## Configuration (env vars)
 
-| Var | Default |
-|---|---|
-| `DB_URL` / `DB_USERNAME` / `DB_PASSWORD` | local Postgres defaults |
-| `RABBITMQ_HOST/PORT/USERNAME/PASSWORD` | localhost defaults |
-| `SERVER_PORT` | `8082` |
+| Var | Default | Purpose |
+|---|---|---|
+| `DB_URL` / `DB_USERNAME` / `DB_PASSWORD` | local Postgres defaults | |
+| `RABBITMQ_HOST/PORT/USERNAME/PASSWORD` | localhost defaults | |
+| `SERVER_PORT` | `8082` | |
+| `COPILOT_MONTHLY_SEAT_COST_USD` | `19` | Per-seat monthly cost allocated across a Copilot user's active days only (its usage export carries no per-request dollar cost) — feeds `staging.ai_usage_state.cost_usd` |
 
 ## Tests
 

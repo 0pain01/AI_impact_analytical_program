@@ -29,6 +29,9 @@ Health: `GET http://localhost:8080/actuator/health`
 | `DB_USERNAME` / `DB_PASSWORD` | `aiimpacteval` / `aiimpacteval_local` | DB credentials (local defaults only) |
 | `SERVER_PORT` | `8080` | HTTP port |
 | `CONNECTOR_GITHUB_BASE_URL` | `http://localhost:8081` | Where `ConnectorAdminService` calls connector-github's internal backfill endpoints when an ADMIN connects a repo/org from the Admin console |
+| `COPILOT_MONTHLY_SEAT_COST_USD` | `19` | Per-seat monthly cost for AI Cost Track's assumptions block — must match ingestion-writer's own copy (see its README); both compute against the same dollar figure independently rather than one reading it back from the other |
+| `AI_LICENSED_SEATS` | `30` | Denominator for AI-03 adoption rate — combined across every connected AI-telemetry tool (see metric-definitions.md's AI adoption/spend/ROI status note on why this is capped at 100%) |
+| `AI_BLENDED_HOURLY_RATE_USD` | `85` | AI-05 ROI's dollar-per-hour conversion for `estimatedHoursSaved → dollarValueRecovered` — an explicit, adjustable assumption, never a hidden constant |
 
 ## Tests
 
@@ -49,6 +52,7 @@ Contract-first: [`src/main/resources/openapi/api-core.yml`](src/main/resources/o
 | `GET /api/v1/setup/status` | ADMIN, ENG_LEADER | Onboarding checklist (git/ticketing/CI/dashboard readiness) and time-to-value figure, derived from staging/mart timestamps (E1-S5) |
 | `GET /api/v1/audit?limit=100` | ADMIN | Recent audit entries, newest first (E8-S3) |
 | `GET /api/v1/admin/connectors` | ADMIN | Per-connector health (status/last sync/event count) derived from `staging.raw_event` timestamps (E1-S4/E8) |
+| `GET /api/v1/metrics/ai-cost-track?days=30` | analytical roles | AI spend/adoption/impact/ROI KPIs (E9, AI-01..AI-05) from `staging.ai_usage_state` and `staging.pull_request_state.ai_assisted`; `impact`/`roi` are `null` when a window's AI-assisted or non-AI-assisted PR sample has fewer than 3 merged PRs |
 | `GET /actuator/health` | public | Liveness/readiness |
 
 Get a token then call a protected endpoint:

@@ -2,6 +2,55 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-08-21 (5)
+- AI Cost Track's Impact and ROI tabs (AI-04/AI-05, PRD E9) went live — they previously showed
+  "Not available yet" because nothing anywhere flagged which PRs were AI-assisted. Added
+  `staging.pull_request_state.ai_assisted` (V13 migration): `StagingEventWriter` detects it from
+  each PR's title/body/labels against known AI co-author trailer conventions (Claude Code's
+  `Co-authored-by: Claude` / `Generated with Claude Code`, GitHub Copilot's equivalents) — same
+  heuristic metric-definitions.md's "AI-assisted commits" supporting metric already specified,
+  applied to PRs since that's what's already in the ingested payload (no new API calls needed).
+  New `AiCostTrackQueryService.queryImpact`/`computeRoi` segment merged-PR cycle time (created→
+  merged) by that flag and derive `estimatedHoursSaved`/`dollarValueRecovered`/`roiMultiple` per
+  AI-05's documented formula, both `null` (not a fabricated zero) when a window has fewer than 3
+  merged PRs in either bucket. New `AI_BLENDED_HOURLY_RATE_USD` assumption (default $85/hr).
+  Verified against real data already in the dev DB, not synthetic: the connected
+  `santifer/career-ops` repo has 5 real merged PRs carrying genuine `Co-authored-by: Claude
+  Opus 4.8` trailers, which produced a real, honestly-negative result (-4.8× ROI — those 5
+  AI-assisted PRs had a slower median cycle time than the 1,143 non-AI-assisted ones in the same
+  window) surfaced as-is rather than floored at zero, with a small-sample caveat banner since n=5
+  is thin. Also extended `infra/generate-seed-events.py` to mark ~40% of its synthetic demo PRs
+  as AI-assisted (for orgs without real AI-attributed PR history to exercise the feature against)
+  and changed AI Cost Track's "Live" badge to "Demo data · real API schema" — the underlying
+  Claude Code/Copilot usage-report files are still sample data shaped like each vendor's real API
+  response, not a genuine enterprise export, and the UI now says so explicitly instead of
+  implying live production telemetry.
+
+## 2026-08-21 (4)
+- New `connector-ai-telemetry` service (PRD E9, AI-01/AI-02/AI-03) + `staging.ai_usage_state`
+  (V12 migration): ingests real-shaped Claude Code and GitHub Copilot usage-report files (user-
+  provided samples matching Anthropic's Admin API / GitHub's Copilot Metrics API response shapes
+  verbatim) and publishes `usage.snapshot` events; `StagingEventWriter.upsertAiUsageState`
+  normalizes both tools' very different payloads into one common per-`(source, actor, day)` row —
+  Claude Code's real per-day dollar cost summed across `model_breakdown[]`, Copilot's flat-fee
+  seat cost (`COPILOT_MONTHLY_SEAT_COST_USD`) allocated only across active days since its export
+  carries no per-request cost. Deliberately architected as a file-read seam
+  (`ClaudeCodeUsageBackfillService.readReport()` / `CopilotUsageBackfillService.readReportLines()`)
+  so swapping in genuine enterprise-provided JSON later needs no downstream changes — every event
+  shape, the projection table, and the API stay the same.
+  New `AiCostTrackQueryService`/`AiCostTrackController` (`GET /api/v1/metrics/ai-cost-track`)
+  replace the AI Cost Track page's mock data (`frontend/src/mock/mockData.ts`'s `aiCostTrack`
+  export deleted) with live spend/adoption KPIs; `AiCostTrack.tsx` rewritten to fetch real data
+  with loading/error states and an honest "Not available yet" state on Impact/ROI (AI-04/AI-05),
+  which still need PR-level AI-attribution and are not implemented. Caught and fixed a real bug
+  during live verification: adoption rate showed 125% because `COUNT(DISTINCT actor_key)` sums
+  across both tools with no cross-tool identity resolution (11 Claude Code + 14 Copilot actors ÷
+  20 assumed seats) — capped the rate at 100% in `AiCostTrackQueryService`, bumped the default
+  `AI_LICENSED_SEATS` 20→30, and surfaced the methodology caveat in both the API response and UI
+  rather than hiding the cap. Added as an 8th service to `infra/start-backend.sh`. Verified
+  end-to-end: unit-level DB checks, direct API calls, and a real browser session across all 4 tabs
+  with zero console errors.
+
 ## 2026-08-21 (3)
 - Fixed a real UX bug: the Admin Connectors panel's "last sync" came solely from
   `MAX(staging.raw_event.received_at)`, which only advances when a genuinely NEW row lands —

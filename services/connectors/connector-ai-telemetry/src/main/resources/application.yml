@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: connector-ai-telemetry
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:aiimpacteval}
+    password: ${RABBITMQ_PASSWORD:aiimpacteval_local}
+    publisher-confirm-type: correlated
+
+server:
+  port: ${SERVER_PORT:8087}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+ai-telemetry:
+  claude-code:
+    # Points at a real Anthropic Admin API usage-report export today; the intended swap is an
+    # authenticated HTTP call to that same endpoint later — the file's shape already matches its
+    # response verbatim, so nothing downstream of ClaudeCodeUsageBackfillService.readReport()
+    # changes when that happens.
+    usage-file-path: ${CLAUDE_CODE_USAGE_FILE:}
+  copilot:
+    # Same swap-later seam as above, for GitHub's Copilot Metrics/enterprise usage export.
+    usage-file-path: ${COPILOT_USAGE_FILE:}

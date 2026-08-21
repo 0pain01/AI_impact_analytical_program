@@ -31,6 +31,24 @@ connectors:
     # curl would, just server-to-server.
     base-url: ${CONNECTOR_GITHUB_BASE_URL:http://localhost:8081}
 
+ai-cost:
+  # Org-configurable AI Cost Track assumptions (AI-01/AI-03 edge cases, metric-definitions.md) —
+  # surfaced back in the API response, never hidden constants. Must match ingestion-writer's own
+  # copy of the Copilot seat-cost value (see its application.yml) — both compute against the
+  # same real dollar figure, api-core just re-derives it for display in the assumptions block
+  # rather than reading it back out of staged rows.
+  copilot:
+    monthly-seat-cost-usd: ${COPILOT_MONTHLY_SEAT_COST_USD:19}
+  # Combined across every AI-telemetry tool, not per-tool — Claude Code and Copilot identities
+  # aren't cross-tool resolved yet, so a real person using both counts as two distinct active
+  # users; the query service caps adoptionRate at 100% to compensate. 30 is a reasonable default
+  # for an org running two AI-coding tools; tune to the real provisioned seat count.
+  licensed-seats: ${AI_LICENSED_SEATS:30}
+  # AI-05 ROI's dollar-per-hour conversion — an explicit, adjustable assumption surfaced in the
+  # API response (never a hidden constant), per the BRD's "calculation assumptions visible and
+  # adjustable" requirement.
+  blended-hourly-rate-usd: ${AI_BLENDED_HOURLY_RATE_USD:85}
+
 management:
   endpoints:
     web:

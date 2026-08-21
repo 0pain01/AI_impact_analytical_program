@@ -1,0 +1,4686 @@
+{
+  "data": [
+    {
+      "date": "2026-07-23T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 9,
+        "lines_of_code": {
+          "added": 1037,
+          "removed": 308
+        },
+        "commits_by_claude_code": 5,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 39,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 8,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 99775,
+            "output": 27829,
+            "cache_read": 54160,
+            "cache_creation": 5053
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 25
+          }
+        },
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 173533,
+            "output": 50292,
+            "cache_read": 69773,
+            "cache_creation": 11374
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 89
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-23T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 4,
+        "lines_of_code": {
+          "added": 453,
+          "removed": 91
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 18,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 35895,
+            "output": 10270,
+            "cache_read": 19093,
+            "cache_creation": 5331
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 10
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-23T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "ravi.chandran@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 208,
+          "removed": 59
+        },
+        "commits_by_claude_code": 0,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 13,
+          "rejected": 0
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 39599,
+            "output": 11784,
+            "cache_read": 14600,
+            "cache_creation": 2107
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 21
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-23T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "lucas.moretti@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 4,
+        "lines_of_code": {
+          "added": 316,
+          "removed": 60
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 28,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 54366,
+            "output": 13152,
+            "cache_read": 32579,
+            "cache_creation": 5488
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 13
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-24T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 4,
+        "lines_of_code": {
+          "added": 645,
+          "removed": 218
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 33,
+          "rejected": 4
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 86425,
+            "output": 25598,
+            "cache_read": 39090,
+            "cache_creation": 5240
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 22
+          }
+        },
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 67016,
+            "output": 20384,
+            "cache_read": 30311,
+            "cache_creation": 4683
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 36
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-24T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 1,
+        "lines_of_code": {
+          "added": 135,
+          "removed": 20
+        },
+        "commits_by_claude_code": 0,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 8,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 0,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 14803,
+            "output": 3359,
+            "cache_read": 7818,
+            "cache_creation": 1873
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 3
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-24T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 9,
+        "lines_of_code": {
+          "added": 1522,
+          "removed": 412
+        },
+        "commits_by_claude_code": 7,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 69,
+          "rejected": 8
+        },
+        "multi_edit_tool": {
+          "accepted": 14,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 9,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 103236,
+            "output": 23372,
+            "cache_read": 31622,
+            "cache_creation": 10880
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 118
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-24T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "fatima.alsayed@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 4,
+        "lines_of_code": {
+          "added": 266,
+          "removed": 41
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 21,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 77219,
+            "output": 18458,
+            "cache_read": 25411,
+            "cache_creation": 7189
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 36
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-24T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "ravi.chandran@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 105,
+          "removed": 31
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 9,
+          "rejected": 0
+        },
+        "multi_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 18741,
+            "output": 5345,
+            "cache_read": 8661,
+            "cache_creation": 964
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 5
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-27T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 8,
+        "lines_of_code": {
+          "added": 1474,
+          "removed": 291
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 43,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 13,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 87873,
+            "output": 21662,
+            "cache_read": 50964,
+            "cache_creation": 12134
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 22
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-27T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 8,
+        "lines_of_code": {
+          "added": 1251,
+          "removed": 340
+        },
+        "commits_by_claude_code": 6,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 32,
+          "rejected": 4
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 11,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 125961,
+            "output": 31141,
+            "cache_read": 60643,
+            "cache_creation": 15337
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 31
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-27T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 9,
+        "lines_of_code": {
+          "added": 1149,
+          "removed": 381
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 73,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 13,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 86096,
+            "output": 27077,
+            "cache_read": 43677,
+            "cache_creation": 5588
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 47
+          }
+        },
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 76539,
+            "output": 19664,
+            "cache_read": 35648,
+            "cache_creation": 7116
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 94
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-27T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "fatima.alsayed@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 7,
+        "lines_of_code": {
+          "added": 1022,
+          "removed": 337
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 31,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 12,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 7,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 151668,
+            "output": 45663,
+            "cache_read": 85605,
+            "cache_creation": 7959
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 199
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-28T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 9,
+        "lines_of_code": {
+          "added": 1036,
+          "removed": 292
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 39,
+          "rejected": 4
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 10,
+          "rejected": 1
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 182506,
+            "output": 44918,
+            "cache_read": 86540,
+            "cache_creation": 27075
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 225
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-28T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 219,
+          "removed": 59
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 13,
+          "rejected": 0
+        },
+        "multi_edit_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 26198,
+            "output": 5946,
+            "cache_read": 13079,
+            "cache_creation": 2174
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 6
+          }
+        },
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 24789,
+            "output": 7555,
+            "cache_read": 12789,
+            "cache_creation": 1983
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 33
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-28T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 865,
+          "removed": 162
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 38,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 72549,
+            "output": 19168,
+            "cache_read": 26415,
+            "cache_creation": 7060
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 18
+          }
+        },
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 103082,
+            "output": 30883,
+            "cache_read": 36172,
+            "cache_creation": 6028
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 54
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-28T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "fatima.alsayed@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 546,
+          "removed": 169
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 53,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 8,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 89527,
+            "output": 21880,
+            "cache_read": 44478,
+            "cache_creation": 4525
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 42
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-28T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "grace.lindqvist@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 702,
+          "removed": 183
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 28,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 122929,
+            "output": 32290,
+            "cache_read": 70322,
+            "cache_creation": 11628
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 31
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-29T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 957,
+          "removed": 170
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 45,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 119965,
+            "output": 35576,
+            "cache_read": 49679,
+            "cache_creation": 6068
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 31
+          }
+        },
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 77547,
+            "output": 22903,
+            "cache_read": 43118,
+            "cache_creation": 11270
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 105
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-29T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 898,
+          "removed": 222
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 29,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 8,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 81432,
+            "output": 23313,
+            "cache_read": 26480,
+            "cache_creation": 7561
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 105
+          }
+        },
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 100679,
+            "output": 23979,
+            "cache_read": 38061,
+            "cache_creation": 8329
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 47
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-29T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 7,
+        "lines_of_code": {
+          "added": 1419,
+          "removed": 448
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 28,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 13,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 7,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 75537,
+            "output": 16772,
+            "cache_read": 26114,
+            "cache_creation": 4730
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 84
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-29T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "marco.dias@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 3,
+        "lines_of_code": {
+          "added": 207,
+          "removed": 56
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 24,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 63541,
+            "output": 15239,
+            "cache_read": 30349,
+            "cache_creation": 8454
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 31
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-29T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "grace.lindqvist@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 792,
+          "removed": 137
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 34,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 84415,
+            "output": 21628,
+            "cache_read": 47903,
+            "cache_creation": 8101
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 104
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-30T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 9,
+        "lines_of_code": {
+          "added": 1437,
+          "removed": 390
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 74,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 73279,
+            "output": 23068,
+            "cache_read": 23865,
+            "cache_creation": 8940
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 20
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-30T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "marco.dias@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 1,
+        "lines_of_code": {
+          "added": 94,
+          "removed": 14
+        },
+        "commits_by_claude_code": 0,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "multi_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 0,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 17839,
+            "output": 4407,
+            "cache_read": 6697,
+            "cache_creation": 1107
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 8
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-31T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 757,
+          "removed": 220
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 25,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 11,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 7,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 88211,
+            "output": 22411,
+            "cache_read": 52013,
+            "cache_creation": 6637
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 43
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-31T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 8,
+        "lines_of_code": {
+          "added": 1129,
+          "removed": 324
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 69,
+          "rejected": 4
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 165752,
+            "output": 41394,
+            "cache_read": 78990,
+            "cache_creation": 15395
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 80
+          }
+        },
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 127686,
+            "output": 28859,
+            "cache_read": 75083,
+            "cache_creation": 7651
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 29
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-31T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 7,
+        "lines_of_code": {
+          "added": 881,
+          "removed": 229
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 52,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 133207,
+            "output": 37631,
+            "cache_read": 66384,
+            "cache_creation": 19097
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 70
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-31T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "fatima.alsayed@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 432,
+          "removed": 77
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 34,
+          "rejected": 4
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 75033,
+            "output": 20212,
+            "cache_read": 24320,
+            "cache_creation": 4050
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 37
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-07-31T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "ravi.chandran@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 4,
+        "lines_of_code": {
+          "added": 467,
+          "removed": 124
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 32,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 56409,
+            "output": 17003,
+            "cache_read": 33321,
+            "cache_creation": 5471
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 15
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-03T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 310,
+          "removed": 63
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 10,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 25516,
+            "output": 7623,
+            "cache_read": 9699,
+            "cache_creation": 1282
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 13
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-03T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 4,
+        "lines_of_code": {
+          "added": 627,
+          "removed": 154
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 23,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 49817,
+            "output": 13315,
+            "cache_read": 28596,
+            "cache_creation": 4390
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 62
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-03T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "marco.dias@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 264,
+          "removed": 85
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 12,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 0,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 33451,
+            "output": 8688,
+            "cache_read": 10841,
+            "cache_creation": 2771
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 16
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-04T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 459,
+          "removed": 96
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 21,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 82664,
+            "output": 21348,
+            "cache_read": 41740,
+            "cache_creation": 8247
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 102
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-04T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 950,
+          "removed": 313
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 33,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 53945,
+            "output": 13943,
+            "cache_read": 24003,
+            "cache_creation": 3976
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 26
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-05T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 8,
+        "lines_of_code": {
+          "added": 1066,
+          "removed": 295
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 60,
+          "rejected": 6
+        },
+        "multi_edit_tool": {
+          "accepted": 14,
+          "rejected": 2
+        },
+        "write_tool": {
+          "accepted": 11,
+          "rejected": 1
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 128912,
+            "output": 37801,
+            "cache_read": 42159,
+            "cache_creation": 10249
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 167
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-05T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 8,
+        "lines_of_code": {
+          "added": 1508,
+          "removed": 386
+        },
+        "commits_by_claude_code": 6,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 42,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 9,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 148464,
+            "output": 36011,
+            "cache_read": 74662,
+            "cache_creation": 17435
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 179
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-05T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "ravi.chandran@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 203,
+          "removed": 57
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 17,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 34134,
+            "output": 9678,
+            "cache_read": 14994,
+            "cache_creation": 4099
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 45
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-05T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "lucas.moretti@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 257,
+          "removed": 50
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 35,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 56317,
+            "output": 15145,
+            "cache_read": 23790,
+            "cache_creation": 8174
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 14
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-06T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 7,
+        "lines_of_code": {
+          "added": 1317,
+          "removed": 447
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 35,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 13,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 137322,
+            "output": 37821,
+            "cache_read": 65353,
+            "cache_creation": 18031
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 178
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-06T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 11,
+        "lines_of_code": {
+          "added": 994,
+          "removed": 319
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 57,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 16,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 114833,
+            "output": 25864,
+            "cache_read": 60002,
+            "cache_creation": 11782
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 132
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-06T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "ravi.chandran@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 1,
+        "lines_of_code": {
+          "added": 51,
+          "removed": 15
+        },
+        "commits_by_claude_code": 0,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "multi_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 0,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 9028,
+            "output": 2059,
+            "cache_read": 4355,
+            "cache_creation": 510
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 4
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-07T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 3,
+        "lines_of_code": {
+          "added": 483,
+          "removed": 156
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 18,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 62765,
+            "output": 14229,
+            "cache_read": 34491,
+            "cache_creation": 3723
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 14
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-07T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 395,
+          "removed": 134
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 30,
+          "rejected": 4
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 47252,
+            "output": 12793,
+            "cache_read": 16368,
+            "cache_creation": 4641
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 24
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-07T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 790,
+          "removed": 154
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 47,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 70954,
+            "output": 21019,
+            "cache_read": 40902,
+            "cache_creation": 6038
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 94
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-07T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "ravi.chandran@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 3,
+        "lines_of_code": {
+          "added": 323,
+          "removed": 62
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 17,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 26090,
+            "output": 5952,
+            "cache_read": 11295,
+            "cache_creation": 2410
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 6
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-08T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 9,
+        "lines_of_code": {
+          "added": 1845,
+          "removed": 558
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 58,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 122030,
+            "output": 35901,
+            "cache_read": 52578,
+            "cache_creation": 11711
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 161
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-10T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 7,
+        "lines_of_code": {
+          "added": 781,
+          "removed": 211
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 34,
+          "rejected": 4
+        },
+        "multi_edit_tool": {
+          "accepted": 8,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 8,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 140696,
+            "output": 39777,
+            "cache_read": 48580,
+            "cache_creation": 7995
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 35
+          }
+        },
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 99336,
+            "output": 24862,
+            "cache_read": 37986,
+            "cache_creation": 5524
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 47
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-10T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 859,
+          "removed": 142
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 35,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 62506,
+            "output": 16724,
+            "cache_read": 21580,
+            "cache_creation": 3512
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 15
+          }
+        },
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 47245,
+            "output": 14641,
+            "cache_read": 19041,
+            "cache_creation": 5737
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 65
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-10T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 843,
+          "removed": 229
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 29,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 59890,
+            "output": 17510,
+            "cache_read": 29763,
+            "cache_creation": 8422
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 16
+          }
+        },
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 101129,
+            "output": 25619,
+            "cache_read": 48018,
+            "cache_creation": 6486
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 48
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-10T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "ravi.chandran@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 3,
+        "lines_of_code": {
+          "added": 278,
+          "removed": 77
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 22,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 39229,
+            "output": 9337,
+            "cache_read": 14289,
+            "cache_creation": 5679
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 47
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-11T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 9,
+        "lines_of_code": {
+          "added": 1508,
+          "removed": 272
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 64,
+          "rejected": 8
+        },
+        "multi_edit_tool": {
+          "accepted": 14,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 101484,
+            "output": 24753,
+            "cache_read": 59842,
+            "cache_creation": 13034
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 50
+          }
+        },
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 185900,
+            "output": 44504,
+            "cache_read": 93599,
+            "cache_creation": 19899
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 44
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-11T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 676,
+          "removed": 232
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 23,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 45871,
+            "output": 10826,
+            "cache_read": 19944,
+            "cache_creation": 4648
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 22
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-11T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 12,
+        "lines_of_code": {
+          "added": 2672,
+          "removed": 898
+        },
+        "commits_by_claude_code": 6,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 70,
+          "rejected": 6
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 8,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 119116,
+            "output": 29622,
+            "cache_read": 65386,
+            "cache_creation": 14247
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 146
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-11T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "emma.fitzgerald@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 3,
+        "lines_of_code": {
+          "added": 323,
+          "removed": 87
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 15,
+          "rejected": 0
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 49063,
+            "output": 10874,
+            "cache_read": 22304,
+            "cache_creation": 3640
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 22
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-11T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "nadia.kowalski@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 125,
+          "removed": 35
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 17,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 0,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 43469,
+            "output": 10665,
+            "cache_read": 13252,
+            "cache_creation": 5601
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 21
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-12T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 4,
+        "lines_of_code": {
+          "added": 801,
+          "removed": 229
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 19,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 84268,
+            "output": 22881,
+            "cache_read": 50285,
+            "cache_creation": 8789
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 43
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-12T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 4,
+        "lines_of_code": {
+          "added": 701,
+          "removed": 111
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 31,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 83761,
+            "output": 22776,
+            "cache_read": 45259,
+            "cache_creation": 10278
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 43
+          }
+        },
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 36419,
+            "output": 10206,
+            "cache_read": 19910,
+            "cache_creation": 3807
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 9
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-12T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 941,
+          "removed": 276
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 37,
+          "rejected": 4
+        },
+        "multi_edit_tool": {
+          "accepted": 11,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 104379,
+            "output": 27203,
+            "cache_read": 47380,
+            "cache_creation": 13046
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 131
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-12T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "marco.dias@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 114,
+          "removed": 18
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 11,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 19855,
+            "output": 5096,
+            "cache_read": 7829,
+            "cache_creation": 1546
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 5
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-12T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "grace.lindqvist@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 998,
+          "removed": 173
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 30,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 123489,
+            "output": 32664,
+            "cache_read": 40299,
+            "cache_creation": 14595
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 155
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-13T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 11,
+        "lines_of_code": {
+          "added": 1288,
+          "removed": 320
+        },
+        "commits_by_claude_code": 5,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 69,
+          "rejected": 10
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 151262,
+            "output": 39470,
+            "cache_read": 71466,
+            "cache_creation": 9458
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 37
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-13T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 226,
+          "removed": 73
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 0,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 25034,
+            "output": 7283,
+            "cache_read": 10108,
+            "cache_creation": 3607
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 33
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-13T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "fatima.alsayed@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 3,
+        "lines_of_code": {
+          "added": 217,
+          "removed": 45
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 14,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 25730,
+            "output": 7883,
+            "cache_read": 8345,
+            "cache_creation": 3727
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 7
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-14T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 9,
+        "lines_of_code": {
+          "added": 1366,
+          "removed": 260
+        },
+        "commits_by_claude_code": 5,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 68,
+          "rejected": 8
+        },
+        "multi_edit_tool": {
+          "accepted": 16,
+          "rejected": 3
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 130775,
+            "output": 32268,
+            "cache_read": 48958,
+            "cache_creation": 7804
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 153
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-15T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "tomas.reyes@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 86,
+          "removed": 19
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 8,
+          "rejected": 0
+        },
+        "multi_edit_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 35051,
+            "output": 8127,
+            "cache_read": 20768,
+            "cache_creation": 3133
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 8
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-16T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 11,
+        "lines_of_code": {
+          "added": 2162,
+          "removed": 548
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 51,
+          "rejected": 7
+        },
+        "multi_edit_tool": {
+          "accepted": 10,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 11,
+          "rejected": 1
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 197145,
+            "output": 49282,
+            "cache_read": 107389,
+            "cache_creation": 17119
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 48
+          }
+        },
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 191766,
+            "output": 60979,
+            "cache_read": 91110,
+            "cache_creation": 24867
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 107
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-17T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 8,
+        "lines_of_code": {
+          "added": 1141,
+          "removed": 265
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 56,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 14,
+          "rejected": 2
+        },
+        "write_tool": {
+          "accepted": 9,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 99140,
+            "output": 23527,
+            "cache_read": 56870,
+            "cache_creation": 8350
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 47
+          }
+        },
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 103680,
+            "output": 30813,
+            "cache_read": 53527,
+            "cache_creation": 11853
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 28
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-17T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 833,
+          "removed": 162
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 32,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 58237,
+            "output": 16752,
+            "cache_read": 24104,
+            "cache_creation": 8620
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 31
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-18T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 888,
+          "removed": 227
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 30,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 105452,
+            "output": 32462,
+            "cache_read": 46739,
+            "cache_creation": 7375
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 28
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-18T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 165,
+          "removed": 43
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 17,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 21216,
+            "output": 6256,
+            "cache_read": 11916,
+            "cache_creation": 1674
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 11
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-18T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 1424,
+          "removed": 294
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 38,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 10,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 69610,
+            "output": 16610,
+            "cache_read": 36265,
+            "cache_creation": 8985
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 17
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-18T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "fatima.alsayed@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 7,
+        "lines_of_code": {
+          "added": 998,
+          "removed": 252
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 34,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 85590,
+            "output": 25016,
+            "cache_read": 25970,
+            "cache_creation": 9874
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 45
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-18T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "marco.dias@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 452,
+          "removed": 113
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 27,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 5,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 71848,
+            "output": 22911,
+            "cache_read": 29607,
+            "cache_creation": 8635
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 100
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-19T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 9,
+        "lines_of_code": {
+          "added": 1010,
+          "removed": 259
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 55,
+          "rejected": 6
+        },
+        "multi_edit_tool": {
+          "accepted": 14,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 12,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 124343,
+            "output": 34367,
+            "cache_read": 58147,
+            "cache_creation": 14582
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 32
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-19T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 2,
+        "lines_of_code": {
+          "added": 322,
+          "removed": 85
+        },
+        "commits_by_claude_code": 0,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 8,
+          "rejected": 1
+        },
+        "multi_edit_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 43393,
+            "output": 12349,
+            "cache_read": 18490,
+            "cache_creation": 6477
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 12
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-19T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 10,
+        "lines_of_code": {
+          "added": 1020,
+          "removed": 349
+        },
+        "commits_by_claude_code": 7,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 83,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 19,
+          "rejected": 2
+        },
+        "write_tool": {
+          "accepted": 4,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 144820,
+            "output": 42274,
+            "cache_read": 61872,
+            "cache_creation": 12733
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 76
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-19T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "fatima.alsayed@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 4,
+        "lines_of_code": {
+          "added": 614,
+          "removed": 181
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 24,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 2,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 69633,
+            "output": 21392,
+            "cache_read": 26002,
+            "cache_creation": 3789
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 18
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-19T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "marco.dias@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 295,
+          "removed": 73
+        },
+        "commits_by_claude_code": 2,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 38,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 76487,
+            "output": 19990,
+            "cache_read": 29259,
+            "cache_creation": 8082
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 19
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-20T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 1,
+        "lines_of_code": {
+          "added": 126,
+          "removed": 36
+        },
+        "commits_by_claude_code": 0,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "multi_edit_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 0,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 9294,
+            "output": 2718,
+            "cache_read": 3319,
+            "cache_creation": 714
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 5
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-20T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 7,
+        "lines_of_code": {
+          "added": 1216,
+          "removed": 298
+        },
+        "commits_by_claude_code": 5,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 61,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 13,
+          "rejected": 2
+        },
+        "write_tool": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 115231,
+            "output": 27707,
+            "cache_read": 66204,
+            "cache_creation": 12123
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 28
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-21T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "priya.nair@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "tmux",
+      "core_metrics": {
+        "num_sessions": 7,
+        "lines_of_code": {
+          "added": 843,
+          "removed": 284
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 33,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 150717,
+            "output": 42829,
+            "cache_read": 67397,
+            "cache_creation": 10071
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 77
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-21T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "daniel.osei@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "Windows Terminal",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 910,
+          "removed": 235
+        },
+        "commits_by_claude_code": 3,
+        "pull_requests_by_claude_code": 1
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 20,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 9,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 6,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 89501,
+            "output": 19772,
+            "cache_read": 40429,
+            "cache_creation": 7815
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 101
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-21T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "wei.zhang@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 11,
+        "lines_of_code": {
+          "added": 1668,
+          "removed": 255
+        },
+        "commits_by_claude_code": 7,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 59,
+          "rejected": 5
+        },
+        "multi_edit_tool": {
+          "accepted": 17,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 15,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 117557,
+            "output": 32051,
+            "cache_read": 64017,
+            "cache_creation": 9020
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 148
+          }
+        },
+        {
+          "model": "claude-haiku-4-5-20251001",
+          "tokens": {
+            "input": 149122,
+            "output": 38369,
+            "cache_read": 62900,
+            "cache_creation": 15881
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 37
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-21T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "fatima.alsayed@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "vscode",
+      "core_metrics": {
+        "num_sessions": 5,
+        "lines_of_code": {
+          "added": 795,
+          "removed": 222
+        },
+        "commits_by_claude_code": 1,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 29,
+          "rejected": 2
+        },
+        "multi_edit_tool": {
+          "accepted": 7,
+          "rejected": 1
+        },
+        "write_tool": {
+          "accepted": 1,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-sonnet-5",
+          "tokens": {
+            "input": 79609,
+            "output": 24344,
+            "cache_read": 26160,
+            "cache_creation": 8185
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 43
+          }
+        }
+      ]
+    },
+    {
+      "date": "2026-08-21T00:00:00Z",
+      "actor": {
+        "type": "user_actor",
+        "email_address": "marco.dias@kpmg.com"
+      },
+      "organization_id": "dc9f6c26-b22c-4831-8d01-0446bada88f1",
+      "customer_type": "subscription",
+      "terminal_type": "iTerm.app",
+      "core_metrics": {
+        "num_sessions": 6,
+        "lines_of_code": {
+          "added": 630,
+          "removed": 128
+        },
+        "commits_by_claude_code": 4,
+        "pull_requests_by_claude_code": 0
+      },
+      "tool_actions": {
+        "edit_tool": {
+          "accepted": 32,
+          "rejected": 3
+        },
+        "multi_edit_tool": {
+          "accepted": 8,
+          "rejected": 0
+        },
+        "write_tool": {
+          "accepted": 7,
+          "rejected": 0
+        },
+        "notebook_edit_tool": {
+          "accepted": 0,
+          "rejected": 0
+        }
+      },
+      "model_breakdown": [
+        {
+          "model": "claude-opus-5",
+          "tokens": {
+            "input": 111189,
+            "output": 32386,
+            "cache_read": 46642,
+            "cache_creation": 6414
+          },
+          "estimated_cost": {
+            "currency": "USD",
+            "amount": 143
+          }
+        }
+      ]
+    }
+  ],
+  "has_more": false,
+  "next_page": null
+}

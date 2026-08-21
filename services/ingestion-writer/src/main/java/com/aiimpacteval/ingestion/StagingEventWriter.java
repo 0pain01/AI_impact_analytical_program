@@ -9,18 +9,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Persists every connector event into the immutable staging store.
@@ -56,6 +63,19 @@ import java.util.Set;
  * Jira re-checking issues nobody touched) correctly writes zero new rows, so that timestamp sat
  * frozen and made a healthy connector look stale. This table answers "did we hear from this
  * source at all," independent of "did anything change."
+ *
+ * <p>V12 added {@code staging.ai_usage_state} (PRD E9, AI-01/AI-02/AI-03) — one row per
+ * {@code (source, actor_key, day)} for {@code claude_code}/{@code copilot} usage snapshots from
+ * {@code connector-ai-telemetry}. Claude Code's report carries real per-day dollar cost; Copilot's
+ * doesn't (flat-fee seat product), so {@link #copilotDailyCost} allocates a configurable per-seat
+ * monthly price across active days only — never charged on a day with zero activity.
+ *
+ * <p>V13 added {@code pull_request_state.ai_assisted} (PRD E9, AI-04) — detected from each PR's
+ * title/body/labels against {@link #AI_ATTRIBUTION_PATTERN}, the known trailer/signature
+ * conventions AI coding assistants leave on PRs they helped author (same heuristic as the
+ * "AI-assisted commits" supporting metric, applied to PRs since that's what's already in the
+ * ingested payload). Lets {@code AiCostTrackQueryService} segment cycle time by AI attribution
+ * instead of showing "not available yet" for AI-04/AI-05.
  */
 @Component
 public class StagingEventWriter {
@@ -94,16 +114,25 @@ public class StagingEventWriter {
     private static final String UPSERT_PULL_REQUEST_SQL = """
             INSERT INTO staging.pull_request_state
                 (repo, pr_id, number, title, author, html_url, state, requested_reviewers,
-                 created_at, merged_at, last_received_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 created_at, merged_at, ai_assisted, last_received_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (repo, pr_id) DO UPDATE SET
                 number = EXCLUDED.number, title = EXCLUDED.title, author = EXCLUDED.author,
                 html_url = EXCLUDED.html_url, state = EXCLUDED.state,
                 requested_reviewers = EXCLUDED.requested_reviewers,
                 created_at = EXCLUDED.created_at, merged_at = EXCLUDED.merged_at,
+                ai_assisted = EXCLUDED.ai_assisted,
                 last_received_at = EXCLUDED.last_received_at
             WHERE EXCLUDED.last_received_at > staging.pull_request_state.last_received_at
             """;
+
+    // See V13 migration / class javadoc — mirrors metric-definitions.md's "AI-assisted commits
+    // (F8)" heuristic, matched against PR title + body + label names.
+    private static final Pattern AI_ATTRIBUTION_PATTERN = Pattern.compile(
+            "(co-authored-by:\\s*(claude|copilot|cursor)"
+                    + "|generated (with|by)\\s*(claude( code)?|copilot|cursor)"
+                    + "|claude[- ]assisted|copilot[- ]assisted)",
+            Pattern.CASE_INSENSITIVE);
 
     // Reviews can be dismissed after submission (state changes to DISMISSED), so this is a
     // guarded upsert like the others, not an insert-once.
@@ -135,6 +164,24 @@ public class StagingEventWriter {
             WHERE EXCLUDED.last_received_at > staging.jira_issue_state.last_received_at
             """;
 
+    // Per (source, actor_key, day) — see V12 migration and class javadoc.
+    private static final String UPSERT_AI_USAGE_SQL = """
+            INSERT INTO staging.ai_usage_state
+                (source, actor_key, day, sessions, loc_added, loc_removed, commits, prs, cost_usd,
+                 tokens_input, tokens_output, prompts, requests, accepted_suggestions,
+                 rejected_suggestions, primary_surface, last_received_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (source, actor_key, day) DO UPDATE SET
+                sessions = EXCLUDED.sessions, loc_added = EXCLUDED.loc_added,
+                loc_removed = EXCLUDED.loc_removed, commits = EXCLUDED.commits, prs = EXCLUDED.prs,
+                cost_usd = EXCLUDED.cost_usd, tokens_input = EXCLUDED.tokens_input,
+                tokens_output = EXCLUDED.tokens_output, prompts = EXCLUDED.prompts,
+                requests = EXCLUDED.requests, accepted_suggestions = EXCLUDED.accepted_suggestions,
+                rejected_suggestions = EXCLUDED.rejected_suggestions,
+                primary_surface = EXCLUDED.primary_surface, last_received_at = EXCLUDED.last_received_at
+            WHERE EXCLUDED.last_received_at > staging.ai_usage_state.last_received_at
+            """;
+
     private static final Set<String> WORKFLOW_RUN_EVENT_TYPES = Set.of("workflow_run", "workflow_run.snapshot");
     private static final Set<String> PULL_REQUEST_EVENT_TYPES = Set.of("pull_request", "pull_request.snapshot");
     private static final Set<String> PULL_REQUEST_REVIEW_EVENT_TYPES =
@@ -146,13 +193,18 @@ public class StagingEventWriter {
     private static final Set<String> TERMINAL_STATUS_NAMES = Set.of("done", "closed", "resolved");
     private static final Set<String> JENKINS_BUILD_EVENT_TYPES = Set.of("build.snapshot");
     private static final String JENKINS_GIT_BUILD_DATA_CLASS = "hudson.plugins.git.util.BuildData";
+    private static final Set<String> AI_USAGE_EVENT_TYPES = Set.of("usage.snapshot");
+    private static final int DAYS_PER_MONTH = 30;
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
+    private final BigDecimal copilotMonthlySeatCostUsd;
 
-    public StagingEventWriter(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
+    public StagingEventWriter(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper,
+                              @Value("${ai-cost.copilot.monthly-seat-cost-usd}") BigDecimal copilotMonthlySeatCostUsd) {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = objectMapper;
+        this.copilotMonthlySeatCostUsd = copilotMonthlySeatCostUsd;
     }
 
     @RabbitListener(queues = EventTopology.STAGING_QUEUE)
@@ -198,6 +250,9 @@ public class StagingEventWriter {
             upsertJiraIssueState(envelope);
         } else if ("jenkins".equals(envelope.source()) && JENKINS_BUILD_EVENT_TYPES.contains(envelope.eventType())) {
             upsertJenkinsBuildState(envelope);
+        } else if (("claude_code".equals(envelope.source()) || "copilot".equals(envelope.source()))
+                && AI_USAGE_EVENT_TYPES.contains(envelope.eventType())) {
+            upsertAiUsageState(envelope);
         }
         return true;
     }
@@ -241,6 +296,7 @@ public class StagingEventWriter {
         String[] requestedReviewers = extractLogins(pr.get("requested_reviewers"));
         Instant createdAt = instantOrNull(textOrNull(pr, "created_at"));
         Instant mergedAt = instantOrNull(textOrNull(pr, "merged_at"));
+        boolean aiAssisted = detectAiAssisted(pr);
 
         // Plain jdbcTemplate.update(...) can't portably bind a text[] parameter, so this one
         // needs a PreparedStatementCreator to call Connection.createArrayOf ourselves.
@@ -260,9 +316,28 @@ public class StagingEventWriter {
             ps.setArray(8, con.createArrayOf("text", requestedReviewers));
             ps.setTimestamp(9, createdAt == null ? null : Timestamp.from(createdAt));
             ps.setTimestamp(10, mergedAt == null ? null : Timestamp.from(mergedAt));
-            ps.setTimestamp(11, Timestamp.from(envelope.receivedAt()));
+            ps.setBoolean(11, aiAssisted);
+            ps.setTimestamp(12, Timestamp.from(envelope.receivedAt()));
             return ps;
         });
+    }
+
+    private static boolean detectAiAssisted(JsonNode pr) {
+        String title = textOrNull(pr, "title");
+        String body = textOrNull(pr, "body");
+        StringBuilder text = new StringBuilder()
+                .append(title == null ? "" : title).append(' ')
+                .append(body == null ? "" : body);
+        JsonNode labels = pr.get("labels");
+        if (labels != null && labels.isArray()) {
+            for (JsonNode label : labels) {
+                String name = textOrNull(label, "name");
+                if (name != null) {
+                    text.append(' ').append(name);
+                }
+            }
+        }
+        return AI_ATTRIBUTION_PATTERN.matcher(text).find();
     }
 
     private void upsertPullRequestReviewState(EventEnvelope envelope) {
@@ -437,6 +512,148 @@ public class StagingEventWriter {
     private static Long longOrNull(JsonNode node, String field) {
         JsonNode v = node.get(field);
         return v == null || v.isNull() ? null : v.asLong();
+    }
+
+    private void upsertAiUsageState(EventEnvelope envelope) {
+        if ("claude_code".equals(envelope.source())) {
+            upsertClaudeCodeUsage(envelope);
+        } else {
+            upsertCopilotUsage(envelope);
+        }
+    }
+
+    /**
+     * Claude Code's usage report shape (verified against a real sample export — see
+     * connector-ai-telemetry's {@code ClaudeCodeUsageBackfillService} javadoc): {@code
+     * core_metrics} for sessions/LOC/commits/PRs, {@code model_breakdown[]} for tokens and real
+     * per-day dollar cost (summed across every model the user touched that day), {@code
+     * tool_actions.*} for accept/reject counts across edit/multi-edit/write/notebook-edit tools.
+     */
+    private void upsertClaudeCodeUsage(EventEnvelope envelope) {
+        JsonNode payload = envelope.payload();
+        String email = textAtPath(payload, "actor", "email_address");
+        String dateRaw = textOrNull(payload, "date");
+        if (email == null || dateRaw == null) {
+            return;
+        }
+        String day = dateRaw.length() >= 10 ? dateRaw.substring(0, 10) : dateRaw;
+
+        JsonNode coreMetrics = payload.get("core_metrics");
+        Integer sessions = intOrNull(coreMetrics, "num_sessions");
+        JsonNode loc = coreMetrics == null ? null : coreMetrics.get("lines_of_code");
+        Integer locAdded = intOrNull(loc, "added");
+        Integer locRemoved = intOrNull(loc, "removed");
+        Integer commits = intOrNull(coreMetrics, "commits_by_claude_code");
+        Integer prs = intOrNull(coreMetrics, "pull_requests_by_claude_code");
+
+        long tokensInput = 0;
+        long tokensOutput = 0;
+        BigDecimal cost = BigDecimal.ZERO;
+        JsonNode modelBreakdown = payload.get("model_breakdown");
+        if (modelBreakdown != null && modelBreakdown.isArray()) {
+            for (JsonNode model : modelBreakdown) {
+                JsonNode tokens = model.get("tokens");
+                tokensInput += longOrZero(tokens, "input");
+                tokensOutput += longOrZero(tokens, "output");
+                JsonNode estimatedCost = model.get("estimated_cost");
+                if (estimatedCost != null && estimatedCost.has("amount") && !estimatedCost.get("amount").isNull()) {
+                    cost = cost.add(BigDecimal.valueOf(estimatedCost.get("amount").asDouble()));
+                }
+            }
+        }
+
+        int accepted = 0;
+        int rejected = 0;
+        JsonNode toolActions = payload.get("tool_actions");
+        if (toolActions != null) {
+            Iterator<Map.Entry<String, JsonNode>> fields = toolActions.fields();
+            while (fields.hasNext()) {
+                JsonNode action = fields.next().getValue();
+                accepted += intOrZero(action, "accepted");
+                rejected += intOrZero(action, "rejected");
+            }
+        }
+
+        String surface = textOrNull(payload, "terminal_type");
+
+        jdbcTemplate.update(UPSERT_AI_USAGE_SQL,
+                "claude_code", email, Date.valueOf(day), sessions, locAdded, locRemoved, commits, prs,
+                cost, tokensInput, tokensOutput, null, null, accepted, rejected, surface,
+                Timestamp.from(envelope.receivedAt()));
+    }
+
+    /**
+     * Copilot's usage export shape (verified against a real sample export — see
+     * connector-ai-telemetry's {@code CopilotUsageBackfillService} javadoc): top-level
+     * {@code loc_added_sum}/{@code loc_deleted_sum}/{@code code_acceptance_activity_count},
+     * {@code totals_by_cli} for sessions/prompts/requests/tokens, {@code totals_by_ide[0]} as the
+     * day's primary surface. No per-request dollar cost exists — {@link #copilotDailyCost}
+     * allocates the configured flat-fee seat price across active days only.
+     */
+    private void upsertCopilotUsage(EventEnvelope envelope) {
+        JsonNode payload = envelope.payload();
+        String login = textOrNull(payload, "user_login");
+        String day = textOrNull(payload, "day");
+        if (login == null || day == null) {
+            return;
+        }
+
+        Integer locAdded = intOrNull(payload, "loc_added_sum");
+        Integer locRemoved = intOrNull(payload, "loc_deleted_sum");
+        Integer accepted = intOrNull(payload, "code_acceptance_activity_count");
+
+        JsonNode cli = payload.get("totals_by_cli");
+        Integer sessions = intOrNull(cli, "session_count");
+        Integer prompts = intOrNull(cli, "prompt_count");
+        Integer requests = intOrNull(cli, "request_count");
+        JsonNode tokenUsage = cli == null ? null : cli.get("token_usage");
+        Long tokensInput = tokenUsage == null ? null : longOrNull(tokenUsage, "prompt_tokens_sum");
+        Long tokensOutput = tokenUsage == null ? null : longOrNull(tokenUsage, "output_tokens_sum");
+
+        String surface = null;
+        JsonNode ides = payload.get("totals_by_ide");
+        if (ides != null && ides.isArray() && !ides.isEmpty()) {
+            surface = textOrNull(ides.get(0), "ide");
+        }
+
+        BigDecimal cost = copilotDailyCost(sessions, prompts, requests);
+
+        jdbcTemplate.update(UPSERT_AI_USAGE_SQL,
+                "copilot", login, Date.valueOf(day), sessions, locAdded, locRemoved, null, null,
+                cost, tokensInput, tokensOutput, prompts, requests, accepted, null, surface,
+                Timestamp.from(envelope.receivedAt()));
+    }
+
+    // AI-01's documented edge case: "un-metered/flat-fee tools use allocated seat cost" — never
+    // a blind charge on every calendar day, only ones with observed activity.
+    private BigDecimal copilotDailyCost(Integer sessions, Integer prompts, Integer requests) {
+        boolean active = (sessions != null && sessions > 0) || (prompts != null && prompts > 0)
+                || (requests != null && requests > 0);
+        if (!active) {
+            return BigDecimal.ZERO;
+        }
+        return copilotMonthlySeatCostUsd.divide(BigDecimal.valueOf(DAYS_PER_MONTH), 2, RoundingMode.HALF_UP);
+    }
+
+    private static Integer intOrNull(JsonNode node, String field) {
+        if (node == null) {
+            return null;
+        }
+        JsonNode v = node.get(field);
+        return v == null || v.isNull() ? null : v.asInt();
+    }
+
+    private static int intOrZero(JsonNode node, String field) {
+        Integer v = intOrNull(node, field);
+        return v == null ? 0 : v;
+    }
+
+    private static long longOrZero(JsonNode node, String field) {
+        if (node == null) {
+            return 0L;
+        }
+        Long v = longOrNull(node, field);
+        return v == null ? 0L : v;
     }
 
     private record RepoAndPrNumber(String repo, long prNumber) {

@@ -89,6 +89,33 @@ paths:
               schema: { $ref: "#/components/schemas/CockpitResponse" }
         "400":
           description: Invalid parameters (RFC 9457 problem details).
+  /metrics/ai-cost-track:
+    get:
+      operationId: getAiCostTrack
+      summary: AI coding-assistant spend, adoption, impact, and ROI (PRD E9, AI-01..AI-05)
+      description: >
+        Computed from staging.ai_usage_state (Claude Code + GitHub Copilot usage ingested by
+        connector-ai-telemetry) and staging.pull_request_state's ai_assisted flag (AI-04/AI-05's
+        cycle-time segmentation, detected from PR title/body/labels against known AI co-author
+        trailer conventions). Input data is sample data shaped like each vendor's real
+        usage-report/PR-payload schema, not a genuine enterprise export yet — see the connector
+        README for the swap-in seam. teamAllocationAvailable is always false today: no
+        contributor→team identity resolution exists yet for AI-telemetry actor keys. impact/roi
+        are null (not present) when the window's AI-assisted or non-AI-assisted PR sample is too
+        small to report a meaningful median. Requires an analytical role (ADMIN, ENG_LEADER,
+        MANAGER, FINANCE_READONLY); IC is denied.
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 90, default: 30 }
+          description: Trailing window in days.
+      responses:
+        "200":
+          description: AI spend/adoption for the requested window.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiCostTrackResponse" }
   /teams:
     get:
       operationId: listTeams
@@ -284,6 +311,83 @@ components:
       bearerFormat: JWT
       description: RS256 JWT with a `role` claim (ADR-0004).
   schemas:
+    AiCostTrackResponse:
+      type: object
+      required: [windowLabel, windowDays, kpis, spendByTool, spendTrend, dailySpend,
+                 developerAllocation, teamAllocationAvailable, assumptions]
+      properties:
+        windowLabel: { type: string }
+        windowDays: { type: integer }
+        kpis:
+          type: object
+          required: [totalSpend, costPerPr, costPerDevDay, adoptionRate]
+          properties:
+            totalSpend: { type: number }
+            costPerPr: { type: number, description: "0 when no AI-attributed PRs (commits_by_claude_code-only tools don't divide by zero)." }
+            costPerDevDay: { type: number }
+            adoptionRate: { type: number, description: "distinct active AI-tool users / assumptions.licensedSeatsAssumed" }
+        spendByTool:
+          type: array
+          items:
+            type: object
+            required: [tool, monthlySpend]
+            properties: { tool: { type: string }, monthlySpend: { type: number } }
+        spendTrend:
+          type: array
+          items:
+            type: object
+            required: [month, spend, prsAssisted]
+            properties: { month: { type: string }, spend: { type: number }, prsAssisted: { type: integer } }
+        dailySpend:
+          type: array
+          items:
+            type: object
+            required: [date, claudeCode, githubCopilot, cursor]
+            properties:
+              date: { type: string }
+              claudeCode: { type: number }
+              githubCopilot: { type: number }
+              cursor: { type: number, description: "Always 0 — no Cursor connector yet." }
+        developerAllocation:
+          type: array
+          items:
+            type: object
+            required: [developer, tool, spend, mergedPrs]
+            properties:
+              developer: { type: string, description: "Claude Code's actor email or Copilot's user_login — not cross-tool identity-resolved yet." }
+              tool: { type: string }
+              spend: { type: number }
+              mergedPrs: { type: integer, description: "0 for Copilot rows — only Claude Code's usage report tracks PRs." }
+        teamAllocationAvailable: { type: boolean, description: "Always false today — see response-level description." }
+        impact:
+          type: object
+          nullable: true
+          description: "AI-04. Null when either PR bucket in the window has fewer than 3 merged PRs."
+          required: [aiAssistedMedianCycleHours, nonAiMedianCycleHours, aiAssistedPrCount, nonAiPrCount, aiAssistedShare]
+          properties:
+            aiAssistedMedianCycleHours: { type: number }
+            nonAiMedianCycleHours: { type: number }
+            aiAssistedPrCount: { type: integer }
+            nonAiPrCount: { type: integer }
+            aiAssistedShare: { type: number, description: "aiAssistedPrCount / (aiAssistedPrCount + nonAiPrCount)" }
+        roi:
+          type: object
+          nullable: true
+          description: "AI-05. Null when impact is null or totalSpend is 0. Can be negative."
+          required: [estimatedHoursSaved, dollarValueRecovered, roiMultiple, blendedHourlyRateUsd]
+          properties:
+            estimatedHoursSaved: { type: number }
+            dollarValueRecovered: { type: number }
+            roiMultiple: { type: number, description: "dollarValueRecovered / kpis.totalSpend" }
+            blendedHourlyRateUsd: { type: number }
+        assumptions:
+          type: object
+          required: [copilotMonthlySeatCostUsd, licensedSeatsAssumed, blendedHourlyRateUsd, methodologyNote]
+          properties:
+            copilotMonthlySeatCostUsd: { type: number }
+            licensedSeatsAssumed: { type: integer }
+            blendedHourlyRateUsd: { type: number }
+            methodologyNote: { type: string }
     CockpitResponse:
       type: object
       required: [asOf, windowDays, scope, tiles]
