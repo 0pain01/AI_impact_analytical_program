@@ -403,6 +403,12 @@ export default function Cockpit({ scope = '*', title = 'Cockpit' }: { scope?: st
     }
   }, [days, scope])
 
+  // Only the very first load (no data on screen yet) shows the skeleton — switching the
+  // 30/90-day toggle re-fetches with `data` still populated from the previous window, so the
+  // existing tiles stay mounted (just dimmed) instead of the whole page unmounting/remounting
+  // into skeleton blocks and back, which read as a flicker.
+  const isInitialLoad = loading && !data
+  const isRefetching = loading && !!data
   const hasData = data?.tiles.some((t) => t.aggregate !== null) ?? false
   const coreTiles = data?.tiles.filter((t) => CORE_DORA.includes(t.metricKey)) ?? []
   const supplementaryTiles = data?.tiles.filter((t) => !CORE_DORA.includes(t.metricKey)) ?? []
@@ -445,10 +451,11 @@ export default function Cockpit({ scope = '*', title = 'Cockpit' }: { scope?: st
       </div>
 
       <p className="mb-4 text-sm text-slate-500">
-        {loading && 'Loading metrics…'}
+        {isInitialLoad && 'Loading metrics…'}
         {error && `Could not load metrics: ${error}`}
-        {!loading && !error && data?.asOf && `Data as of ${new Date(data.asOf).toLocaleString()}`}
-        {!loading && !error && !data?.asOf && 'No data yet — connect a tool and metrics appear after the next recompute.'}
+        {!error && !isInitialLoad && data?.asOf &&
+          `Data as of ${new Date(data.asOf).toLocaleString()}${isRefetching ? ' · Refreshing…' : ''}`}
+        {!error && !isInitialLoad && !data?.asOf && 'No data yet — connect a tool and metrics appear after the next recompute.'}
       </p>
 
       {error && (
@@ -457,7 +464,7 @@ export default function Cockpit({ scope = '*', title = 'Cockpit' }: { scope?: st
         </div>
       )}
 
-      {!error && loading && (
+      {!error && isInitialLoad && (
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-64 animate-pulse rounded-lg border border-slate-200 bg-white" />
@@ -465,51 +472,55 @@ export default function Cockpit({ scope = '*', title = 'Cockpit' }: { scope?: st
         </div>
       )}
 
-      {!error && !loading && coreTiles.length > 0 && (
-        <>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">DORA performance</p>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <DoraRadar coreTiles={coreTiles} windowDays={data?.windowDays ?? 30} />
-            <TierBands coreTiles={coreTiles} windowDays={data?.windowDays ?? 30} />
-          </div>
-
-          <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-slate-400">Metric detail</p>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {coreTiles.map((tile) => (
-              <ScoreCard key={tile.metricKey} tile={tile} windowDays={data?.windowDays ?? 30} />
-            ))}
-          </div>
-
-          {supplementaryTiles.length > 0 && (
+      {!error && data && (
+        <div className={`transition-opacity duration-200 ${isRefetching ? 'opacity-50' : 'opacity-100'}`}>
+          {coreTiles.length > 0 && (
             <>
-              <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-slate-400">Review throughput</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">DORA performance</p>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <DoraRadar coreTiles={coreTiles} windowDays={data?.windowDays ?? 30} />
+                <TierBands coreTiles={coreTiles} windowDays={data?.windowDays ?? 30} />
+              </div>
+
+              <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-slate-400">Metric detail</p>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                {supplementaryTiles.map((tile) => (
+                {coreTiles.map((tile) => (
                   <ScoreCard key={tile.metricKey} tile={tile} windowDays={data?.windowDays ?? 30} />
                 ))}
               </div>
+
+              {supplementaryTiles.length > 0 && (
+                <>
+                  <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-slate-400">Review throughput</p>
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    {supplementaryTiles.map((tile) => (
+                      <ScoreCard key={tile.metricKey} tile={tile} windowDays={data?.windowDays ?? 30} />
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
-        </>
-      )}
 
-      {!error && hasData && (
-        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <DeploymentOutcomes tiles={data!.tiles} />
-          <div className="lg:col-span-2">
-            {heroTile ? (
-              <HeroTrend tile={heroTile} />
-            ) : (
-              <div className="flex h-full min-h-[16rem] items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-400">
-                Trend chart appears once the window has 2+ days of data.
+          {hasData && (
+            <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <DeploymentOutcomes tiles={data.tiles} />
+              <div className="lg:col-span-2">
+                {heroTile ? (
+                  <HeroTrend tile={heroTile} />
+                ) : (
+                  <div className="flex h-full min-h-[16rem] items-center justify-center rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-400">
+                    Trend chart appears once the window has 2+ days of data.
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+          )}
 
-      {!loading && !error && !hasData && (
-        <p className="mt-4 text-sm text-slate-400">Tiles stay empty until staged events exist for the selected window.</p>
+          {!hasData && (
+            <p className="mt-4 text-sm text-slate-400">Tiles stay empty until staged events exist for the selected window.</p>
+          )}
+        </div>
       )}
     </section>
   )
