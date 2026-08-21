@@ -329,17 +329,66 @@ function DeploymentOutcomes({ tiles }: { tiles: CockpitTile[] }) {
 
 const CORE_DORA: MetricKey[] = ['deployment_frequency', 'lead_time_p50_hours', 'change_failure_rate', 'mttr_p50_hours']
 
+function csvCell(value: string | number): string {
+  const s = String(value)
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}
+
+/** Client-side CSV of everything the tiles currently show — summary + full daily series per
+ * metric — so "Export report" produces exactly what's on screen, no separate backend export
+ * endpoint needed for data that's already fully in the response. */
+function buildCockpitCsv(data: CockpitResponse, scope: string, windowDays: number): string {
+  const rows: string[][] = []
+  rows.push(['scope', scope])
+  rows.push(['window_days', String(windowDays)])
+  rows.push(['as_of', data.asOf ?? ''])
+  rows.push([])
+  rows.push(['metric', 'label', 'aggregate', 'unit', 'sample_size', 'tier'])
+  for (const tile of data.tiles) {
+    const tier = tierFor(tile, windowDays) ?? ''
+    rows.push([
+      tile.metricKey,
+      tile.label,
+      tile.aggregate === null ? '' : String(tile.aggregate),
+      tile.unit,
+      String(tile.sampleSize),
+      tier,
+    ])
+  }
+  rows.push([])
+  rows.push(['metric', 'day', 'value'])
+  for (const tile of data.tiles) {
+    for (const point of tile.series) {
+      rows.push([tile.metricKey, point.day, String(point.value)])
+    }
+  }
+  return rows.map((r) => r.map(csvCell).join(',')).join('\n')
+}
+
+function downloadCsv(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
 /** Reusable Cockpit view (E4-S1/E4-S2): scope is a repo, "*" for org, or a team id. */
 export default function Cockpit({ scope = '*', title = 'Cockpit' }: { scope?: string; title?: string }) {
   const [data, setData] = useState<CockpitResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [days, setDays] = useState<30 | 90>(30)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetchCockpit(30, scope)
+    fetchCockpit(days, scope)
       .then((d) => {
         if (!cancelled) setData(d)
       })
@@ -352,7 +401,7 @@ export default function Cockpit({ scope = '*', title = 'Cockpit' }: { scope?: st
     return () => {
       cancelled = true
     }
-  }, [scope])
+  }, [days, scope])
 
   const hasData = data?.tiles.some((t) => t.aggregate !== null) ?? false
   const coreTiles = data?.tiles.filter((t) => CORE_DORA.includes(t.metricKey)) ?? []
@@ -369,13 +418,26 @@ export default function Cockpit({ scope = '*', title = 'Cockpit' }: { scope?: st
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h2>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-            Last {data?.windowDays ?? 30} days
-          </span>
+          <div className="flex overflow-hidden rounded-md border border-slate-200 text-xs">
+            {([30, 90] as const).map((d) => (
+              <button
+                key={d}
+                onClick={() => setDays(d)}
+                className={`px-3 py-1.5 font-medium ${days === d ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+              >
+                {d} days
+              </button>
+            ))}
+          </div>
           <button
-            disabled
-            className="cursor-not-allowed rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400"
-            title="Coming soon"
+            disabled={!data || !hasData}
+            onClick={() => {
+              if (!data) return
+              const stamp = new Date().toISOString().slice(0, 10)
+              downloadCsv(`cockpit-${scope === '*' ? 'org' : scope}-${data.windowDays}d-${stamp}.csv`, buildCockpitCsv(data, scope, data.windowDays))
+            }}
+            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 enabled:hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+            title={hasData ? 'Download the tiles above as CSV' : 'No data to export yet'}
           >
             Export report
           </button>

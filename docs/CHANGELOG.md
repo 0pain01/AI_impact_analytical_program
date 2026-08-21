@@ -2,6 +2,16 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-08-21 (6)
+- Cockpit: added the 30/90-day window toggle Code Review already had (`GET /api/v1/metrics/cockpit`
+  already accepted `days` up to 90 server-side — `CockpitController.MAX_WINDOW_DAYS` — this was
+  frontend-only; `Cockpit.tsx` hardcoded `fetchCockpit(30, scope)`). Also replaced the disabled
+  "Export report" placeholder (shipped 2026-07-05, never wired up) with a working one: downloads
+  a CSV of exactly what's on screen — the per-metric summary (aggregate, unit, sample size, tier)
+  plus the full daily series per tile — client-side, no new backend endpoint needed since the
+  Cockpit response already carries everything the export contains. Applies to both the org-wide
+  Cockpit and the per-team drill-down (Teams → team card), since both render the same component.
+
 ## 2026-08-21 (5)
 - AI Cost Track's Impact and ROI tabs (AI-04/AI-05, PRD E9) went live — they previously showed
   "Not available yet" because nothing anywhere flagged which PRs were AI-assisted. Added
