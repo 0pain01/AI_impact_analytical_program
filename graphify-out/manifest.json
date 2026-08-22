@@ -1,0 +1,1340 @@
+{
+  ".claude/launch.json": {
+    "mtime": 1786381663.581355,
+    "seen": 1787357646.8743947,
+    "ast_hash": "b39e9962b7c9e2f1b30cea428b389298",
+    "semantic_hash": "b39e9962b7c9e2f1b30cea428b389298"
+  },
+  "ai-impact-evaluation-project-pack.json": {
+    "mtime": 1786381663.588349,
+    "seen": 1787357646.8743947,
+    "ast_hash": "309bfae26ed493f074c85885533681b4",
+    "semantic_hash": "309bfae26ed493f074c85885533681b4"
+  },
+  "frontend/package.json": {
+    "mtime": 1786381663.6103466,
+    "seen": 1787357646.8743947,
+    "ast_hash": "0dd110b518c81b328f7241d508b99f58",
+    "semantic_hash": "0dd110b518c81b328f7241d508b99f58"
+  },
+  "frontend/postcss.config.js": {
+    "mtime": 1786381663.6113477,
+    "seen": 1787357646.8743947,
+    "ast_hash": "5b84f4567208c7c747079c0477373231",
+    "semantic_hash": "5b84f4567208c7c747079c0477373231"
+  },
+  "frontend/src/App.tsx": {
+    "mtime": 1787252013.1744306,
+    "seen": 1787357646.8743947,
+    "ast_hash": "15523c63a127f1e6fbf898203e728d81",
+    "semantic_hash": "15523c63a127f1e6fbf898203e728d81"
+  },
+  "frontend/src/api.ts": {
+    "mtime": 1787286113.252328,
+    "seen": 1787357646.8743947,
+    "ast_hash": "7c5befadd3bf01ab36a93296f4568c29",
+    "semantic_hash": "7c5befadd3bf01ab36a93296f4568c29"
+  },
+  "frontend/src/components/AiNetworkBackground.tsx": {
+    "mtime": 1786381663.6324036,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e516decf41280c41c510d1b74de271e9",
+    "semantic_hash": "e516decf41280c41c510d1b74de271e9"
+  },
+  "frontend/src/components/GradientMeshBackground.tsx": {
+    "mtime": 1786381663.6333494,
+    "seen": 1787357646.8743947,
+    "ast_hash": "82d1bf72250515e04ec4b07d982b59e3",
+    "semantic_hash": "82d1bf72250515e04ec4b07d982b59e3"
+  },
+  "frontend/src/components/ParticleField.tsx": {
+    "mtime": 1786381663.6343515,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2ef26a240e39acdf94f7acdbc706cb74",
+    "semantic_hash": "2ef26a240e39acdf94f7acdbc706cb74"
+  },
+  "frontend/src/lib/motion.ts": {
+    "mtime": 1786381663.6353512,
+    "seen": 1787357646.8743947,
+    "ast_hash": "053b5dd0bb390b4f6839b2be7814177c",
+    "semantic_hash": "053b5dd0bb390b4f6839b2be7814177c"
+  },
+  "frontend/src/main.tsx": {
+    "mtime": 1786381663.636347,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e8f48a7c3edebe80e09c721c662515d7",
+    "semantic_hash": "e8f48a7c3edebe80e09c721c662515d7"
+  },
+  "frontend/src/mock/mockData.ts": {
+    "mtime": 1787262276.2380123,
+    "seen": 1787357646.8743947,
+    "ast_hash": "1ec33aa253be729edbafc30e857112c2",
+    "semantic_hash": "1ec33aa253be729edbafc30e857112c2"
+  },
+  "frontend/src/roleAccess.ts": {
+    "mtime": 1786835873.9204404,
+    "seen": 1787357646.8743947,
+    "ast_hash": "ead569b4604443e2664120bb38e01e18",
+    "semantic_hash": "ead569b4604443e2664120bb38e01e18"
+  },
+  "frontend/src/views/Admin.tsx": {
+    "mtime": 1787286140.3379421,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a2ff6c2c7fcec85b08d310f8e7f76924",
+    "semantic_hash": "a2ff6c2c7fcec85b08d310f8e7f76924"
+  },
+  "frontend/src/views/AiCostTrack.tsx": {
+    "mtime": 1787282950.0621607,
+    "seen": 1787357646.8743947,
+    "ast_hash": "dfab7cad76fc639f903036caedffec14",
+    "semantic_hash": "dfab7cad76fc639f903036caedffec14"
+  },
+  "frontend/src/views/Cockpit.tsx": {
+    "mtime": 1787284742.0972257,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f10fd2cc6f62cf6a4c0ed1da04736720",
+    "semantic_hash": "f10fd2cc6f62cf6a4c0ed1da04736720"
+  },
+  "frontend/src/views/CodeReview.tsx": {
+    "mtime": 1786751495.931152,
+    "seen": 1787357646.8743947,
+    "ast_hash": "1384ebdd0b89fb0543345a58fd6b2cb4",
+    "semantic_hash": "1384ebdd0b89fb0543345a58fd6b2cb4"
+  },
+  "frontend/src/views/InvestmentProfile.tsx": {
+    "mtime": 1786987276.1427426,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f197f6b20f9523d6049d91a1cf166b02",
+    "semantic_hash": "f197f6b20f9523d6049d91a1cf166b02"
+  },
+  "frontend/src/views/Landing.tsx": {
+    "mtime": 1786381663.641355,
+    "seen": 1787357646.8743947,
+    "ast_hash": "6a1a36e85f5bedff7fff1ea3b26938b7",
+    "semantic_hash": "6a1a36e85f5bedff7fff1ea3b26938b7"
+  },
+  "frontend/src/views/Login.tsx": {
+    "mtime": 1786815755.3247714,
+    "seen": 1787357646.8743947,
+    "ast_hash": "aa9714485327f1c99c45e63d6230d199",
+    "semantic_hash": "aa9714485327f1c99c45e63d6230d199"
+  },
+  "frontend/src/views/Personal.tsx": {
+    "mtime": 1786835947.1223667,
+    "seen": 1787357646.8743947,
+    "ast_hash": "eff0c466f9032b392a0ec8381cfabf18",
+    "semantic_hash": "eff0c466f9032b392a0ec8381cfabf18"
+  },
+  "frontend/src/views/Setup.tsx": {
+    "mtime": 1787255228.9384937,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2b9bf8f0299000fd3bb1665a91dad381",
+    "semantic_hash": "2b9bf8f0299000fd3bb1665a91dad381"
+  },
+  "frontend/src/views/Teams.tsx": {
+    "mtime": 1787251994.191209,
+    "seen": 1787357646.8743947,
+    "ast_hash": "57124df78a84a9447035cd2029e67fb0",
+    "semantic_hash": "57124df78a84a9447035cd2029e67fb0"
+  },
+  "frontend/src/vite-env.d.ts": {
+    "mtime": 1786381663.6423478,
+    "seen": 1787357646.8743947,
+    "ast_hash": "8f68c27c3fc38817b2726b20e2d4f1ee",
+    "semantic_hash": "8f68c27c3fc38817b2726b20e2d4f1ee"
+  },
+  "frontend/tailwind.config.js": {
+    "mtime": 1786381663.6433682,
+    "seen": 1787357646.8743947,
+    "ast_hash": "dc7317a754ce29e80774bf1cd2d8e020",
+    "semantic_hash": "dc7317a754ce29e80774bf1cd2d8e020"
+  },
+  "frontend/tsconfig.json": {
+    "mtime": 1786381663.6433682,
+    "seen": 1787357646.8743947,
+    "ast_hash": "49b64372f0f00edeea9b5b13ee6c4613",
+    "semantic_hash": "49b64372f0f00edeea9b5b13ee6c4613"
+  },
+  "frontend/vercel.json": {
+    "mtime": 1786381663.6443663,
+    "seen": 1787357646.8743947,
+    "ast_hash": "1ebb32b5db21701d34780399aca3db48",
+    "semantic_hash": "1ebb32b5db21701d34780399aca3db48"
+  },
+  "frontend/vite.config.ts": {
+    "mtime": 1786381663.6443663,
+    "seen": 1787357646.8743947,
+    "ast_hash": "3ec97ccdecbc20a6ead2a8a6cfb54789",
+    "semantic_hash": "3ec97ccdecbc20a6ead2a8a6cfb54789"
+  },
+  "frontend/vite.config.ts.timestamp-1785487694559-a2c5032442204.mjs": {
+    "mtime": 1786381663.645348,
+    "seen": 1787357646.8743947,
+    "ast_hash": "9009993aebae19bd844aad9098c89b28",
+    "semantic_hash": "9009993aebae19bd844aad9098c89b28"
+  },
+  "frontend/vite.config.ts.timestamp-1786010943792-3eb659354bf78.mjs": {
+    "mtime": 1786381663.645348,
+    "seen": 1787357646.8743947,
+    "ast_hash": "8e14d83f4974f018517664c597c8e9d0",
+    "semantic_hash": "8e14d83f4974f018517664c597c8e9d0"
+  },
+  "frontend/vite.config.ts.timestamp-1786010955325-7ae34233f5631.mjs": {
+    "mtime": 1786381663.646348,
+    "seen": 1787357646.8743947,
+    "ast_hash": "8e14d83f4974f018517664c597c8e9d0",
+    "semantic_hash": "8e14d83f4974f018517664c597c8e9d0"
+  },
+  "infra/generate-seed-events.py": {
+    "mtime": 1787282517.5535767,
+    "seen": 1787357646.8743947,
+    "ast_hash": "538ec006e07af0f3335790d113abd545",
+    "semantic_hash": "538ec006e07af0f3335790d113abd545"
+  },
+  "infra/generate-team-events.py": {
+    "mtime": 1786381663.649348,
+    "seen": 1787357646.8743947,
+    "ast_hash": "23a8ea13b9515a6308f1a65e3831f564",
+    "semantic_hash": "23a8ea13b9515a6308f1a65e3831f564"
+  },
+  "infra/sample-data/claude-code-usage-report.json": {
+    "mtime": 1787261162.4575903,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2261572e0611cacb8d3d84d2c7b932e1",
+    "semantic_hash": "2261572e0611cacb8d3d84d2c7b932e1"
+  },
+  "infra/seed-demo-history.sh": {
+    "mtime": 1786381663.649348,
+    "seen": 1787357646.8743947,
+    "ast_hash": "9c6934eb62352c98e8a6bc26c61ceec1",
+    "semantic_hash": "9c6934eb62352c98e8a6bc26c61ceec1"
+  },
+  "infra/seed-more-teams.sh": {
+    "mtime": 1786381663.6503527,
+    "seen": 1787357646.8743947,
+    "ast_hash": "245792dbbff42eebd70c66d8aadbe7a9",
+    "semantic_hash": "245792dbbff42eebd70c66d8aadbe7a9"
+  },
+  "infra/smoke-e2e.sh": {
+    "mtime": 1786381663.6513484,
+    "seen": 1787357646.8743947,
+    "ast_hash": "aae6ad433ddf0db1ce098dacaa340f97",
+    "semantic_hash": "aae6ad433ddf0db1ce098dacaa340f97"
+  },
+  "infra/start-backend.sh": {
+    "mtime": 1787281357.328027,
+    "seen": 1787357646.8743947,
+    "ast_hash": "7069a7f2b155c76e424a622413bea204",
+    "semantic_hash": "7069a7f2b155c76e424a622413bea204"
+  },
+  "infra/stop-backend.sh": {
+    "mtime": 1786381663.6523495,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f5fad008b30378071047703be10d57f6",
+    "semantic_hash": "f5fad008b30378071047703be10d57f6"
+  },
+  "project-pack-template.json": {
+    "mtime": 1786381663.653358,
+    "seen": 1787357646.8743947,
+    "ast_hash": "8be501e0a69dfbe35dd36b0bed0c0fa0",
+    "semantic_hash": "8be501e0a69dfbe35dd36b0bed0c0fa0"
+  },
+  "services/api-core/pom.xml": {
+    "mtime": 1787259777.3950205,
+    "seen": 1787357646.8743947,
+    "ast_hash": "77293a998a1e8129ef585e1eead226e7",
+    "semantic_hash": "77293a998a1e8129ef585e1eead226e7"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/ApiCoreApplication.java": {
+    "mtime": 1786381663.657352,
+    "seen": 1787357646.8743947,
+    "ast_hash": "78dce2f088574496ef3bac22d5256a9b",
+    "semantic_hash": "78dce2f088574496ef3bac22d5256a9b"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/admin/AdminConnectorService.java": {
+    "mtime": 1787259943.4810002,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a63c193be49d16c93dbe7b17677853b7",
+    "semantic_hash": "a63c193be49d16c93dbe7b17677853b7"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/admin/AdminController.java": {
+    "mtime": 1786381663.6583574,
+    "seen": 1787357646.8743947,
+    "ast_hash": "13733233218ff64d40848eaef742fab7",
+    "semantic_hash": "13733233218ff64d40848eaef742fab7"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/admin/AdminUserController.java": {
+    "mtime": 1786835712.481354,
+    "seen": 1787357646.8743947,
+    "ast_hash": "4d352d4753d214229fda8f16a8645b66",
+    "semantic_hash": "4d352d4753d214229fda8f16a8645b66"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/admin/AdminUserService.java": {
+    "mtime": 1786837320.7848544,
+    "seen": 1787357646.8743947,
+    "ast_hash": "6001c4e4033aa84ec601dd49f0cd892d",
+    "semantic_hash": "6001c4e4033aa84ec601dd49f0cd892d"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/admin/ConnectorAdminController.java": {
+    "mtime": 1787255061.5972314,
+    "seen": 1787357646.8743947,
+    "ast_hash": "c9bc91a7f6078986c7da70cfd37df821",
+    "semantic_hash": "c9bc91a7f6078986c7da70cfd37df821"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/admin/ConnectorAdminService.java": {
+    "mtime": 1787259771.2706265,
+    "seen": 1787357646.8743947,
+    "ast_hash": "74aedb559f0c4d130ebf168ebe5edbe9",
+    "semantic_hash": "74aedb559f0c4d130ebf168ebe5edbe9"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/admin/TeamAdminController.java": {
+    "mtime": 1787286073.8555896,
+    "seen": 1787357646.8743947,
+    "ast_hash": "87867f02cbf758f99fd310b8ea3f4cff",
+    "semantic_hash": "87867f02cbf758f99fd310b8ea3f4cff"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/admin/TeamAdminService.java": {
+    "mtime": 1787286058.980697,
+    "seen": 1787357646.8743947,
+    "ast_hash": "261fc44978885f45865fd88cb1356021",
+    "semantic_hash": "261fc44978885f45865fd88cb1356021"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/aicost/AiCostTrackController.java": {
+    "mtime": 1787262069.6333718,
+    "seen": 1787357646.8743947,
+    "ast_hash": "66f018aaad104416db76fa2bbdbc0ebe",
+    "semantic_hash": "66f018aaad104416db76fa2bbdbc0ebe"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/aicost/AiCostTrackDtos.java": {
+    "mtime": 1787282533.0635068,
+    "seen": 1787357646.8743947,
+    "ast_hash": "bdd3a338ae838f70844dc366f195e67b",
+    "semantic_hash": "bdd3a338ae838f70844dc366f195e67b"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/aicost/AiCostTrackQueryService.java": {
+    "mtime": 1787282572.037282,
+    "seen": 1787357646.8743947,
+    "ast_hash": "c09e699926fb13a1b50030a37b88038f",
+    "semantic_hash": "c09e699926fb13a1b50030a37b88038f"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/audit/AuditController.java": {
+    "mtime": 1786381663.659349,
+    "seen": 1787357646.8743947,
+    "ast_hash": "efb1b4404ea79b0e6f4c9834e889e8c8",
+    "semantic_hash": "efb1b4404ea79b0e6f4c9834e889e8c8"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/audit/AuditLog.java": {
+    "mtime": 1786381663.6603467,
+    "seen": 1787357646.8743947,
+    "ast_hash": "5d69170f7d1d657443230120d0d40403",
+    "semantic_hash": "5d69170f7d1d657443230120d0d40403"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/audit/AuditQueryService.java": {
+    "mtime": 1786381663.6613474,
+    "seen": 1787357646.8743947,
+    "ast_hash": "b9756b1ce8bcc72461b9819912b1fbb7",
+    "semantic_hash": "b9756b1ce8bcc72461b9819912b1fbb7"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/audit/JdbcAuditLog.java": {
+    "mtime": 1786381663.6613474,
+    "seen": 1787357646.8743947,
+    "ast_hash": "93cbcca395499611ad007dd990379556",
+    "semantic_hash": "93cbcca395499611ad007dd990379556"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/codereview/CodeReviewController.java": {
+    "mtime": 1786815603.9824708,
+    "seen": 1787357646.8743947,
+    "ast_hash": "62f4dd12604032b3a792938d2eac53a0",
+    "semantic_hash": "62f4dd12604032b3a792938d2eac53a0"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/codereview/CodeReviewDtos.java": {
+    "mtime": 1786751385.1436934,
+    "seen": 1787357646.8743947,
+    "ast_hash": "93594e77aff73320b82c382e51377304",
+    "semantic_hash": "93594e77aff73320b82c382e51377304"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/codereview/CodeReviewQueryService.java": {
+    "mtime": 1786751412.756917,
+    "seen": 1787357646.8743947,
+    "ast_hash": "fd3c5fe51641f56c735103a435a6def3",
+    "semantic_hash": "fd3c5fe51641f56c735103a435a6def3"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/investment/InvestmentProfileController.java": {
+    "mtime": 1786975026.6375973,
+    "seen": 1787357646.8743947,
+    "ast_hash": "5dd883537289c90c9be12ab1d1547df3",
+    "semantic_hash": "5dd883537289c90c9be12ab1d1547df3"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/investment/InvestmentProfileDtos.java": {
+    "mtime": 1786975005.8799026,
+    "seen": 1787357646.8743947,
+    "ast_hash": "598b419befd929aa7f148f60d0eb6402",
+    "semantic_hash": "598b419befd929aa7f148f60d0eb6402"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/investment/InvestmentProfileQueryService.java": {
+    "mtime": 1786975014.1752937,
+    "seen": 1787357646.8743947,
+    "ast_hash": "0755013aa55a76e065cb2061178705b3",
+    "semantic_hash": "0755013aa55a76e065cb2061178705b3"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/metrics/CockpitController.java": {
+    "mtime": 1786815577.4810915,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a0d8d350ba61efb54f27dadc61532d44",
+    "semantic_hash": "a0d8d350ba61efb54f27dadc61532d44"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/metrics/CockpitDtos.java": {
+    "mtime": 1786381663.6623478,
+    "seen": 1787357646.8743947,
+    "ast_hash": "6ba3c75cd5b6aeab6075d00897771630",
+    "semantic_hash": "6ba3c75cd5b6aeab6075d00897771630"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/metrics/CockpitQueryService.java": {
+    "mtime": 1786381663.66335,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2c3137b2d1b8a614a1de752a82b09938",
+    "semantic_hash": "2c3137b2d1b8a614a1de752a82b09938"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/personal/PersonalController.java": {
+    "mtime": 1786835796.109162,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2c4c73588f55f6153e1cc40a7b4c99bc",
+    "semantic_hash": "2c4c73588f55f6153e1cc40a7b4c99bc"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/personal/PersonalDtos.java": {
+    "mtime": 1786835781.1898718,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f4be079a765b94ad5fdf9483ec936992",
+    "semantic_hash": "f4be079a765b94ad5fdf9483ec936992"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/personal/PersonalQueryService.java": {
+    "mtime": 1786835789.5049162,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f70aada17f1c5c062993cf1becc60fa3",
+    "semantic_hash": "f70aada17f1c5c062993cf1becc60fa3"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/AppUser.java": {
+    "mtime": 1786835559.234887,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a431b720d501ea7433fcb7eefd00a270",
+    "semantic_hash": "a431b720d501ea7433fcb7eefd00a270"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/AppUserRepository.java": {
+    "mtime": 1786835568.018759,
+    "seen": 1787357646.8743947,
+    "ast_hash": "4da589633ea65f078404bcf7578fec43",
+    "semantic_hash": "4da589633ea65f078404bcf7578fec43"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/DevTokenController.java": {
+    "mtime": 1786815532.4119606,
+    "seen": 1787357646.8743947,
+    "ast_hash": "4c939c29e5ad500d870935f9a22d8ce6",
+    "semantic_hash": "4c939c29e5ad500d870935f9a22d8ce6"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/DevTokenService.java": {
+    "mtime": 1786835592.9106112,
+    "seen": 1787357646.8743947,
+    "ast_hash": "9bda64d3a55574727ea6f03a268558ed",
+    "semantic_hash": "9bda64d3a55574727ea6f03a268558ed"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/JdbcAppUserRepository.java": {
+    "mtime": 1786835578.1745968,
+    "seen": 1787357646.8743947,
+    "ast_hash": "c704ee24d1227e1b9a60dcd814b3f248",
+    "semantic_hash": "c704ee24d1227e1b9a60dcd814b3f248"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/JwtConfig.java": {
+    "mtime": 1786381663.6663518,
+    "seen": 1787357646.8743947,
+    "ast_hash": "8af37dca9d6384da68b3a1807e889ab0",
+    "semantic_hash": "8af37dca9d6384da68b3a1807e889ab0"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/NoSuchAppUserException.java": {
+    "mtime": 1786815469.1509418,
+    "seen": 1787357646.8743947,
+    "ast_hash": "4737d45a0ff40866a9997a2d7bce3120",
+    "semantic_hash": "4737d45a0ff40866a9997a2d7bce3120"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/Role.java": {
+    "mtime": 1786381663.6663518,
+    "seen": 1787357646.8743947,
+    "ast_hash": "d9ca7b6ceaea08132f4ed928a28bac6c",
+    "semantic_hash": "d9ca7b6ceaea08132f4ed928a28bac6c"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/ScopeResolver.java": {
+    "mtime": 1786815483.899719,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2a0cf5289396a7a83a0dae68f5403128",
+    "semantic_hash": "2a0cf5289396a7a83a0dae68f5403128"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/security/SecurityConfig.java": {
+    "mtime": 1786836999.859794,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a2f3aa340e2db5c914ca6d8f7b4d4f9a",
+    "semantic_hash": "a2f3aa340e2db5c914ca6d8f7b4d4f9a"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/setup/SetupController.java": {
+    "mtime": 1786381663.66935,
+    "seen": 1787357646.8743947,
+    "ast_hash": "822c25eddb1474c89c45e2ef07140975",
+    "semantic_hash": "822c25eddb1474c89c45e2ef07140975"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/setup/SetupQueryService.java": {
+    "mtime": 1786381663.66935,
+    "seen": 1787357646.8743947,
+    "ast_hash": "45a586c1e22ff0aad9c61b6a000afb3b",
+    "semantic_hash": "45a586c1e22ff0aad9c61b6a000afb3b"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/teams/TeamController.java": {
+    "mtime": 1786835649.0153954,
+    "seen": 1787357646.8743947,
+    "ast_hash": "b1e2351bd671751c9c518c97610f902b",
+    "semantic_hash": "b1e2351bd671751c9c518c97610f902b"
+  },
+  "services/api-core/src/main/java/com/aiimpacteval/apicore/teams/TeamQueryService.java": {
+    "mtime": 1786836173.1169834,
+    "seen": 1787357646.8743947,
+    "ast_hash": "c17b92aec805a5fa8d325c62d557bcb7",
+    "semantic_hash": "c17b92aec805a5fa8d325c62d557bcb7"
+  },
+  "services/api-core/src/main/resources/db/migration/V10__jira_issue_state.sql": {
+    "mtime": 1786974878.8539426,
+    "seen": 1787357646.8743947,
+    "ast_hash": "bc30af74b19b9397508a89063a503fab",
+    "semantic_hash": "bc30af74b19b9397508a89063a503fab"
+  },
+  "services/api-core/src/main/resources/db/migration/V11__connector_activity.sql": {
+    "mtime": 1787255859.7065723,
+    "seen": 1787357646.8743947,
+    "ast_hash": "c272033e2766ab3b878e98fc2f02b639",
+    "semantic_hash": "c272033e2766ab3b878e98fc2f02b639"
+  },
+  "services/api-core/src/main/resources/db/migration/V12__ai_usage_state.sql": {
+    "mtime": 1787261757.772933,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f9efef276d5961a0cd9ac7a3a3d55f32",
+    "semantic_hash": "f9efef276d5961a0cd9ac7a3a3d55f32"
+  },
+  "services/api-core/src/main/resources/db/migration/V13__pull_request_ai_attribution.sql": {
+    "mtime": 1787282472.3059652,
+    "seen": 1787357646.8743947,
+    "ast_hash": "732cc0bc9041330fd912aa7d28271a5e",
+    "semantic_hash": "732cc0bc9041330fd912aa7d28271a5e"
+  },
+  "services/api-core/src/main/resources/db/migration/V1__init_schemas_and_core_tables.sql": {
+    "mtime": 1786381663.673348,
+    "seen": 1787357646.8743947,
+    "ast_hash": "0f6d4259d81c06509f63befca71ad704",
+    "semantic_hash": "0f6d4259d81c06509f63befca71ad704"
+  },
+  "services/api-core/src/main/resources/db/migration/V2__mart_metric_daily.sql": {
+    "mtime": 1786381663.673348,
+    "seen": 1787357646.8743947,
+    "ast_hash": "57901a00c48a1411e6c2ae6cf04d7b64",
+    "semantic_hash": "57901a00c48a1411e6c2ae6cf04d7b64"
+  },
+  "services/api-core/src/main/resources/db/migration/V3__audit_actor_email.sql": {
+    "mtime": 1786381663.675352,
+    "seen": 1787357646.8743947,
+    "ast_hash": "fa49be15088d2964c44eda215e01f24e",
+    "semantic_hash": "fa49be15088d2964c44eda215e01f24e"
+  },
+  "services/api-core/src/main/resources/db/migration/V4__team_repo_mapping_and_mart_scope.sql": {
+    "mtime": 1786381663.675352,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f243a51a0896e6976490f727d9402dd2",
+    "semantic_hash": "f243a51a0896e6976490f727d9402dd2"
+  },
+  "services/api-core/src/main/resources/db/migration/V5__normalize_workflow_run_and_pr_state.sql": {
+    "mtime": 1786664429.2725358,
+    "seen": 1787357646.8743947,
+    "ast_hash": "beb9eb7a842805238d551381abc88bec",
+    "semantic_hash": "beb9eb7a842805238d551381abc88bec"
+  },
+  "services/api-core/src/main/resources/db/migration/V6__pull_request_review_state.sql": {
+    "mtime": 1786730631.8944097,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e364428c6857dcfa8222c916bbfcd504",
+    "semantic_hash": "e364428c6857dcfa8222c916bbfcd504"
+  },
+  "services/api-core/src/main/resources/db/migration/V7__pull_request_state_review_fields.sql": {
+    "mtime": 1786732627.7145972,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2f1c38d6e57d6fc64f16ad55c9aad949",
+    "semantic_hash": "2f1c38d6e57d6fc64f16ad55c9aad949"
+  },
+  "services/api-core/src/main/resources/db/migration/V8__app_user_team_scope.sql": {
+    "mtime": 1786815296.477244,
+    "seen": 1787357646.8743947,
+    "ast_hash": "269c3cde2d2753b374293e58f739895c",
+    "semantic_hash": "269c3cde2d2753b374293e58f739895c"
+  },
+  "services/api-core/src/main/resources/db/migration/V9__app_user_github_login.sql": {
+    "mtime": 1786835520.7794313,
+    "seen": 1787357646.8743947,
+    "ast_hash": "53f9fb77d8ebef19d15eddd8ec5774a2",
+    "semantic_hash": "53f9fb77d8ebef19d15eddd8ec5774a2"
+  },
+  "services/api-core/src/test/java/com/aiimpacteval/apicore/admin/AdminConnectorSecurityTest.java": {
+    "mtime": 1786381663.679347,
+    "seen": 1787357646.8743947,
+    "ast_hash": "30ec94109338f95081bb8d2047ada5b1",
+    "semantic_hash": "30ec94109338f95081bb8d2047ada5b1"
+  },
+  "services/api-core/src/test/java/com/aiimpacteval/apicore/audit/AuditSecurityTest.java": {
+    "mtime": 1786381663.680347,
+    "seen": 1787357646.8743947,
+    "ast_hash": "6f0e21aa27fd247ab27167f4a8892fb1",
+    "semantic_hash": "6f0e21aa27fd247ab27167f4a8892fb1"
+  },
+  "services/api-core/src/test/java/com/aiimpacteval/apicore/security/CockpitSecurityTest.java": {
+    "mtime": 1786381663.680347,
+    "seen": 1787357646.8743947,
+    "ast_hash": "42d416c0840679dbb1fa5bb4f2147604",
+    "semantic_hash": "42d416c0840679dbb1fa5bb4f2147604"
+  },
+  "services/api-core/src/test/java/com/aiimpacteval/apicore/security/DevTokenServiceTest.java": {
+    "mtime": 1786835616.1678166,
+    "seen": 1787357646.8743947,
+    "ast_hash": "281db68365b20f551d4e182dd1e2035c",
+    "semantic_hash": "281db68365b20f551d4e182dd1e2035c"
+  },
+  "services/api-core/src/test/java/com/aiimpacteval/apicore/setup/SetupSecurityTest.java": {
+    "mtime": 1786381663.6823547,
+    "seen": 1787357646.8743947,
+    "ast_hash": "625742231898f6e7e654ed9d20cfc697",
+    "semantic_hash": "625742231898f6e7e654ed9d20cfc697"
+  },
+  "services/api-core/src/test/java/com/aiimpacteval/apicore/teams/TeamSecurityTest.java": {
+    "mtime": 1787244415.4719312,
+    "seen": 1787357646.8743947,
+    "ast_hash": "be3f77749d30f521d733196aa13502f8",
+    "semantic_hash": "be3f77749d30f521d733196aa13502f8"
+  },
+  "services/connectors/connector-ai-telemetry/pom.xml": {
+    "mtime": 1787261630.2998502,
+    "seen": 1787357646.8743947,
+    "ast_hash": "539a39711f36d1b4c0872de0a80e7a09",
+    "semantic_hash": "539a39711f36d1b4c0872de0a80e7a09"
+  },
+  "services/connectors/connector-ai-telemetry/src/main/java/com/aiimpacteval/connector/aitelemetry/ConnectorAiTelemetryApplication.java": {
+    "mtime": 1787261635.08264,
+    "seen": 1787357646.8743947,
+    "ast_hash": "6d113266e071c8f94f4c1a2695a43465",
+    "semantic_hash": "6d113266e071c8f94f4c1a2695a43465"
+  },
+  "services/connectors/connector-ai-telemetry/src/main/java/com/aiimpacteval/connector/aitelemetry/backfill/BackfillController.java": {
+    "mtime": 1787261709.526848,
+    "seen": 1787357646.8743947,
+    "ast_hash": "b0d563c1dfacfdf48cb881c72c57bb9d",
+    "semantic_hash": "b0d563c1dfacfdf48cb881c72c57bb9d"
+  },
+  "services/connectors/connector-ai-telemetry/src/main/java/com/aiimpacteval/connector/aitelemetry/backfill/ClaudeCodeUsageBackfillService.java": {
+    "mtime": 1787261687.2812204,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a1941d5f139b40698471be5491a1ab47",
+    "semantic_hash": "a1941d5f139b40698471be5491a1ab47"
+  },
+  "services/connectors/connector-ai-telemetry/src/main/java/com/aiimpacteval/connector/aitelemetry/backfill/CopilotUsageBackfillService.java": {
+    "mtime": 1787261702.15838,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a38448d48bf3e000c886585355461558",
+    "semantic_hash": "a38448d48bf3e000c886585355461558"
+  },
+  "services/connectors/connector-ai-telemetry/src/main/java/com/aiimpacteval/connector/aitelemetry/config/ClockConfig.java": {
+    "mtime": 1787261639.7176778,
+    "seen": 1787357646.8743947,
+    "ast_hash": "066d5e23161246b1dfa0073dc8eed783",
+    "semantic_hash": "066d5e23161246b1dfa0073dc8eed783"
+  },
+  "services/connectors/connector-ai-telemetry/src/main/java/com/aiimpacteval/connector/aitelemetry/events/EventPublisher.java": {
+    "mtime": 1787261644.9839003,
+    "seen": 1787357646.8743947,
+    "ast_hash": "35ebe83132274e3e2883f5ecafd89d4f",
+    "semantic_hash": "35ebe83132274e3e2883f5ecafd89d4f"
+  },
+  "services/connectors/connector-ai-telemetry/src/main/java/com/aiimpacteval/connector/aitelemetry/events/RabbitConfig.java": {
+    "mtime": 1787261658.5284426,
+    "seen": 1787357646.8743947,
+    "ast_hash": "00e3da439cc48fc94f8346f0090fabbd",
+    "semantic_hash": "00e3da439cc48fc94f8346f0090fabbd"
+  },
+  "services/connectors/connector-ai-telemetry/src/main/java/com/aiimpacteval/connector/aitelemetry/events/RabbitEventPublisher.java": {
+    "mtime": 1787261650.142208,
+    "seen": 1787357646.8743947,
+    "ast_hash": "ef71aaec86b60c29e77d9c68f8e11d8f",
+    "semantic_hash": "ef71aaec86b60c29e77d9c68f8e11d8f"
+  },
+  "services/connectors/connector-github/pom.xml": {
+    "mtime": 1786646401.5409079,
+    "seen": 1787357646.8743947,
+    "ast_hash": "3f7808b7668fea3206256cf3258dbd6b",
+    "semantic_hash": "3f7808b7668fea3206256cf3258dbd6b"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/ConnectorGithubApplication.java": {
+    "mtime": 1786381663.687354,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2b6940639d83b601d37d3bbdd9a193c7",
+    "semantic_hash": "2b6940639d83b601d37d3bbdd9a193c7"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/backfill/BackfillController.java": {
+    "mtime": 1786381663.6883473,
+    "seen": 1787357646.8743947,
+    "ast_hash": "cbf1b0bfb1dc35f5288c69afd7c0cece",
+    "semantic_hash": "cbf1b0bfb1dc35f5288c69afd7c0cece"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/backfill/GithubBackfillService.java": {
+    "mtime": 1786730631.897411,
+    "seen": 1787357646.8743947,
+    "ast_hash": "05772c395d272eab67910d97ddd8b108",
+    "semantic_hash": "05772c395d272eab67910d97ddd8b108"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/backfill/GithubRestClients.java": {
+    "mtime": 1787252979.3107283,
+    "seen": 1787357646.8743947,
+    "ast_hash": "7884a91ae26f90613134321165359348",
+    "semantic_hash": "7884a91ae26f90613134321165359348"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/backfill/GithubTeamBackfillService.java": {
+    "mtime": 1786381663.6913464,
+    "seen": 1787357646.8743947,
+    "ast_hash": "118b8aa4ac67b304c87ad1c50185b2db",
+    "semantic_hash": "118b8aa4ac67b304c87ad1c50185b2db"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/backfill/RetryingJsonFetcher.java": {
+    "mtime": 1786381663.6913464,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2af57547c96e3b37daa9a26ff6bdefe9",
+    "semantic_hash": "2af57547c96e3b37daa9a26ff6bdefe9"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/config/ClockConfig.java": {
+    "mtime": 1786381663.6923552,
+    "seen": 1787357646.8743947,
+    "ast_hash": "720fdd4af4c44b10d4498f8ebdde8efe",
+    "semantic_hash": "720fdd4af4c44b10d4498f8ebdde8efe"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/events/EventPublisher.java": {
+    "mtime": 1786381663.6933491,
+    "seen": 1787357646.8743947,
+    "ast_hash": "eafe03160433cececd86e73aef7d6eb3",
+    "semantic_hash": "eafe03160433cececd86e73aef7d6eb3"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/events/RabbitConfig.java": {
+    "mtime": 1786381663.6933491,
+    "seen": 1787357646.8743947,
+    "ast_hash": "27fcaee9a41d198637ff380aee40926e",
+    "semantic_hash": "27fcaee9a41d198637ff380aee40926e"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/events/RabbitEventPublisher.java": {
+    "mtime": 1786381663.694348,
+    "seen": 1787357646.8743947,
+    "ast_hash": "af22ff8b6e4e00b8e1174d4a6be72727",
+    "semantic_hash": "af22ff8b6e4e00b8e1174d4a6be72727"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/webhook/GithubWebhookController.java": {
+    "mtime": 1786381663.6953483,
+    "seen": 1787357646.8743947,
+    "ast_hash": "900e6cfa7ccea72d242edea4e66ab9a4",
+    "semantic_hash": "900e6cfa7ccea72d242edea4e66ab9a4"
+  },
+  "services/connectors/connector-github/src/main/java/com/aiimpacteval/connector/github/webhook/WebhookSignatureVerifier.java": {
+    "mtime": 1786381663.6953483,
+    "seen": 1787357646.8743947,
+    "ast_hash": "ddab3afbd5a98699de3c8a6b718f3e79",
+    "semantic_hash": "ddab3afbd5a98699de3c8a6b718f3e79"
+  },
+  "services/connectors/connector-github/src/test/java/com/aiimpacteval/connector/github/webhook/GithubWebhookControllerTest.java": {
+    "mtime": 1786381663.699347,
+    "seen": 1787357646.8743947,
+    "ast_hash": "0f528a313cc8646d5e1cf20aee02876e",
+    "semantic_hash": "0f528a313cc8646d5e1cf20aee02876e"
+  },
+  "services/connectors/connector-github/src/test/java/com/aiimpacteval/connector/github/webhook/WebhookSignatureVerifierTest.java": {
+    "mtime": 1786381663.699347,
+    "seen": 1787357646.8743947,
+    "ast_hash": "c0045885e908578f2b6cfcd71c497249",
+    "semantic_hash": "c0045885e908578f2b6cfcd71c497249"
+  },
+  "services/connectors/connector-jenkins/pom.xml": {
+    "mtime": 1787052898.225556,
+    "seen": 1787357646.8743947,
+    "ast_hash": "808b219d0d802489d0249b7504d27b13",
+    "semantic_hash": "808b219d0d802489d0249b7504d27b13"
+  },
+  "services/connectors/connector-jenkins/src/main/java/com/aiimpacteval/connector/jenkins/ConnectorJenkinsApplication.java": {
+    "mtime": 1787242973.3139327,
+    "seen": 1787357646.8743947,
+    "ast_hash": "7173417d68db5de3b8accb4e134804b3",
+    "semantic_hash": "7173417d68db5de3b8accb4e134804b3"
+  },
+  "services/connectors/connector-jenkins/src/main/java/com/aiimpacteval/connector/jenkins/backfill/BackfillController.java": {
+    "mtime": 1787242996.6154828,
+    "seen": 1787357646.8743947,
+    "ast_hash": "61dda53585d7015f4b8a3426b4a51892",
+    "semantic_hash": "61dda53585d7015f4b8a3426b4a51892"
+  },
+  "services/connectors/connector-jenkins/src/main/java/com/aiimpacteval/connector/jenkins/backfill/JenkinsBackfillService.java": {
+    "mtime": 1787253031.6108973,
+    "seen": 1787357646.8743947,
+    "ast_hash": "feed01eb966c63dc1f473aa17686ac58",
+    "semantic_hash": "feed01eb966c63dc1f473aa17686ac58"
+  },
+  "services/connectors/connector-jenkins/src/main/java/com/aiimpacteval/connector/jenkins/config/ClockConfig.java": {
+    "mtime": 1787242974.1866305,
+    "seen": 1787357646.8743947,
+    "ast_hash": "aef8fd3ad4958c626ecf9ab8f5b0918c",
+    "semantic_hash": "aef8fd3ad4958c626ecf9ab8f5b0918c"
+  },
+  "services/connectors/connector-jenkins/src/main/java/com/aiimpacteval/connector/jenkins/events/EventPublisher.java": {
+    "mtime": 1787242975.7764592,
+    "seen": 1787357646.8743947,
+    "ast_hash": "6bf423397088de886b1db8605bc09824",
+    "semantic_hash": "6bf423397088de886b1db8605bc09824"
+  },
+  "services/connectors/connector-jenkins/src/main/java/com/aiimpacteval/connector/jenkins/events/RabbitConfig.java": {
+    "mtime": 1787242981.3600957,
+    "seen": 1787357646.8743947,
+    "ast_hash": "d69df3718a57813f66408be536f94322",
+    "semantic_hash": "d69df3718a57813f66408be536f94322"
+  },
+  "services/connectors/connector-jenkins/src/main/java/com/aiimpacteval/connector/jenkins/events/RabbitEventPublisher.java": {
+    "mtime": 1787242977.6504257,
+    "seen": 1787357646.8743947,
+    "ast_hash": "aad397ac2df34827c07da9dc8896dade",
+    "semantic_hash": "aad397ac2df34827c07da9dc8896dade"
+  },
+  "services/connectors/connector-jira/pom.xml": {
+    "mtime": 1786381663.7003484,
+    "seen": 1787357646.8743947,
+    "ast_hash": "3e4b3c8c2226d118e3fb357d326ffb93",
+    "semantic_hash": "3e4b3c8c2226d118e3fb357d326ffb93"
+  },
+  "services/connectors/connector-jira/src/main/java/com/aiimpacteval/connector/jira/ConnectorJiraApplication.java": {
+    "mtime": 1786381663.7033536,
+    "seen": 1787357646.8743947,
+    "ast_hash": "cad5401b6321dcf0cd08e5b2158f88bb",
+    "semantic_hash": "cad5401b6321dcf0cd08e5b2158f88bb"
+  },
+  "services/connectors/connector-jira/src/main/java/com/aiimpacteval/connector/jira/backfill/BackfillController.java": {
+    "mtime": 1786381663.7043505,
+    "seen": 1787357646.8743947,
+    "ast_hash": "5a11c6de5c4ec3d183dd03bf74b0f528",
+    "semantic_hash": "5a11c6de5c4ec3d183dd03bf74b0f528"
+  },
+  "services/connectors/connector-jira/src/main/java/com/aiimpacteval/connector/jira/backfill/JiraBackfillService.java": {
+    "mtime": 1787253010.726379,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2c24334fd2ecb2f656bdbdafb827f59a",
+    "semantic_hash": "2c24334fd2ecb2f656bdbdafb827f59a"
+  },
+  "services/connectors/connector-jira/src/main/java/com/aiimpacteval/connector/jira/config/ClockConfig.java": {
+    "mtime": 1786381663.7053592,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e2f4cfaef56f1bff44d490f1acef4a30",
+    "semantic_hash": "e2f4cfaef56f1bff44d490f1acef4a30"
+  },
+  "services/connectors/connector-jira/src/main/java/com/aiimpacteval/connector/jira/events/EventPublisher.java": {
+    "mtime": 1786381663.7063518,
+    "seen": 1787357646.8743947,
+    "ast_hash": "b37519aac6a75ab7a406f1fc10b5a335",
+    "semantic_hash": "b37519aac6a75ab7a406f1fc10b5a335"
+  },
+  "services/connectors/connector-jira/src/main/java/com/aiimpacteval/connector/jira/events/RabbitConfig.java": {
+    "mtime": 1786381663.7073526,
+    "seen": 1787357646.8743947,
+    "ast_hash": "d05ab6cf14d604bb65bdb41c7eae639d",
+    "semantic_hash": "d05ab6cf14d604bb65bdb41c7eae639d"
+  },
+  "services/connectors/connector-jira/src/main/java/com/aiimpacteval/connector/jira/events/RabbitEventPublisher.java": {
+    "mtime": 1786381663.7083473,
+    "seen": 1787357646.8743947,
+    "ast_hash": "7401decb3b225370b628ae7b64277c56",
+    "semantic_hash": "7401decb3b225370b628ae7b64277c56"
+  },
+  "services/connectors/connector-jira/src/main/java/com/aiimpacteval/connector/jira/webhook/JiraWebhookController.java": {
+    "mtime": 1786381663.709353,
+    "seen": 1787357646.8743947,
+    "ast_hash": "4c24ab5430553a221b2eff603b90be27",
+    "semantic_hash": "4c24ab5430553a221b2eff603b90be27"
+  },
+  "services/connectors/connector-jira/src/main/java/com/aiimpacteval/connector/jira/webhook/WebhookTokenVerifier.java": {
+    "mtime": 1786381663.7103896,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e4fc11617fa9f88135c70ba9b2250c96",
+    "semantic_hash": "e4fc11617fa9f88135c70ba9b2250c96"
+  },
+  "services/connectors/connector-jira/src/test/java/com/aiimpacteval/connector/jira/webhook/JiraWebhookControllerTest.java": {
+    "mtime": 1786381663.7143488,
+    "seen": 1787357646.8743947,
+    "ast_hash": "c8bdd119d1832901978d82572bfb55a4",
+    "semantic_hash": "c8bdd119d1832901978d82572bfb55a4"
+  },
+  "services/connectors/connector-jira/src/test/java/com/aiimpacteval/connector/jira/webhook/WebhookTokenVerifierTest.java": {
+    "mtime": 1786381663.7143488,
+    "seen": 1787357646.8743947,
+    "ast_hash": "d8fb6c3f3563b580b03fc352515670ad",
+    "semantic_hash": "d8fb6c3f3563b580b03fc352515670ad"
+  },
+  "services/identity-service/pom.xml": {
+    "mtime": 1786381663.7163463,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e6d82b20de130ff7b15be60ff2c04e26",
+    "semantic_hash": "e6d82b20de130ff7b15be60ff2c04e26"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/IdentityEventListener.java": {
+    "mtime": 1786381663.719351,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f1da3607c56bb9cb487157bda64868db",
+    "semantic_hash": "f1da3607c56bb9cb487157bda64868db"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/IdentityServiceApplication.java": {
+    "mtime": 1786381663.7203586,
+    "seen": 1787357646.8743947,
+    "ast_hash": "d8b91f5fced50657bc2e425973a25f0b",
+    "semantic_hash": "d8b91f5fced50657bc2e425973a25f0b"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/QueueConfig.java": {
+    "mtime": 1786381663.7213485,
+    "seen": 1787357646.8743947,
+    "ast_hash": "0229c12ea0b718fa260360ecfc54b0c8",
+    "semantic_hash": "0229c12ea0b718fa260360ecfc54b0c8"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/resolve/IdentityRepository.java": {
+    "mtime": 1786381663.722353,
+    "seen": 1787357646.8743947,
+    "ast_hash": "629fdadb509a20d14177ba9d5fb0023f",
+    "semantic_hash": "629fdadb509a20d14177ba9d5fb0023f"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/resolve/IdentityResolver.java": {
+    "mtime": 1786381663.722353,
+    "seen": 1787357646.8743947,
+    "ast_hash": "072bd7c109321eade23d41321549c698",
+    "semantic_hash": "072bd7c109321eade23d41321549c698"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/resolve/JdbcIdentityRepository.java": {
+    "mtime": 1786381663.72335,
+    "seen": 1787357646.8743947,
+    "ast_hash": "08e1d0abeb6f4dbd5b80ade08309d332",
+    "semantic_hash": "08e1d0abeb6f4dbd5b80ade08309d332"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/resolve/ObservedIdentity.java": {
+    "mtime": 1786381663.7243578,
+    "seen": 1787357646.8743947,
+    "ast_hash": "16d5e38f81f992944f75ccb79c84d687",
+    "semantic_hash": "16d5e38f81f992944f75ccb79c84d687"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/team/JdbcTeamRepository.java": {
+    "mtime": 1786381663.7253487,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e47efa55e3b0e6988947647e463bc7c2",
+    "semantic_hash": "e47efa55e3b0e6988947647e463bc7c2"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/team/TeamImportService.java": {
+    "mtime": 1786381663.7263522,
+    "seen": 1787357646.8743947,
+    "ast_hash": "81f92b2ffdfc82073d534c13bfecb859",
+    "semantic_hash": "81f92b2ffdfc82073d534c13bfecb859"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/team/TeamRepository.java": {
+    "mtime": 1786381663.7263522,
+    "seen": 1787357646.8743947,
+    "ast_hash": "887e38d67409adfd1e0133b284d66ba4",
+    "semantic_hash": "887e38d67409adfd1e0133b284d66ba4"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/team/TeamSnapshot.java": {
+    "mtime": 1786381663.7273526,
+    "seen": 1787357646.8743947,
+    "ast_hash": "486558956ade85476e1c637e75e39136",
+    "semantic_hash": "486558956ade85476e1c637e75e39136"
+  },
+  "services/identity-service/src/main/java/com/aiimpacteval/identity/team/TeamSnapshotParser.java": {
+    "mtime": 1786381663.7283485,
+    "seen": 1787357646.8743947,
+    "ast_hash": "82be50cac0de59daa890f9c6550ac060",
+    "semantic_hash": "82be50cac0de59daa890f9c6550ac060"
+  },
+  "services/identity-service/src/test/java/com/aiimpacteval/identity/IdentityEventListenerTest.java": {
+    "mtime": 1786381663.7313776,
+    "seen": 1787357646.8743947,
+    "ast_hash": "8f25cb683aa000407b9d1cd828b658e3",
+    "semantic_hash": "8f25cb683aa000407b9d1cd828b658e3"
+  },
+  "services/identity-service/src/test/java/com/aiimpacteval/identity/resolve/IdentityResolverTest.java": {
+    "mtime": 1786381663.7323525,
+    "seen": 1787357646.8743947,
+    "ast_hash": "de1d8c32da235609856e5fcd767d9349",
+    "semantic_hash": "de1d8c32da235609856e5fcd767d9349"
+  },
+  "services/identity-service/src/test/java/com/aiimpacteval/identity/team/TeamImportServiceTest.java": {
+    "mtime": 1786381663.7323525,
+    "seen": 1787357646.8743947,
+    "ast_hash": "16c98afba11b5afd595f5772ecaa4d1f",
+    "semantic_hash": "16c98afba11b5afd595f5772ecaa4d1f"
+  },
+  "services/identity-service/src/test/java/com/aiimpacteval/identity/team/TeamSnapshotParserTest.java": {
+    "mtime": 1786381663.733349,
+    "seen": 1787357646.8743947,
+    "ast_hash": "064b950bbbba760d605ffb0efda1b2fe",
+    "semantic_hash": "064b950bbbba760d605ffb0efda1b2fe"
+  },
+  "services/ingestion-writer/pom.xml": {
+    "mtime": 1786381663.7363496,
+    "seen": 1787357646.8743947,
+    "ast_hash": "bfd744896b2892e9ee045410f82265d6",
+    "semantic_hash": "bfd744896b2892e9ee045410f82265d6"
+  },
+  "services/ingestion-writer/src/main/java/com/aiimpacteval/ingestion/IngestionWriterApplication.java": {
+    "mtime": 1786381663.7393503,
+    "seen": 1787357646.8743947,
+    "ast_hash": "88e1a8c2aaa2c5a888000063f411dde1",
+    "semantic_hash": "88e1a8c2aaa2c5a888000063f411dde1"
+  },
+  "services/ingestion-writer/src/main/java/com/aiimpacteval/ingestion/QueueTopologyConfig.java": {
+    "mtime": 1786381663.7393503,
+    "seen": 1787357646.8743947,
+    "ast_hash": "77de70027957ee7f38eb863a4c47fab8",
+    "semantic_hash": "77de70027957ee7f38eb863a4c47fab8"
+  },
+  "services/ingestion-writer/src/main/java/com/aiimpacteval/ingestion/StagingEventWriter.java": {
+    "mtime": 1787282497.3580441,
+    "seen": 1787357646.8743947,
+    "ast_hash": "abb9c7634de07150a689fd3ada1bf203",
+    "semantic_hash": "abb9c7634de07150a689fd3ada1bf203"
+  },
+  "services/ingestion-writer/src/test/java/com/aiimpacteval/ingestion/StagingEventWriterIntegrationTest.java": {
+    "mtime": 1787261934.9884782,
+    "seen": 1787357646.8743947,
+    "ast_hash": "86c281d4256682b2f9227e60cd8c0090",
+    "semantic_hash": "86c281d4256682b2f9227e60cd8c0090"
+  },
+  "services/metrics-engine/pom.xml": {
+    "mtime": 1786381663.7453482,
+    "seen": 1787357646.8743947,
+    "ast_hash": "743a98b5271b4d76cd09067ff684523c",
+    "semantic_hash": "743a98b5271b4d76cd09067ff684523c"
+  },
+  "services/metrics-engine/src/main/java/com/aiimpacteval/metrics/MetricsEngineApplication.java": {
+    "mtime": 1786381663.7483485,
+    "seen": 1787357646.8743947,
+    "ast_hash": "b16216a886fa20fa45b0f71f11744e2d",
+    "semantic_hash": "b16216a886fa20fa45b0f71f11744e2d"
+  },
+  "services/metrics-engine/src/main/java/com/aiimpacteval/metrics/MetricsRecomputeService.java": {
+    "mtime": 1786664537.6940045,
+    "seen": 1787357646.8743947,
+    "ast_hash": "4d8ea1654998a5f85e9cd2e364f2f221",
+    "semantic_hash": "4d8ea1654998a5f85e9cd2e364f2f221"
+  },
+  "services/metrics-engine/src/main/java/com/aiimpacteval/metrics/RecomputeController.java": {
+    "mtime": 1786655456.637293,
+    "seen": 1787357646.8743947,
+    "ast_hash": "7b4c086f4dbf147dde0bb455899cccfd",
+    "semantic_hash": "7b4c086f4dbf147dde0bb455899cccfd"
+  },
+  "services/metrics-engine/src/test/java/com/aiimpacteval/metrics/MetricsRecomputeServiceIntegrationTest.java": {
+    "mtime": 1786381663.7553475,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e87b2cba105237071207a7d0ef1747c8",
+    "semantic_hash": "e87b2cba105237071207a7d0ef1747c8"
+  },
+  "services/platform-common/pom.xml": {
+    "mtime": 1787253153.2362783,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a180b38f3e94d206a4a2aca9de8b487b",
+    "semantic_hash": "a180b38f3e94d206a4a2aca9de8b487b"
+  },
+  "services/platform-common/src/main/java/com/aiimpacteval/common/events/EventEnvelope.java": {
+    "mtime": 1786381663.7593513,
+    "seen": 1787357646.8743947,
+    "ast_hash": "07438dfa332751549e63b3bea281c3d2",
+    "semantic_hash": "07438dfa332751549e63b3bea281c3d2"
+  },
+  "services/platform-common/src/main/java/com/aiimpacteval/common/events/EventTopology.java": {
+    "mtime": 1786381663.7603493,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e9d34098fd8a2c5305d7c15fba47be7d",
+    "semantic_hash": "e9d34098fd8a2c5305d7c15fba47be7d"
+  },
+  "services/platform-common/src/main/java/com/aiimpacteval/common/http/TimeoutRestClients.java": {
+    "mtime": 1787252968.637466,
+    "seen": 1787357646.8743947,
+    "ast_hash": "d401fc5017fb58c0eee8e0e1a958e51a",
+    "semantic_hash": "d401fc5017fb58c0eee8e0e1a958e51a"
+  },
+  "services/platform-common/src/test/java/com/aiimpacteval/common/events/EventEnvelopeTest.java": {
+    "mtime": 1786381663.7623494,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a3bf9eb67bca01fa1f5104278bfcc7c8",
+    "semantic_hash": "a3bf9eb67bca01fa1f5104278bfcc7c8"
+  },
+  "services/pom.xml": {
+    "mtime": 1787261725.152009,
+    "seen": 1787357646.8743947,
+    "ast_hash": "042f0d1ea1c6d42fc40b82e31dfc121e",
+    "semantic_hash": "042f0d1ea1c6d42fc40b82e31dfc121e"
+  },
+  "templates/company-tickets-template.json": {
+    "mtime": 1786381663.7653587,
+    "seen": 1787357646.8743947,
+    "ast_hash": "fbda2f7ce80972f94e465b9497b316ff",
+    "semantic_hash": "fbda2f7ce80972f94e465b9497b316ff"
+  },
+  "templates/dsa-template.json": {
+    "mtime": 1786381663.7653587,
+    "seen": 1787357646.8743947,
+    "ast_hash": "107d50961e989f6121cd0e7d0323ba04",
+    "semantic_hash": "107d50961e989f6121cd0e7d0323ba04"
+  },
+  "templates/quiz-template.json": {
+    "mtime": 1786381663.766352,
+    "seen": 1787357646.8743947,
+    "ast_hash": "fb72b9493a08f36e5055edf0785ceaae",
+    "semantic_hash": "fb72b9493a08f36e5055edf0785ceaae"
+  },
+  "CLAUDE.md": {
+    "mtime": 1786381663.5853481,
+    "seen": 1787357646.8743947,
+    "ast_hash": "2414ce21a67092c20686a2a742673b43",
+    "semantic_hash": "2414ce21a67092c20686a2a742673b43"
+  },
+  "README.md": {
+    "mtime": 1787288118.0853877,
+    "seen": 1787357646.8743947,
+    "ast_hash": "429ec61f5c1c0d46ef0c863beeb821ab",
+    "semantic_hash": "429ec61f5c1c0d46ef0c863beeb821ab"
+  },
+  "claude_HANDOFF.md": {
+    "mtime": 1787242630.9408803,
+    "seen": 1787357646.8743947,
+    "ast_hash": "37ac7339493d36c1ec5d343229cc35d0",
+    "semantic_hash": "37ac7339493d36c1ec5d343229cc35d0"
+  },
+  "docs/01-product/brd-summary.md": {
+    "mtime": 1786381663.5953474,
+    "seen": 1787357646.8743947,
+    "ast_hash": "8438837eb78d5318fd1ba07541173606",
+    "semantic_hash": "8438837eb78d5318fd1ba07541173606"
+  },
+  "docs/01-product/frd.md": {
+    "mtime": 1786381663.596348,
+    "seen": 1787357646.8743947,
+    "ast_hash": "9ddebabcec6cc266ebcf668cd7c4fa60",
+    "semantic_hash": "9ddebabcec6cc266ebcf668cd7c4fa60"
+  },
+  "docs/01-product/metric-definitions.md": {
+    "mtime": 1787283216.2067082,
+    "seen": 1787357646.8743947,
+    "ast_hash": "8efe6c23234fae682f96cc69af8a8453",
+    "semantic_hash": "8efe6c23234fae682f96cc69af8a8453"
+  },
+  "docs/01-product/prd.md": {
+    "mtime": 1786381663.5973854,
+    "seen": 1787357646.8743947,
+    "ast_hash": "29f9c630951a776b8cc6a43a008cac6b",
+    "semantic_hash": "29f9c630951a776b8cc6a43a008cac6b"
+  },
+  "docs/02-standards/engineering-standards.md": {
+    "mtime": 1786381663.5983493,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e9be084f6ead2d85332dd862b7edcbad",
+    "semantic_hash": "e9be084f6ead2d85332dd862b7edcbad"
+  },
+  "docs/02-standards/security-and-privacy-standards.md": {
+    "mtime": 1786381663.5983493,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a8b8f5f5f43c4d6893c6ca263641fcc0",
+    "semantic_hash": "a8b8f5f5f43c4d6893c6ca263641fcc0"
+  },
+  "docs/03-architecture/decisions/ADR-0000-template.md": {
+    "mtime": 1786381663.599347,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a6b705e131f4681278f8ff01ef8e9f11",
+    "semantic_hash": "a6b705e131f4681278f8ff01ef8e9f11"
+  },
+  "docs/03-architecture/decisions/ADR-0001-technology-stack.md": {
+    "mtime": 1786381663.600347,
+    "seen": 1787357646.8743947,
+    "ast_hash": "080a6fd17c044763e727b5def5dbc2e4",
+    "semantic_hash": "080a6fd17c044763e727b5def5dbc2e4"
+  },
+  "docs/03-architecture/decisions/ADR-0002-queue-isolated-connectors-single-postgres.md": {
+    "mtime": 1786381663.6013505,
+    "seen": 1787357646.8743947,
+    "ast_hash": "d7f9832cc5bc03c08792e4438ed408a2",
+    "semantic_hash": "d7f9832cc5bc03c08792e4438ed408a2"
+  },
+  "docs/03-architecture/decisions/ADR-0003-event-envelope-and-queue-topology.md": {
+    "mtime": 1786381663.602352,
+    "seen": 1787357646.8743947,
+    "ast_hash": "06d97a328890c994ac52963dee7ee8de",
+    "semantic_hash": "06d97a328890c994ac52963dee7ee8de"
+  },
+  "docs/03-architecture/decisions/ADR-0004-authentication-rbac-audit.md": {
+    "mtime": 1786381663.6033509,
+    "seen": 1787357646.8743947,
+    "ast_hash": "9c56becb088da90b894a8b98e65c8fcd",
+    "semantic_hash": "9c56becb088da90b894a8b98e65c8fcd"
+  },
+  "docs/03-architecture/system-architecture.md": {
+    "mtime": 1787243894.8049545,
+    "seen": 1787357646.8743947,
+    "ast_hash": "11d76dd88480d915cf531db00dfbd584",
+    "semantic_hash": "11d76dd88480d915cf531db00dfbd584"
+  },
+  "docs/04-operations/README.md": {
+    "mtime": 1786381663.604349,
+    "seen": 1787357646.8743947,
+    "ast_hash": "57d53347807bc9ded52b0c5145e6bf07",
+    "semantic_hash": "57d53347807bc9ded52b0c5145e6bf07"
+  },
+  "docs/CHANGELOG.md": {
+    "mtime": 1787288129.4140446,
+    "seen": 1787357646.8743947,
+    "ast_hash": "43c6fbb52701b373c91a99fb72e63f0b",
+    "semantic_hash": "43c6fbb52701b373c91a99fb72e63f0b"
+  },
+  "docs/README.md": {
+    "mtime": 1786381663.6063879,
+    "seen": 1787357646.8743947,
+    "ast_hash": "600c64e15d224879d1106b63af47cebc",
+    "semantic_hash": "600c64e15d224879d1106b63af47cebc"
+  },
+  "frontend/README.md": {
+    "mtime": 1787288096.417585,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e4ee257332b0ea666060dd56606ba6f9",
+    "semantic_hash": "e4ee257332b0ea666060dd56606ba6f9"
+  },
+  "frontend/index.html": {
+    "mtime": 1786381663.6073515,
+    "seen": 1787357646.8743947,
+    "ast_hash": "91bad7a3fb4c737ef9e51a048cc602a1",
+    "semantic_hash": "91bad7a3fb4c737ef9e51a048cc602a1"
+  },
+  "infra/README.md": {
+    "mtime": 1787281358.0405853,
+    "seen": 1787357646.8743947,
+    "ast_hash": "e09f6542c76e944d3f66758b7e4eda22",
+    "semantic_hash": "e09f6542c76e944d3f66758b7e4eda22"
+  },
+  "infra/docker-compose.yml": {
+    "mtime": 1787243605.424134,
+    "seen": 1787357646.8743947,
+    "ast_hash": "70acb14d4e47d385dc0f55e619731ec8",
+    "semantic_hash": "70acb14d4e47d385dc0f55e619731ec8"
+  },
+  "project-setup-commands.md": {
+    "mtime": 1786381663.653358,
+    "seen": 1787357646.8743947,
+    "ast_hash": "67efadf4fb256e9ce2316595ad1d176c",
+    "semantic_hash": "67efadf4fb256e9ce2316595ad1d176c"
+  },
+  "services/api-core/README.md": {
+    "mtime": 1787286515.3792799,
+    "seen": 1787357646.8743947,
+    "ast_hash": "817e9eb75ec51230c4233ea4673eb041",
+    "semantic_hash": "817e9eb75ec51230c4233ea4673eb041"
+  },
+  "services/api-core/src/main/resources/application.yml": {
+    "mtime": 1787282576.2467833,
+    "seen": 1787357646.8743947,
+    "ast_hash": "3c0bed1a1a72612dfc04f11222399316",
+    "semantic_hash": "3c0bed1a1a72612dfc04f11222399316"
+  },
+  "services/api-core/src/main/resources/openapi/api-core.yml": {
+    "mtime": 1787286106.568684,
+    "seen": 1787357646.8743947,
+    "ast_hash": "b922c88705884cd7e022d9e9fa9744aa",
+    "semantic_hash": "b922c88705884cd7e022d9e9fa9744aa"
+  },
+  "services/connectors/connector-ai-telemetry/README.md": {
+    "mtime": 1787281097.809744,
+    "seen": 1787357646.8743947,
+    "ast_hash": "8f1e3d8334d4b15caa159a83939dad0a",
+    "semantic_hash": "8f1e3d8334d4b15caa159a83939dad0a"
+  },
+  "services/connectors/connector-ai-telemetry/src/main/resources/application.yml": {
+    "mtime": 1787261717.0799375,
+    "seen": 1787357646.8743947,
+    "ast_hash": "d5b1f519890b1b8f264b85e433b8ba7f",
+    "semantic_hash": "d5b1f519890b1b8f264b85e433b8ba7f"
+  },
+  "services/connectors/connector-github/README.md": {
+    "mtime": 1786381663.6843479,
+    "seen": 1787357646.8743947,
+    "ast_hash": "5e500d7882228c39723f88b97843ca14",
+    "semantic_hash": "5e500d7882228c39723f88b97843ca14"
+  },
+  "services/connectors/connector-jenkins/README.md": {
+    "mtime": 1787243911.6936526,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f6c6b29fa56731cfa916b3aef2eaf474",
+    "semantic_hash": "f6c6b29fa56731cfa916b3aef2eaf474"
+  },
+  "services/connectors/connector-jira/README.md": {
+    "mtime": 1786381663.7003484,
+    "seen": 1787357646.8743947,
+    "ast_hash": "740c44b9501f09db82ce10f7d84f674a",
+    "semantic_hash": "740c44b9501f09db82ce10f7d84f674a"
+  },
+  "services/identity-service/README.md": {
+    "mtime": 1786381663.7153535,
+    "seen": 1787357646.8743947,
+    "ast_hash": "263cdfaaf1287b5d296b95bee0f9c9c7",
+    "semantic_hash": "263cdfaaf1287b5d296b95bee0f9c9c7"
+  },
+  "services/ingestion-writer/README.md": {
+    "mtime": 1787281079.989338,
+    "seen": 1787357646.8743947,
+    "ast_hash": "ce50488572b0791fc91764d5d982fa0a",
+    "semantic_hash": "ce50488572b0791fc91764d5d982fa0a"
+  },
+  "services/ingestion-writer/src/main/resources/application.yml": {
+    "mtime": 1787261820.8321126,
+    "seen": 1787357646.8743947,
+    "ast_hash": "b343b5ad32951c40652c1ef4875909f1",
+    "semantic_hash": "b343b5ad32951c40652c1ef4875909f1"
+  },
+  "services/metrics-engine/README.md": {
+    "mtime": 1786381663.7453482,
+    "seen": 1787357646.8743947,
+    "ast_hash": "49fcb8d981fb6b426116a14558c8c2ce",
+    "semantic_hash": "49fcb8d981fb6b426116a14558c8c2ce"
+  },
+  "templates/README.md": {
+    "mtime": 1786381663.7643487,
+    "seen": 1787357646.8743947,
+    "ast_hash": "360d2d566667e65af2507a0a23ae6e7e",
+    "semantic_hash": "360d2d566667e65af2507a0a23ae6e7e"
+  },
+  "docs/01-product/BRD-Summary.pdf": {
+    "mtime": 1786381663.5913482,
+    "seen": 1787357646.8743947,
+    "ast_hash": "a5d8249ff33aba9e37a4bfa16d5d52dc",
+    "semantic_hash": "a5d8249ff33aba9e37a4bfa16d5d52dc"
+  },
+  "docs/01-product/FRD-v1.0.pdf": {
+    "mtime": 1786381663.5933528,
+    "seen": 1787357646.8743947,
+    "ast_hash": "24c08572b933fcd17ba80847ec045ef0",
+    "semantic_hash": "24c08572b933fcd17ba80847ec045ef0"
+  },
+  "docs/01-product/PRD-v1.0.pdf": {
+    "mtime": 1786381663.5953474,
+    "seen": 1787357646.8743947,
+    "ast_hash": "caf5211b6fc124e01b8b14c5b7b7b888",
+    "semantic_hash": "caf5211b6fc124e01b8b14c5b7b7b888"
+  },
+  "frontend/public/ai-impact-evaluation-logo.png": {
+    "mtime": 1786381663.6213539,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f3f108acf6272e7edc797c427dac8292",
+    "semantic_hash": "f3f108acf6272e7edc797c427dac8292"
+  },
+  "frontend/src/assets/ai-impact-evaluation-logo.png": {
+    "mtime": 1786381663.6313524,
+    "seen": 1787357646.8743947,
+    "ast_hash": "f3f108acf6272e7edc797c427dac8292",
+    "semantic_hash": "f3f108acf6272e7edc797c427dac8292"
+  }
+}
