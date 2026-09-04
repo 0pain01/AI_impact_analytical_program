@@ -2,6 +2,17 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-09-04
+- connector-github: an exhausted GitHub rate limit (trivial to hit with no `GITHUB_TOKEN`
+  configured — unauthenticated calls cap at 60/hour, and one PR backfill costs a list call plus
+  one extra call per PR for reviews) used to surface as `/internal/backfill`'s generic 500,
+  which api-core's Admin console relayed verbatim as an opaque `syncError` — indistinguishable
+  from a real bug. `RetryingJsonFetcher` now detects `X-RateLimit-Remaining: 0` and fails fast
+  (no point burning its 3 retries over ~6s against an hourly reset) with a `RateLimitException`;
+  `BackfillController` maps that to a 429 carrying `retryAfter` and a pointer to set
+  `GITHUB_TOKEN`. Found while investigating a live "500 refreshing repos" report — repro'd
+  against `api.github.com/rate_limit` showing the dev machine's IP at 0 remaining.
+
 ## 2026-08-21 (8)
 - Docs: refreshed root `README.md` and `frontend/README.md`, both stale since before this
   session's work — root README now lists 4 live connectors (added AI Telemetry), AI Cost Track
