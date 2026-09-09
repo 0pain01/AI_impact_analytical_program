@@ -2,6 +2,26 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-09-09
+- GitLab wired end to end: `ingestion-writer` now maps `merge_request`/`pipeline` events into
+  the same `pull_request_state`/`workflow_run_state` tables GitHub/Jenkins share (`repo` values
+  prefixed `gitlab:` so a same-named GitLab project can never blend into a GitHub repo's
+  numbers) — DORA/PR-velocity/cycle-time pick GitLab data up in `metrics-engine` with zero
+  query changes. `identity-service` normalizes GitLab group imports into `core.team` (GitLab's
+  analogue of a GitHub org's teams) and resolves GitLab user/git-signature identities. `api-core`
+  exposes `POST /admin/connectors/gitlab-projects`/`gitlab-groups` and two new connector-health
+  entries (`gitlab`, `gitlab_ci`); the Admin console UI gained matching connect-a-project /
+  import-a-group forms. Known gap: GitLab pipelines carry no per-run name to match the
+  deploy/hotfix pattern against (unlike a GitHub Actions workflow or Jenkins job) — detection
+  matches the pipeline's git ref instead, so `METRICS_DEPLOY_WORKFLOW_PATTERN`/
+  `METRICS_HOTFIX_WORKFLOW_PATTERN` need the deploy branch name configured — see
+  metric-definitions.md and connector-gitlab's README.
+- New connector: `connector-gitlab` (PRD F1, FR-1.1) — token-verified webhooks
+  (`X-Gitlab-Token`, plain shared-secret comparison, not HMAC) and merge-request/commit/pipeline
+  backfill, plus group-structure backfill (projects + members) for the identity service. It's
+  the first connector packaged as a Docker image (multi-stage build, non-root runtime user —
+  ADR-0005); the other four connectors keep running as local processes.
+
 ## 2026-09-04
 - connector-github: an exhausted GitHub rate limit (trivial to hit with no `GITHUB_TOKEN`
   configured — unauthenticated calls cap at 60/hour, and one PR backfill costs a list call plus
