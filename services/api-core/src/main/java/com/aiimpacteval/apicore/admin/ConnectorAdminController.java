@@ -80,6 +80,33 @@ public class ConnectorAdminController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new TriggeredResponse(true));
     }
 
+    public record ConnectGitlabProjectRequest(String project, UUID teamId) {
+    }
+
+    @PostMapping("/gitlab-projects")
+    public ResponseEntity<TriggeredResponse> connectGitlabProject(@RequestBody ConnectGitlabProjectRequest request,
+                                                                   Authentication auth, HttpServletRequest servletRequest) {
+        if (isBlank(request.project())) {
+            return ResponseEntity.badRequest().build();
+        }
+        connectorAdminService.connectGitlabProject(auth.getName(), request.project().trim(), request.teamId(),
+                servletRequest.getRemoteAddr());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new TriggeredResponse(true));
+    }
+
+    public record ConnectGitlabGroupRequest(String group) {
+    }
+
+    @PostMapping("/gitlab-groups")
+    public ResponseEntity<TriggeredResponse> connectGitlabGroup(@RequestBody ConnectGitlabGroupRequest request,
+                                                                 Authentication auth, HttpServletRequest servletRequest) {
+        if (isBlank(request.group())) {
+            return ResponseEntity.badRequest().build();
+        }
+        connectorAdminService.connectGitlabGroup(auth.getName(), request.group().trim(), servletRequest.getRemoteAddr());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new TriggeredResponse(true));
+    }
+
     private static boolean isBlank(String s) {
         return s == null || s.isBlank();
     }

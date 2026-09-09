@@ -29,6 +29,7 @@ Health: `GET http://localhost:8080/actuator/health`
 | `DB_USERNAME` / `DB_PASSWORD` | `aiimpacteval` / `aiimpacteval_local` | DB credentials (local defaults only) |
 | `SERVER_PORT` | `8080` | HTTP port |
 | `CONNECTOR_GITHUB_BASE_URL` | `http://localhost:8081` | Where `ConnectorAdminService` calls connector-github's internal backfill endpoints when an ADMIN connects a repo/org from the Admin console |
+| `CONNECTOR_GITLAB_BASE_URL` | `http://localhost:8088` | Same, for connector-gitlab (project/group connect) |
 | `COPILOT_MONTHLY_SEAT_COST_USD` | `19` | Per-seat monthly cost for AI Cost Track's assumptions block — must match ingestion-writer's own copy (see its README); both compute against the same dollar figure independently rather than one reading it back from the other |
 | `AI_LICENSED_SEATS` | `30` | Denominator for AI-03 adoption rate — combined across every connected AI-telemetry tool (see metric-definitions.md's AI adoption/spend/ROI status note on why this is capped at 100%) |
 | `AI_BLENDED_HOURLY_RATE_USD` | `85` | AI-05 ROI's dollar-per-hour conversion for `estimatedHoursSaved → dollarValueRecovered` — an explicit, adjustable assumption, never a hidden constant |

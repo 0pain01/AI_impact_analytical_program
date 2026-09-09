@@ -395,8 +395,10 @@ export const MOCK_SETUP_STATUS: SetupStatus = {
 
 export const MOCK_CONNECTORS: ConnectorHealth[] = [
   { key: 'github', name: 'GitHub', type: 'Git host', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T07:55:00Z', lastCheckedAt: '2026-07-31T07:55:00Z', eventCount: 48213 },
+  { key: 'gitlab', name: 'GitLab', type: 'Git host', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T06:20:00Z', lastCheckedAt: '2026-07-31T07:52:00Z', eventCount: 6104 },
   { key: 'jira', name: 'Jira', type: 'Ticketing', status: 'CONNECTED', lastDataChangeAt: '2026-07-30T09:10:00Z', lastCheckedAt: '2026-07-31T07:50:00Z', eventCount: 9820 },
   { key: 'gha', name: 'GitHub Actions', type: 'CI/CD', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T07:48:00Z', lastCheckedAt: '2026-07-31T07:48:00Z', eventCount: 15230 },
+  { key: 'gitlab_ci', name: 'GitLab CI/CD', type: 'CI/CD', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T06:15:00Z', lastCheckedAt: '2026-07-31T07:52:00Z', eventCount: 2870 },
   { key: 'jenkins', name: 'Jenkins', type: 'CI/CD', status: 'CONNECTED', lastDataChangeAt: '2026-07-31T07:40:00Z', lastCheckedAt: '2026-07-31T07:40:00Z', eventCount: 3110 },
   { key: 'sonarqube', name: 'SonarQube', type: 'Code quality', status: 'STALE', lastDataChangeAt: '2026-07-29T06:10:00Z', lastCheckedAt: '2026-07-29T06:10:00Z', eventCount: 6120 },
   { key: 'pagerduty', name: 'PagerDuty', type: 'Incidents', status: 'NOT_CONNECTED', lastDataChangeAt: null, lastCheckedAt: null, eventCount: 0 },
@@ -601,6 +603,21 @@ export async function disconnectRepo(repo: string): Promise<void> {
 // import (repos + members), same as connectRepo but for `/internal/backfill-teams?org=`.
 export async function connectGithubOrgTeams(org: string): Promise<void> {
   await authFetch('/api/v1/admin/connectors/github-teams', { method: 'POST', body: { org } })
+}
+
+// LIVE: POST /api/v1/admin/connectors/gitlab-projects — triggers connector-gitlab's backfill
+// for one project (merge requests, commits, pipelines), optionally assigning it to a team.
+// `project` must be the namespace/project path, not a numeric GitLab project ID (see the
+// endpoint's OpenAPI description) — the repo shows up in fetchRepoSyncStatus() prefixed
+// `gitlab:`.
+export async function connectGitlabProject(project: string, teamId: string | null): Promise<void> {
+  await authFetch('/api/v1/admin/connectors/gitlab-projects', { method: 'POST', body: { project, teamId } })
+}
+
+// LIVE: POST /api/v1/admin/connectors/gitlab-groups — triggers connector-gitlab's group import
+// (projects + members, including subgroups), GitLab's analogue of connectGithubOrgTeams above.
+export async function connectGitlabGroup(group: string): Promise<void> {
+  await authFetch('/api/v1/admin/connectors/gitlab-groups', { method: 'POST', body: { group } })
 }
 
 // LIVE: POST/GET/DELETE /api/v1/admin/teams/** — manual team/repo-structure administration

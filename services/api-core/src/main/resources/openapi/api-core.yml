@@ -224,6 +224,53 @@ paths:
         "202": { description: Team import triggered. }
         "400": { description: Missing org. }
         "403": { description: Caller is not ADMIN. }
+  /admin/connectors/gitlab-projects:
+    post:
+      operationId: connectGitlabProject
+      summary: Connect a GitLab project from the Admin console — ADMIN only
+      description: >
+        Triggers connector-gitlab's backfill for one project (merge requests, commits,
+        pipelines) — same async pattern as connectRepo above. `project` must be the
+        `namespace/project` path (not a numeric GitLab project ID): the tracked repo key is
+        `"gitlab:" + project`, which only lines up with what StagingEventWriter actually persists
+        when the input string equals the project's real path. Appears in the same Sync status
+        table as GitHub repos (GET /admin/connectors/repos), prefixed `gitlab:`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [project]
+              properties:
+                project: { type: string, example: my-group/my-project }
+                teamId: { type: string, format: uuid, nullable: true }
+      responses:
+        "202": { description: Backfill triggered. }
+        "400": { description: Missing project. }
+        "403": { description: Caller is not ADMIN. }
+  /admin/connectors/gitlab-groups:
+    post:
+      operationId: connectGitlabGroup
+      summary: Import a GitLab group's projects and members from the Admin console — ADMIN only
+      description: >
+        Triggers connector-gitlab's group import (projects + members, including subgroups),
+        consumed by identity-service into core.team/core.team_repo/core.team_member — GitLab's
+        closest analogue to a GitHub org's teams. Async, same pattern as connectGithubOrgTeams
+        above. `group` is the group (or subgroup) path.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [group]
+              properties:
+                group: { type: string, example: my-group }
+      responses:
+        "202": { description: Group import triggered. }
+        "400": { description: Missing group. }
+        "403": { description: Caller is not ADMIN. }
   /admin/teams:
     post:
       operationId: upsertTeam
