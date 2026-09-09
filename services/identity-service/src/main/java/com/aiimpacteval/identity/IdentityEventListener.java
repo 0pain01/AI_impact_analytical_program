@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.aiimpacteval.common.events.EventEnvelope;
 import com.aiimpacteval.identity.resolve.IdentityResolver;
 import com.aiimpacteval.identity.resolve.ObservedIdentity;
+import com.aiimpacteval.identity.team.GitlabGroupSnapshotParser;
 import com.aiimpacteval.identity.team.TeamImportService;
 import com.aiimpacteval.identity.team.TeamSnapshotParser;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import java.util.List;
 public class IdentityEventListener {
 
     private static final String TEAM_SNAPSHOT_EVENT_TYPE = "team.snapshot";
+    private static final String GROUP_SNAPSHOT_EVENT_TYPE = "group.snapshot";
 
     private static final Logger log = LoggerFactory.getLogger(IdentityEventListener.class);
 
@@ -37,7 +39,11 @@ public class IdentityEventListener {
     @RabbitListener(queues = QueueConfig.IDENTITY_QUEUE)
     public void onEvent(EventEnvelope envelope) {
         if ("github".equals(envelope.source()) && TEAM_SNAPSHOT_EVENT_TYPE.equals(envelope.eventType())) {
-            teamImportService.importSnapshot(TeamSnapshotParser.parse(envelope.payload()));
+            teamImportService.importSnapshot("github", TeamSnapshotParser.parse(envelope.payload()));
+            return;
+        }
+        if ("gitlab".equals(envelope.source()) && GROUP_SNAPSHOT_EVENT_TYPE.equals(envelope.eventType())) {
+            teamImportService.importSnapshot("gitlab", GitlabGroupSnapshotParser.parse(envelope.payload()));
             return;
         }
         for (ObservedIdentity observed : extract(envelope)) {
@@ -52,6 +58,7 @@ public class IdentityEventListener {
             switch (envelope.source()) {
                 case "github" -> extractGithub(envelope.eventType(), payload, found);
                 case "jira" -> extractJira(payload, found);
+                case "gitlab" -> extractGitlab(envelope.eventType(), payload, found);
                 default -> { /* unknown source: nothing identity-relevant */ }
             }
         } catch (RuntimeException e) {
@@ -99,6 +106,46 @@ public class IdentityEventListener {
         if (email != null) {
             found.add(new ObservedIdentity("github", "email:" + email.toLowerCase(),
                     textOrNull(author, "name"), email));
+        }
+    }
+
+    /**
+     * GitLab's user objects (both the merge-request {@code author} sub-object and the webhook
+     * {@code user} actor) carry {@code id}/{@code username}/{@code name} but never an email
+     * address — GitLab doesn't expose it outside the authenticated user's own profile. Members
+     * observed only this way resolve on username alone until the same person is also observed
+     * with an email elsewhere (a git-signature commit, GitLab group import) for the resolver's
+     * email-merge heuristic to link them.
+     */
+    private void extractGitlab(String eventType, JsonNode payload, List<ObservedIdentity> found) {
+        if (eventType.startsWith("merge_request")) {
+            JsonNode mr = payload.has("object_attributes") ? payload.get("object_attributes") : payload;
+            JsonNode author = mr.path("author");
+            if (author.hasNonNull("id")) {
+                addGitlabUser(author, found);
+            } else {
+                addGitlabUser(payload.path("user"), found); // webhook actor fallback
+            }
+        } else if (eventType.equals("commit.snapshot")) {
+            addGitlabGitSignature(textOrNull(payload, "author_name"), textOrNull(payload, "author_email"), found);
+        } else if (eventType.equals("push")) {
+            payload.path("commits").forEach(c -> {
+                JsonNode author = c.path("author");
+                addGitlabGitSignature(textOrNull(author, "name"), textOrNull(author, "email"), found);
+            });
+        }
+    }
+
+    private void addGitlabUser(JsonNode user, List<ObservedIdentity> found) {
+        if (user.hasNonNull("id")) {
+            found.add(new ObservedIdentity("gitlab", user.get("id").asText(),
+                    textOrNull(user, "username"), textOrNull(user, "email")));
+        }
+    }
+
+    private void addGitlabGitSignature(String name, String email, List<ObservedIdentity> found) {
+        if (email != null) {
+            found.add(new ObservedIdentity("gitlab", "email:" + email.toLowerCase(), name, email));
         }
     }
 

@@ -76,7 +76,8 @@ flowchart TB
   end
 
   subgraph Ingestion["Ingestion Layer"]
-    CGH["Connector: GitHub/GitLab<br/>(also carries GH Actions CI/CD)"]
+    CGH["Connector: GitHub<br/>(also carries GH Actions CI/CD)"]
+    CGL["Connector: GitLab<br/>(also carries GitLab CI/CD pipelines;<br/>containerized, ADR-0005)"]
     CJR["Connector: Jira"]
     CJK["Connector: Jenkins<br/>(alt. CI/CD source, PRD E1-S3)"]
     CSQ["Connector: SonarQube (P2)"]
@@ -89,8 +90,8 @@ flowchart TB
   STG[("Staging Store<br/>(Postgres schema: immutable raw events)")]
   CORE[("Core DB<br/>(Postgres schema: normalized entities,<br/>users, teams, RBAC, config, audit)")]
 
-  SRC["External tool APIs & webhooks"] --> CGH & CJR & CJK & CSQ & CIN & CAI
-  CGH & CJR & CJK & CSQ & CIN & CAI --> MQ
+  SRC["External tool APIs & webhooks"] --> CGH & CGL & CJR & CJK & CSQ & CIN & CAI
+  CGH & CGL & CJR & CJK & CSQ & CIN & CAI --> MQ
   MQ --> IW
   IW --> STG
   MQ --> IDN
@@ -106,6 +107,9 @@ flowchart TB
 **Deployment note (MVP):** one PostgreSQL instance with three schemas (`staging`, `core`,
 `mart`) — see ADR-0002. The schema separation preserves a clean migration path to a dedicated
 analytical store (ClickHouse or warehouse) when event volume demands it, without re-architecture.
+Backend services otherwise run as local processes (`infra/start-backend.sh`); `connector-gitlab`
+is the one exception, packaged as a Docker image built via `infra/docker-compose.yml` (ADR-0005)
+— the template for containerizing further services if/when that becomes the norm.
 
 ## 4. Container responsibilities
 

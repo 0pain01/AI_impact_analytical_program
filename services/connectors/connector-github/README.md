@@ -16,7 +16,7 @@ poller.
 | Endpoint | Purpose |
 |---|---|
 | `POST /webhooks/github` | GitHub webhook receiver. Verifies `X-Hub-Signature-256` (HMAC-SHA256, constant-time); 401 on failure. |
-| `POST /internal/backfill?owner={o}&repo={r}` | Backfills PRs + commits + workflow runs for the configured window. Internal — invoked by api-core on repo connect. |
+| `POST /internal/backfill?owner={o}&repo={r}` | Backfills PRs + commits + workflow runs for the configured window. Internal — invoked by api-core on repo connect. Returns 429 (`{"error":"github_rate_limited","retryAfter":...}`) instead of a generic 500 if GitHub's rate limit is exhausted mid-backfill — set `GITHUB_TOKEN` to raise the cap from 60/hour (unauthenticated) to 5,000/hour. |
 | `POST /internal/backfill-teams?org={org}` | Backfills org teams, their repos, and their members. Internal — invoked by api-core on org connect. |
 | `GET /actuator/health` | Liveness/readiness. |
 

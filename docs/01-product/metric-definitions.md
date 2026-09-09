@@ -25,6 +25,20 @@ medians. Current fidelity vs. the full definitions below:
 Deploy/hotfix detection patterns are per-repo configurable (`METRICS_DEPLOY_WORKFLOW_PATTERN`,
 `METRICS_HOTFIX_WORKFLOW_PATTERN`).
 
+**GitLab (2026-09-09):** `connector-gitlab`'s merge requests and pipelines feed the same
+`pull_request_state`/`workflow_run_state` tables GitHub/Jenkins already share (`repo` values
+prefixed `gitlab:` — GitLab is an independent SCM, not an alt. data source for an existing repo
+the way Jenkins is, so this prevents a same-named GitLab project from blending into a GitHub
+repo's numbers). One real fidelity gap: GitHub Actions workflow runs and Jenkins jobs both carry
+a **name** the deploy/hotfix pattern matches against; GitLab pipelines don't — the closest
+available field is the pipeline's **git ref** (branch/tag). Deploy/hotfix detection for GitLab
+therefore matches the configured pattern against the ref, not a job/workflow name — set
+`METRICS_DEPLOY_WORKFLOW_PATTERN`/`METRICS_HOTFIX_WORKFLOW_PATTERN` to include your deploy
+branch (e.g. `main|production`) for GitLab deployments to be detected at all. Job-level
+detection (matching individual pipeline job names, closer to GitHub Actions' fidelity) and
+GitLab's dedicated Deployments API (environment-scoped, arguably a truer DORA signal than a
+name-pattern heuristic) are both tracked as follow-up work, not implemented.
+
 ---
 
 ## DORA-1: Deployment frequency — v1

@@ -32,6 +32,7 @@
     <module>metrics-engine</module>
     <module>identity-service</module>
     <module>connectors/connector-github</module>
+    <module>connectors/connector-gitlab</module>
     <module>connectors/connector-jira</module>
     <module>connectors/connector-jenkins</module>
     <module>connectors/connector-ai-telemetry</module>

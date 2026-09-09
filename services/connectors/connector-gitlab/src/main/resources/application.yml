@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: connector-gitlab
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:aiimpacteval}
+    password: ${RABBITMQ_PASSWORD:aiimpacteval_local}
+    publisher-confirm-type: correlated
+
+server:
+  # 8080-8087 are already claimed by the other 8 backend services (see infra/start-backend.sh).
+  port: ${SERVER_PORT:8088}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+gitlab:
+  # Shared secret configured on the GitLab webhook (Settings > Webhooks > Secret token),
+  # sent back verbatim as the X-Gitlab-Token header; requests failing verification are rejected.
+  webhook-secret: ${GITLAB_WEBHOOK_SECRET:}
+  # Read-only personal/project/group access token (scope: read_api) for backfill; sent as
+  # PRIVATE-TOKEN (security standards §3 — least-privilege scopes).
+  token: ${GITLAB_TOKEN:}
+  # gitlab.com by default; override for self-managed GitLab instances.
+  api-base-url: ${GITLAB_API_BASE_URL:https://gitlab.com/api/v4}
+  backfill-days: ${GITLAB_BACKFILL_DAYS:90}

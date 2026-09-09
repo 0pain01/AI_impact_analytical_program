@@ -26,8 +26,8 @@ import java.util.List;
  * anything changed lately" are no longer conflated into one misleading signal.
  *
  * <p>Only connectors actually wired into ingestion are reported here. Connectors named in the PRD
- * but not yet built (SonarQube, PagerDuty, AI-assistant telemetry, GitLab) are intentionally
- * absent rather than faked — the Admin UI should say "not built yet", not show fabricated health.
+ * but not yet built (SonarQube, PagerDuty, AI-assistant telemetry) are intentionally absent
+ * rather than faked — the Admin UI should say "not built yet", not show fabricated health.
  */
 @Service
 public class AdminConnectorService {
@@ -50,6 +50,8 @@ public class AdminConnectorService {
                 health("github_actions", "GitHub Actions", "CI/CD", "github",
                         "source = 'github' AND (event_type LIKE 'workflow_run%' OR event_type LIKE 'deployment_status%')",
                         now),
+                health("gitlab", "GitLab", "Git host", "gitlab", "source = 'gitlab' AND event_type NOT LIKE 'pipeline%'", now),
+                health("gitlab_ci", "GitLab CI/CD", "CI/CD", "gitlab", "source = 'gitlab' AND event_type LIKE 'pipeline%'", now),
                 health("jira", "Jira", "Ticketing", "jira", "source = 'jira'", now),
                 health("jenkins", "Jenkins", "CI/CD", "jenkins", "source = 'jenkins'", now));
     }

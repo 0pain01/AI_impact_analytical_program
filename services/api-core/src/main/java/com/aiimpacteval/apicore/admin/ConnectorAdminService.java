@@ -38,6 +38,11 @@ import java.util.concurrent.Executors;
  * from "synced" apart from "failed" without polling connector-github itself or standing up a
  * persistent job table. It's a UX signal, not a source of truth — {@code staging.raw_event}
  * (surfaced here via {@code pull_request_state}/{@code workflow_run_state}) remains that.
+ *
+ * <p>GitLab project/group connect follows the identical pattern against connector-gitlab, just
+ * keyed under {@code "gitlab:" + project} in {@link #triggers} to match the prefix
+ * {@code StagingEventWriter} stamps onto GitLab's rows in the same shared state tables (see its
+ * class javadoc) — {@link #listRepoSyncStatus()} needs no source-specific branching as a result.
  */
 @Service
 public class ConnectorAdminService {
@@ -56,6 +61,7 @@ public class ConnectorAdminService {
     }
 
     private final RestClient githubClient;
+    private final RestClient gitlabClient;
     private final AuditLog auditLog;
     private final JdbcTemplate jdbcTemplate;
     private final TeamAdminService teamAdminService;
@@ -67,17 +73,22 @@ public class ConnectorAdminService {
     // minutes is a backstop against a truly stuck connector call (e.g. GithubRestClients' own
     // 60s-per-request timeout somehow not firing), not a normal-case constraint — without it, a
     // hung connector-github call left this trigger stuck showing "Syncing" in the Admin console
-    // forever, which is exactly the bug that surfaced this whole timeout gap.
-    private static final Duration GITHUB_CLIENT_READ_TIMEOUT = Duration.ofMinutes(30);
+    // forever, which is exactly the bug that surfaced this whole timeout gap. Shared by the
+    // GitLab client below for the same reason.
+    private static final Duration CONNECTOR_CLIENT_READ_TIMEOUT = Duration.ofMinutes(30);
 
     /** listRepoSyncStatus() treats an IN_PROGRESS trigger older than this as failed, not syncing. */
     private static final Duration STUCK_AFTER = Duration.ofMinutes(35);
 
     public ConnectorAdminService(RestClient.Builder restClientBuilder,
                                  @Value("${connectors.github.base-url}") String githubBaseUrl,
+                                 @Value("${connectors.gitlab.base-url}") String gitlabBaseUrl,
                                  AuditLog auditLog, JdbcTemplate jdbcTemplate, TeamAdminService teamAdminService) {
-        this.githubClient = TimeoutRestClients.withTimeouts(restClientBuilder, Duration.ofSeconds(10), GITHUB_CLIENT_READ_TIMEOUT)
+        this.githubClient = TimeoutRestClients.withTimeouts(restClientBuilder, Duration.ofSeconds(10), CONNECTOR_CLIENT_READ_TIMEOUT)
                 .baseUrl(githubBaseUrl)
+                .build();
+        this.gitlabClient = TimeoutRestClients.withTimeouts(restClientBuilder, Duration.ofSeconds(10), CONNECTOR_CLIENT_READ_TIMEOUT)
+                .baseUrl(gitlabBaseUrl)
                 .build();
         this.auditLog = auditLog;
         this.jdbcTemplate = jdbcTemplate;
@@ -149,6 +160,55 @@ public class ConnectorAdminService {
                 log.info("Team import backfill for org {} completed", org);
             } catch (Exception e) {
                 log.warn("Team import backfill for org {} failed: {}", org, e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Connects a GitLab project (triggers connector-gitlab's backfill), same shape as
+     * {@link #connectRepo}. {@code project} is expected to be the {@code namespace/project}
+     * path, not a numeric GitLab project ID — the tracked repo key here is
+     * {@code "gitlab:" + project} (matching StagingEventWriter's prefix), and that only lines
+     * up with what actually lands in {@code pull_request_state}/{@code workflow_run_state} when
+     * the caller's input string equals the project's real {@code path_with_namespace}, which is
+     * only guaranteed for the path form.
+     */
+    public void connectGitlabProject(String actorEmail, String project, UUID teamId, String sourceIp) {
+        String repoKey = "gitlab:" + project;
+        if (teamId != null) {
+            teamAdminService.addRepo(teamId, repoKey);
+        }
+        auditLog.write(new AuditEvent(actorEmail, "GITLAB_PROJECT_CONNECT_TRIGGERED", "repo", repoKey,
+                null, teamId == null ? null : "{\"teamId\":\"" + teamId + "\"}", sourceIp));
+        triggers.put(repoKey, new Trigger(SyncState.IN_PROGRESS, Instant.now(), null));
+        executor.submit(() -> {
+            try {
+                gitlabClient.post()
+                        .uri("/internal/backfill?project={project}", project)
+                        .retrieve()
+                        .toBodilessEntity();
+                triggers.put(repoKey, new Trigger(SyncState.COMPLETED, Instant.now(), null));
+                log.info("GitLab project connect backfill for {} completed", repoKey);
+            } catch (Exception e) {
+                triggers.put(repoKey, new Trigger(SyncState.FAILED, Instant.now(), e.getMessage()));
+                log.warn("GitLab project connect backfill for {} failed: {}", repoKey, e.getMessage());
+            }
+        });
+    }
+
+    /** GitLab's group import, same shape as {@link #connectGithubOrgTeams}. */
+    public void connectGitlabGroup(String actorEmail, String group, String sourceIp) {
+        auditLog.write(new AuditEvent(actorEmail, "GITLAB_GROUP_CONNECT_TRIGGERED", "gitlab_group", group,
+                null, null, sourceIp));
+        executor.submit(() -> {
+            try {
+                gitlabClient.post()
+                        .uri("/internal/backfill-groups?group={group}", group)
+                        .retrieve()
+                        .toBodilessEntity();
+                log.info("Group import backfill for {} completed", group);
+            } catch (Exception e) {
+                log.warn("Group import backfill for {} failed: {}", group, e.getMessage());
             }
         });
     }

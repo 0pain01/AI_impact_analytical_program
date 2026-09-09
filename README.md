@@ -30,10 +30,10 @@ AI Impact Evaluation is an AI-native **Software Engineering Intelligence (SEI)**
 
 ## ✨ Features
 
-### Data Integration — 4 connectors live
-- **Source Control:** GitHub — signature-verified webhooks + PR/commit backfill (`connector-github`)
+### Data Integration — 5 connectors live
+- **Source Control:** GitHub — signature-verified webhooks + PR/commit backfill (`connector-github`); GitLab — token-verified webhooks + merge-request/commit/pipeline backfill (`connector-gitlab`, the only connector packaged as a Docker image — see ADR-0005)
 - **Project Management:** Jira — token-verified webhooks + issue backfill with changelogs (`connector-jira`)
-- **CI/CD:** GitHub Actions (via `connector-github`) **and** Jenkins (`connector-jenkins`) — both write into the same provider-agnostic `workflow_run_state` table, so DORA metrics see either source the same way
+- **CI/CD:** GitHub Actions (via `connector-github`), Jenkins (`connector-jenkins`), **and** GitLab CI/CD pipelines (via `connector-gitlab`) all write into the same provider-agnostic `workflow_run_state` table, so DORA metrics see any source the same way. One real fidelity gap for GitLab: pipelines carry no per-run *name* to match the deploy/hotfix pattern against (unlike a GitHub Actions workflow or Jenkins job name) — the closest field is the pipeline's git ref, so `METRICS_DEPLOY_WORKFLOW_PATTERN`/`METRICS_HOTFIX_WORKFLOW_PATTERN` need your deploy branch name (e.g. `main|production`) for GitLab deployments to be detected — see `metric-definitions.md`'s GitLab section and connector-gitlab's README
 - **AI coding assistants:** Claude Code and GitHub Copilot usage ingestion (`connector-ai-telemetry`) — reads usage-report files shaped exactly like each vendor's real Admin API response, architected so a genuine enterprise export is a drop-in swap later
 - **Planned:** SonarQube (code quality), PagerDuty (incidents) — named in the BRD, not yet built
 
@@ -47,9 +47,9 @@ AI Impact Evaluation is an AI-native **Software Engineering Intelligence (SEI)**
 Five roles (RS256 JWT resource server, ADR-0004): **Admin**, **Engineering Leader** (org-wide, exec/leader access), **Manager** (team-scoped — pinned server-side, not just client-side), **Individual Contributor** (opt-in personal activity only — no org/team surveillance surface), **Finance (read-only)**.
 
 ### Admin Console — connector & team management from the UI
-- Live connector health per source (GitHub, GitHub Actions, Jira, Jenkins) with two distinct signals: **Last checked** (did we hear from it at all) vs **Last data change** (did anything actually change) — so a healthy connector with nothing new to report never looks stale
-- **Connect a repo or a whole GitHub org's teams from the UI** — no more manual `curl` against a connector's internal backfill endpoint — with a live per-repo Sync status table (Syncing/Synced/Failed, Refresh, Delete)
-- **Team management** — create teams by hand or import a GitHub org's teams automatically, assign/unassign repos, and delete a team (blocked with a clear error if a user account or another team still depends on it, rather than silently breaking their access)
+- Live connector health per source (GitHub, GitHub Actions, GitLab, GitLab CI/CD, Jira, Jenkins) with two distinct signals: **Last checked** (did we hear from it at all) vs **Last data change** (did anything actually change) — so a healthy connector with nothing new to report never looks stale
+- **Connect a repo/project or a whole GitHub org's/GitLab group's teams from the UI** — no more manual `curl` against a connector's internal backfill endpoint — with a live per-repo Sync status table (Syncing/Synced/Failed, Refresh, Delete); GitLab projects show up prefixed `gitlab:` so they can never collide with a same-named GitHub repo
+- **Team management** — create teams by hand or import a GitHub org's/GitLab group's teams automatically, assign/unassign repos, and delete a team (blocked with a clear error if a user account or another team still depends on it, rather than silently breaking their access)
 - Real per-user RBAC role/team/GitHub-login assignment, append-only audit log (12+ month retention)
 
 ### Core Principles
@@ -168,6 +168,10 @@ For detailed C4 diagrams and data flows, see [System Architecture](docs/03-archi
    > pointed at `infra/sample-data/*` (or a real usage export) to have anything to backfill. Once
    > running, connect a repo/project/job either via each connector's `/internal/backfill`
    > endpoint, or from the app's **Admin** tab once the frontend is up.
+   >
+   > `connector-gitlab` is not in this script — it's the one connector packaged as a Docker
+   > image (ADR-0005). Start it separately: `docker compose -f infra/docker-compose.yml up
+   > --build gitlab` (see `services/connectors/connector-gitlab/README.md`).
 
 4. **Start the frontend:**
    ```bash
@@ -298,6 +302,7 @@ AI_impact_analytical_program/
 │   ├── ingestion-writer/        # Idempotent event ingestion + staging projections
 │   ├── connectors/              # One service per external tool
 │   │   ├── connector-github/    # Source control + GitHub Actions CI/CD
+│   │   ├── connector-gitlab/    # Source control + GitLab CI/CD (Docker image, ADR-0005)
 │   │   ├── connector-jira/      # Ticketing
 │   │   ├── connector-jenkins/   # Alt. CI/CD source
 │   │   └── connector-ai-telemetry/  # Claude Code + GitHub Copilot usage ingestion
@@ -405,11 +410,12 @@ Built with:
 ---
 
 **Status:** Phase 1 MVP well underway, with an E9 (AI Adoption & ROI) slice already live —
-4 connectors (GitHub, Jira, Jenkins, AI Telemetry), all four DORA metrics computed end-to-end at
-repo/org/team scope with a 30/90-day toggle and CSV export, AI Cost Track computing real
-spend/adoption/impact/ROI (AI-01..AI-05) from connected usage and PR data, server-enforced RBAC
-across 5 roles, and a live Admin console (connector health, repo/team connect + sync-status +
-delete, user administration, audit log). See the
+5 connectors (GitHub, GitLab, Jira, Jenkins, AI Telemetry — GitLab deploy detection matches
+pipeline git ref, not a job name; see connector-gitlab's README), all four DORA metrics
+computed end-to-end at repo/org/team scope with a 30/90-day toggle and CSV export, AI Cost Track
+computing real spend/adoption/impact/ROI (AI-01..AI-05) from connected usage and PR data,
+server-enforced RBAC across 5 roles, and a live Admin console (connector health, repo/team
+connect + sync-status + delete, user administration, audit log). See the
 [PRD's delivery status appendix](docs/01-product/prd.md) for epic-by-epic detail and what's still
 pending (SonarQube/PagerDuty connectors, OIDC login, team-level AI adoption breakdown, Phase 2/3
 epics E5–E7/E10–E11).

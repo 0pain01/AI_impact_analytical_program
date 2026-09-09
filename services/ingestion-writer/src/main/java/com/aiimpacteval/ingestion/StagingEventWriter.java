@@ -76,6 +76,19 @@ import java.util.regex.Pattern;
  * "AI-assisted commits" supporting metric, applied to PRs since that's what's already in the
  * ingested payload). Lets {@code AiCostTrackQueryService} segment cycle time by AI attribution
  * instead of showing "not available yet" for AI-04/AI-05.
+ *
+ * <p>GitLab (connector-gitlab) feeds the same two tables Jenkins already shares with GitHub —
+ * merge requests into {@code pull_request_state}, pipelines into {@code workflow_run_state} —
+ * but GitLab is an independent SCM, not an alt. data source for an existing GitHub repo the way
+ * Jenkins is. Its {@code repo}/{@code pr_id}/{@code run_id} values are therefore prefixed
+ * ({@code "gitlab:"}) so a same-named GitLab project can never collide with (or silently merge
+ * data into) a GitHub repo — same defensive-prefixing idea as Jenkins' {@code "jenkins:"}
+ * run_id, just applied one level higher since GitLab genuinely is a different codebase, not the
+ * same one built by a different CI tool. GitLab's pipelines carry no per-run "name" the way a
+ * GitHub Actions workflow or a Jenkins job does, so {@code name} is the pipeline's git ref —
+ * {@code METRICS_DEPLOY_WORKFLOW_PATTERN}/{@code METRICS_HOTFIX_WORKFLOW_PATTERN} must include
+ * the deploy branch (e.g. {@code main|production}) for GitLab deployments to be detected; see
+ * connector-gitlab's README.
  */
 @Component
 public class StagingEventWriter {
@@ -193,6 +206,9 @@ public class StagingEventWriter {
     private static final Set<String> TERMINAL_STATUS_NAMES = Set.of("done", "closed", "resolved");
     private static final Set<String> JENKINS_BUILD_EVENT_TYPES = Set.of("build.snapshot");
     private static final String JENKINS_GIT_BUILD_DATA_CLASS = "hudson.plugins.git.util.BuildData";
+    private static final Set<String> GITLAB_MERGE_REQUEST_EVENT_TYPES =
+            Set.of("merge_request", "merge_request.snapshot");
+    private static final Set<String> GITLAB_PIPELINE_EVENT_TYPES = Set.of("pipeline", "pipeline.snapshot");
     private static final Set<String> AI_USAGE_EVENT_TYPES = Set.of("usage.snapshot");
     private static final int DAYS_PER_MONTH = 30;
 
@@ -250,6 +266,12 @@ public class StagingEventWriter {
             upsertJiraIssueState(envelope);
         } else if ("jenkins".equals(envelope.source()) && JENKINS_BUILD_EVENT_TYPES.contains(envelope.eventType())) {
             upsertJenkinsBuildState(envelope);
+        } else if ("gitlab".equals(envelope.source())) {
+            if (GITLAB_MERGE_REQUEST_EVENT_TYPES.contains(envelope.eventType())) {
+                upsertGitlabMergeRequestState(envelope);
+            } else if (GITLAB_PIPELINE_EVENT_TYPES.contains(envelope.eventType())) {
+                upsertGitlabPipelineState(envelope);
+            }
         } else if (("claude_code".equals(envelope.source()) || "copilot".equals(envelope.source()))
                 && AI_USAGE_EVENT_TYPES.contains(envelope.eventType())) {
             upsertAiUsageState(envelope);
@@ -512,6 +534,171 @@ public class StagingEventWriter {
     private static Long longOrNull(JsonNode node, String field) {
         JsonNode v = node.get(field);
         return v == null || v.isNull() ? null : v.asLong();
+    }
+
+    /**
+     * GitLab merge requests → the same {@code pull_request_state} table GitHub PRs use. Webhook
+     * ({@code merge_request} object_kind) nests the entity under {@code object_attributes} with
+     * a sibling top-level {@code project.path_with_namespace}; backfill ({@code
+     * merge_request.snapshot}) payload IS the MR object, carrying GitlabBackfillService's
+     * injected {@code project_path_with_namespace} instead (see its javadoc — GitLab's MR API
+     * doesn't reliably embed the project path itself the way GitHub's does).
+     */
+    private void upsertGitlabMergeRequestState(EventEnvelope envelope) {
+        JsonNode payload = envelope.payload();
+        JsonNode mr = payload.has("object_attributes") ? payload.get("object_attributes") : payload;
+
+        String mrId = textOrNull(mr, "id");
+        if (mrId == null) {
+            return;
+        }
+        // See class javadoc: GitLab is an independent SCM, not an alt. source for a GitHub repo
+        // — prefixed so it can never collide with a same-named GitHub repo/PR.
+        String repo = "gitlab:" + firstNonBlank(
+                textAtPath(payload, "project", "path_with_namespace"),
+                textOrNull(mr, "project_path_with_namespace"),
+                "unknown");
+        Long number = longOrNull(textOrNull(mr, "iid"));
+        String title = textOrNull(mr, "title");
+        // object_attributes historically carries only author_id (a bare number) on the webhook
+        // path, not a resolvable username — the top-level "user" (who triggered the webhook) is
+        // the best available fallback, correct for the common "opened"/"updated by author" case.
+        // Backfill's MR object always has the full author sub-object.
+        String author = firstNonBlank(textAtPath(mr, "author", "username"), textAtPath(payload, "user", "username"));
+        String htmlUrl = firstNonBlank(textOrNull(mr, "url"), textOrNull(mr, "web_url"));
+        String state = normalizeGitlabMrState(textOrNull(mr, "state"));
+        String[] requestedReviewers = extractGitlabReviewerUsernames(mr.get("reviewers"));
+        Instant createdAt = instantOrNull(textOrNull(mr, "created_at"));
+        Instant mergedAt = instantOrNull(textOrNull(mr, "merged_at"));
+        boolean aiAssisted = detectAiAssistedGitlab(mr);
+
+        jdbcTemplate.update(con -> {
+            var ps = con.prepareStatement(UPSERT_PULL_REQUEST_SQL);
+            ps.setString(1, repo);
+            ps.setString(2, "gitlab:" + mrId);
+            if (number == null) {
+                ps.setNull(3, Types.BIGINT);
+            } else {
+                ps.setLong(3, number);
+            }
+            ps.setString(4, title);
+            ps.setString(5, author);
+            ps.setString(6, htmlUrl);
+            ps.setString(7, state);
+            ps.setArray(8, con.createArrayOf("text", requestedReviewers));
+            ps.setTimestamp(9, createdAt == null ? null : Timestamp.from(createdAt));
+            ps.setTimestamp(10, mergedAt == null ? null : Timestamp.from(mergedAt));
+            ps.setBoolean(11, aiAssisted);
+            ps.setTimestamp(12, Timestamp.from(envelope.receivedAt()));
+            return ps;
+        });
+    }
+
+    // GitHub's PR state is a plain open/closed pair (a merged PR still reports state=closed;
+    // merged_at is the authoritative merge signal metrics-engine actually queries). GitLab adds
+    // "merged"/"locked" as their own state values — normalized onto GitHub's vocabulary so
+    // anything that does read this column (e.g. an "open PRs" list) behaves the same across
+    // both connectors; merged_at, not this column, is what DORA/PR-velocity queries key on.
+    private static String normalizeGitlabMrState(String rawState) {
+        if (rawState == null) {
+            return null;
+        }
+        return switch (rawState) {
+            case "opened" -> "open";
+            case "merged", "locked" -> "closed";
+            default -> rawState; // "closed" already matches GitHub's vocabulary
+        };
+    }
+
+    // Backfill's /merge_requests response returns reviewers as full user objects (username
+    // present); the webhook's object_attributes.reviewer_ids (where present at all — added in
+    // GitLab 15.3) is bare numeric IDs with no username to resolve without an extra API call
+    // connectors don't make (ADR-0002) — those simply contribute nothing here, same as a PR with
+    // no requested reviewers. A later backfill/refresh republishes the fuller shape.
+    private static String[] extractGitlabReviewerUsernames(JsonNode arrayNode) {
+        if (arrayNode == null || !arrayNode.isArray()) {
+            return new String[0];
+        }
+        List<String> usernames = new ArrayList<>();
+        for (JsonNode item : arrayNode) {
+            String username = textOrNull(item, "username");
+            if (username != null) {
+                usernames.add(username);
+            }
+        }
+        return usernames.toArray(new String[0]);
+    }
+
+    // Same heuristic as detectAiAssisted, adapted for GitLab's field names: "description" not
+    // "body", and labels as plain strings from the REST API (webhook object_attributes has used
+    // {"title": "..."} label objects in some GitLab versions — handled defensively).
+    private static boolean detectAiAssistedGitlab(JsonNode mr) {
+        String title = textOrNull(mr, "title");
+        String description = firstNonBlank(textOrNull(mr, "description"), textOrNull(mr, "body"));
+        StringBuilder text = new StringBuilder()
+                .append(title == null ? "" : title).append(' ')
+                .append(description == null ? "" : description);
+        JsonNode labels = mr.get("labels");
+        if (labels != null && labels.isArray()) {
+            for (JsonNode label : labels) {
+                String name = label.isTextual() ? label.asText() : textOrNull(label, "title");
+                if (name != null) {
+                    text.append(' ').append(name);
+                }
+            }
+        }
+        return AI_ATTRIBUTION_PATTERN.matcher(text).find();
+    }
+
+    /**
+     * GitLab pipelines → the same {@code workflow_run_state} table GitHub Actions/Jenkins
+     * share. Webhook ({@code pipeline} object_kind) nests the entity under
+     * {@code object_attributes} with a sibling top-level {@code project.path_with_namespace};
+     * backfill ({@code pipeline.snapshot}) payload IS the pipeline object, carrying
+     * GitlabBackfillService's injected {@code project_path_with_namespace}.
+     */
+    private void upsertGitlabPipelineState(EventEnvelope envelope) {
+        JsonNode payload = envelope.payload();
+        JsonNode pipeline = payload.has("object_attributes") ? payload.get("object_attributes") : payload;
+
+        String runId = textOrNull(pipeline, "id");
+        if (runId == null) {
+            return;
+        }
+        String repo = "gitlab:" + firstNonBlank(
+                textAtPath(payload, "project", "path_with_namespace"),
+                textOrNull(pipeline, "project_path_with_namespace"),
+                "unknown");
+        // GitLab pipelines have no per-run "name" the way a GitHub Actions workflow or a Jenkins
+        // job does — the closest available field is the git ref the pipeline ran on. See class
+        // javadoc: the deploy/hotfix pattern env vars must include the deploy branch for GitLab
+        // deployments to be detected by name-pattern matching.
+        String name = textOrNull(pipeline, "ref");
+        String conclusion = normalizeGitlabPipelineStatus(textOrNull(pipeline, "status"));
+        Instant ts = instantOrNull(firstNonBlank(
+                textOrNull(pipeline, "finished_at"), textOrNull(pipeline, "updated_at")));
+
+        jdbcTemplate.update(UPSERT_WORKFLOW_RUN_SQL,
+                repo, "gitlab:" + runId, conclusion, name,
+                ts == null ? null : Timestamp.from(ts),
+                Timestamp.from(envelope.receivedAt()));
+    }
+
+    // metrics-engine's DORA queries hardcode conclusion = 'success' (lowercase) — GitLab reports
+    // lowercase statuses already, but spells failure/cancellation differently
+    // (failed/canceled vs. GitHub's failure/cancelled); normalized onto the same vocabulary
+    // Jenkins' normalizeJenkinsResult already established. running/pending/skipped/manual/
+    // created pass through unchanged — nothing currently queries for those values.
+    private static String normalizeGitlabPipelineStatus(String rawStatus) {
+        if (rawStatus == null) {
+            return null;
+        }
+        return switch (rawStatus) {
+            case "success" -> "success";
+            case "failed" -> "failure";
+            case "canceled" -> "cancelled";
+            default -> rawStatus;
+        };
     }
 
     private void upsertAiUsageState(EventEnvelope envelope) {

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import {
   addTeamRepo,
   connectGithubOrgTeams,
+  connectGitlabGroup,
+  connectGitlabProject,
   connectRepo,
   createAdminUser,
   createOrUpdateTeam,
@@ -314,6 +316,127 @@ function ConnectRepoForm({ teams, onConnected }: { teams: Team[]; onConnected: (
   )
 }
 
+function ConnectGitlabGroupForm() {
+  const [group, setGroup] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!group.trim()) {
+      setError('Group is required.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    setMessage(null)
+    try {
+      await connectGitlabGroup(group.trim())
+      setMessage(`Importing ${group.trim()}'s projects and members in the background — new teams will appear below shortly.`)
+      setGroup('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not import group.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
+      <div>
+        <label className="mb-1 block text-xs text-slate-400">GitLab group</label>
+        <input
+          value={group}
+          onChange={(e) => setGroup(e.target.value)}
+          placeholder="my-group"
+          className="w-40 rounded-md border border-slate-200 px-2 py-1 text-sm"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={busy}
+        className="rounded-md border border-slate-300 px-3 py-1 text-sm font-medium text-slate-700 disabled:opacity-50"
+      >
+        {busy ? 'Importing…' : 'Import group'}
+      </button>
+      {error && <p className="w-full text-sm text-red-600">{error}</p>}
+      {message && <p className="w-full text-sm text-emerald-700">{message}</p>}
+    </form>
+  )
+}
+
+function ConnectGitlabProjectForm({ teams, onConnected }: { teams: Team[]; onConnected: () => void }) {
+  const [project, setProject] = useState('')
+  const [teamId, setTeamId] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!project.trim()) {
+      setError('Project is required.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    setMessage(null)
+    try {
+      await connectGitlabProject(project.trim(), teamId || null)
+      setMessage(
+        `Connecting ${project.trim()}${teamId ? ' and assigning it to the selected team' : ''} — ` +
+          'watch its progress in the Sync status table below (as gitlab:' + project.trim() + ').',
+      )
+      setProject('')
+      setTeamId('')
+      onConnected()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not connect project.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
+      <div>
+        <label className="mb-1 block text-xs text-slate-400">Project (namespace/project)</label>
+        <input
+          value={project}
+          onChange={(e) => setProject(e.target.value)}
+          placeholder="my-group/my-project"
+          className="w-52 rounded-md border border-slate-200 px-2 py-1 text-sm"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-slate-400">Team (optional)</label>
+        <select
+          value={teamId}
+          onChange={(e) => setTeamId(e.target.value)}
+          className="rounded-md border border-slate-200 px-2 py-1 text-sm"
+        >
+          <option value="">No team</option>
+          {teams.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <button
+        type="submit"
+        disabled={busy}
+        className="rounded-md bg-slate-900 px-3 py-1 text-sm font-medium text-white disabled:opacity-50"
+      >
+        {busy ? 'Connecting…' : 'Connect project'}
+      </button>
+      {error && <p className="w-full text-sm text-red-600">{error}</p>}
+      {message && <p className="w-full text-sm text-emerald-700">{message}</p>}
+    </form>
+  )
+}
+
 function syncStateBadge(state: RepoSyncStatus['syncState']) {
   if (state === 'COMPLETED') return 'bg-emerald-100 text-emerald-700'
   if (state === 'IN_PROGRESS') return 'bg-amber-100 text-amber-700'
@@ -356,12 +479,18 @@ function RepoSyncTable({
   }, [rows])
 
   async function handleRefresh(repo: string) {
-    const [owner, name] = repo.split('/')
-    if (!owner || !name) return
     setBusyRepo(repo)
     setError(null)
     try {
-      await connectRepo(owner, name, null)
+      if (repo.startsWith('gitlab:')) {
+        // Sync status rows store GitLab projects prefixed "gitlab:" (see connectGitlabProject) —
+        // strip it back off to get the namespace/project path connector-gitlab expects.
+        await connectGitlabProject(repo.slice('gitlab:'.length), null)
+      } else {
+        const [owner, name] = repo.split('/')
+        if (!owner || !name) return
+        await connectRepo(owner, name, null)
+      }
       load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not refresh repo.')
@@ -588,9 +717,12 @@ function RepoTeamsPanel() {
         <div>
           <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
             Bulk alternative
-            <InfoTooltip text="Imports ALL of a GitHub org's teams, their repos, and members automatically — use this instead of connecting repos one by one and assigning teams by hand, if you manage a whole org." />
+            <InfoTooltip text="Imports ALL of a GitHub org's teams (or GitLab group's projects), their repos, and members automatically — use this instead of connecting repos one by one and assigning teams by hand, if you manage a whole org/group." />
           </p>
-          <ConnectGithubTeamsForm />
+          <div className="flex flex-col gap-2">
+            <ConnectGithubTeamsForm />
+            <ConnectGitlabGroupForm />
+          </div>
         </div>
       </div>
 
@@ -600,6 +732,20 @@ function RepoTeamsPanel() {
           <InfoTooltip text="Pulls PRs, commits, and workflow-run (CI/CD) history for this repo into the pipeline. Pick a team here to assign it in the same step, or assign it later from the table below." />
         </p>
         <ConnectRepoForm
+          teams={teams}
+          onConnected={() => {
+            setSyncRefreshSignal((k) => k + 1)
+            reloadTeams()
+          }}
+        />
+      </div>
+
+      <div className="mb-4 border-b border-slate-100 pb-4">
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
+          Step 2b · Connect a GitLab project
+          <InfoTooltip text="Pulls merge requests, commits, and pipeline history for this project into the pipeline. GitLab pipelines have no per-run name the way GitHub Actions/Jenkins do, so deploy/hotfix detection matches against the pipeline's git ref — set METRICS_DEPLOY_WORKFLOW_PATTERN to include your deploy branch (e.g. main|production) for GitLab deployments to show up in DORA." />
+        </p>
+        <ConnectGitlabProjectForm
           teams={teams}
           onConnected={() => {
             setSyncRefreshSignal((k) => k + 1)

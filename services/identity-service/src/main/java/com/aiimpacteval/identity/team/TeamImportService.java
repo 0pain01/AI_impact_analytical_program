@@ -11,6 +11,12 @@ import java.util.UUID;
  * repositories (feeding metrics-engine team rollups), and resolves each member through the
  * existing identity resolver so team rosters share the same contributor identities as
  * everything else.
+ *
+ * <p>{@code source} tags both the team row (so a GitHub org sync and a GitLab group import
+ * never collide on the same team, mirroring "manual" teams already coexisting with "github"
+ * ones) and each member's {@link ObservedIdentity} (GitLab user IDs are a distinct identity
+ * space from GitHub's — the resolver merges across sources by email, same as it already does
+ * for GitHub/Jira).
  */
 @Service
 public class TeamImportService {
@@ -23,8 +29,8 @@ public class TeamImportService {
         this.identityResolver = identityResolver;
     }
 
-    public void importSnapshot(TeamSnapshot snapshot) {
-        UUID teamId = teamRepository.upsertTeam("github", snapshot.teamId(), snapshot.name());
+    public void importSnapshot(String source, TeamSnapshot snapshot) {
+        UUID teamId = teamRepository.upsertTeam(source, snapshot.teamId(), snapshot.name());
 
         for (String repo : snapshot.repoFullNames()) {
             teamRepository.mapRepo(teamId, repo);
@@ -32,7 +38,7 @@ public class TeamImportService {
 
         for (TeamSnapshot.MemberRef member : snapshot.members()) {
             UUID contributorId = identityResolver.resolve(
-                    new ObservedIdentity("github", member.sourceUserId(), member.login(), null));
+                    new ObservedIdentity(source, member.sourceUserId(), member.login(), null));
             teamRepository.addMember(teamId, contributorId);
         }
     }

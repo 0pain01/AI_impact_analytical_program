@@ -30,6 +30,10 @@ connectors:
     # the Admin console — api-core calls the connector's internal endpoint, same as a terminal
     # curl would, just server-to-server.
     base-url: ${CONNECTOR_GITHUB_BASE_URL:http://localhost:8081}
+  gitlab:
+    # Default matches connector-gitlab's own SERVER_PORT default (8088) — see its README for why
+    # 8080-8087 were already taken.
+    base-url: ${CONNECTOR_GITLAB_BASE_URL:http://localhost:8088}
 
 ai-cost:
   # Org-configurable AI Cost Track assumptions (AI-01/AI-03 edge cases, metric-definitions.md) —
