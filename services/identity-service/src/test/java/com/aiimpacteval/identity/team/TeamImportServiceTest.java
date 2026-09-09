@@ -78,7 +78,7 @@ class TeamImportServiceTest {
                 List.of(new TeamSnapshot.MemberRef("42", "v-sharma"),
                         new TeamSnapshot.MemberRef("43", "a-iyer")));
 
-        service.importSnapshot(snapshot);
+        service.importSnapshot("github", snapshot);
 
         assertEquals(1, teamRepository.teamsBySourceKey.size());
         assertEquals(2, teamRepository.repoMappings.size());
@@ -90,8 +90,8 @@ class TeamImportServiceTest {
         var snapshot = new TeamSnapshot("555", "Platform Team", "platform-team",
                 List.of("acme/app"), List.of());
 
-        service.importSnapshot(snapshot);
-        service.importSnapshot(snapshot);
+        service.importSnapshot("github", snapshot);
+        service.importSnapshot("github", snapshot);
 
         assertEquals(1, teamRepository.teamsBySourceKey.size(), "same source team must resolve to one team id");
         assertTrue(teamRepository.teamNames.stream().allMatch("Platform Team"::equals));
@@ -101,7 +101,7 @@ class TeamImportServiceTest {
     void emptyTeamImportsWithNoMappings() {
         var snapshot = new TeamSnapshot("1", "Empty Team", "empty", List.of(), List.of());
 
-        service.importSnapshot(snapshot);
+        service.importSnapshot("github", snapshot);
 
         assertEquals(1, teamRepository.teamsBySourceKey.size());
         assertEquals(0, teamRepository.repoMappings.size());

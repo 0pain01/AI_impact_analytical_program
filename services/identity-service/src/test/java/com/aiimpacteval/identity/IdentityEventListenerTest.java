@@ -79,4 +79,53 @@ class IdentityEventListenerTest {
         assertTrue(listener.extract(envelope("jira", "jira:issue_updated", "{\"issue\":{}}")).isEmpty());
         assertTrue(listener.extract(envelope("sonarqube", "scan", "{}")).isEmpty());
     }
+
+    @Test
+    void extractsGitlabMrAuthorFromSnapshot() throws Exception {
+        // Backfill's merge_request.snapshot payload IS the MR object — full author sub-object.
+        String snapshot = "{\"id\":9,\"author\":{\"id\":7,\"username\":\"v-sharma\"}}";
+
+        var found = listener.extract(envelope("gitlab", "merge_request.snapshot", snapshot));
+
+        assertEquals(List.of(new ObservedIdentity("gitlab", "7", "v-sharma", null)), found);
+    }
+
+    @Test
+    void extractsGitlabMrAuthorFallsBackToWebhookActorWhenAuthorIdMissing() throws Exception {
+        // Classic webhook object_attributes carries only author_id (no username to resolve) —
+        // top-level "user" (who triggered the webhook) is the best available fallback.
+        String webhook = """
+                {"object_kind":"merge_request",
+                 "object_attributes":{"id":9,"author_id":7},
+                 "user":{"id":7,"username":"v-sharma"}}""";
+
+        var found = listener.extract(envelope("gitlab", "merge_request", webhook));
+
+        assertEquals(List.of(new ObservedIdentity("gitlab", "7", "v-sharma", null)), found);
+    }
+
+    @Test
+    void extractsGitlabCommitSnapshotGitSignature() throws Exception {
+        String commit = "{\"id\":\"abc\",\"author_name\":\"Ext Contributor\",\"author_email\":\"Ext@Example.com\"}";
+
+        var found = listener.extract(envelope("gitlab", "commit.snapshot", commit));
+
+        assertEquals(1, found.size());
+        assertEquals("email:ext@example.com", found.get(0).sourceUserId());
+        assertEquals("gitlab", found.get(0).source());
+    }
+
+    @Test
+    void extractsGitlabPushCommitAuthors() throws Exception {
+        String push = """
+                {"object_kind":"push","commits":[
+                  {"author":{"name":"Vishal Sharma","email":"v@example.com"}},
+                  {"author":{"name":"No Email"}}]}""";
+
+        var found = listener.extract(envelope("gitlab", "push", push));
+
+        assertEquals(1, found.size());
+        assertEquals(new ObservedIdentity("gitlab", "email:v@example.com", "Vishal Sharma", "v@example.com"),
+                found.get(0));
+    }
 }
