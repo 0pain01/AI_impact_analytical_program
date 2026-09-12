@@ -17,6 +17,19 @@ One line per user-visible or architecturally significant change. Newest first.
   code bug) — reconnected against the real local Jenkins (`localhost:9090`, job `aie-pipeline`)
   and the real Jira Cloud site, verified both flip to `CONNECTED` with a fresh `lastCheckedAt`
   even though `lastDataChangeAt` correctly stays frozen (no new issues/builds since last check).
+- connector-github: root-caused recurring "rate limit reached" on Admin console
+  Refresh/"Refresh all" to an **expired** fine-grained PAT (`mallify-local`, silently past its
+  30-day expiry) rather than `GITHUB_TOKEN` never having been set — rotated to a new
+  `Public repositories`-scoped token (least-privilege: every connected GitHub repo is public, so
+  no owned-repo access was needed) and confirmed a 13-repo "Refresh all" burst completes cleanly
+  against the fresh 5,000/hour budget (a handful of very large repos — `prettier/prettier`'s 579
+  PR reviews, `github/docs`'s full history — did exhaust that budget mid-burst once; the
+  remaining 3 repos completed on retry after the hourly reset, not a bug).
+- connector-gitlab: verified end-to-end for the first time in this environment — the Docker
+  image had never actually been built before (not "not needed", just never run). Built and
+  started it, connected a real test GitLab.com project, and drove a full add-branch → open-MR →
+  merge cycle through the real GitLab API to confirm `pull_request_state` and Cockpit's PR
+  velocity/cycle-time tiles populate correctly for a `gitlab:`-prefixed repo end to end.
 
 ## 2026-09-09
 - GitLab wired end to end: `ingestion-writer` now maps `merge_request`/`pipeline` events into
