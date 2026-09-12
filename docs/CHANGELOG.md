@@ -2,6 +2,48 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-09-12
+- New: GitLab merge-request **approvals** now feed `staging.pull_request_review_state` — the
+  same table GitHub PR reviews use (`connector-gitlab` fetches `GET
+  /merge_requests/:iid/approvals` per MR during backfill, one extra call per MR, same N+1 shape
+  connector-github's PR-review fetch already uses). Closes the one remaining GitHub/GitLab
+  asymmetry in Code Review Analytics — cycle-stage breakdown and reviewer-load now populate for
+  GitLab exactly like GitHub, verified against a real approval + merge on a real GitLab.com
+  project. GitLab has no equivalent to GitHub's "changes requested"/"commented" review states —
+  only every approver and when — so GitLab review rows are always `APPROVED`; a real platform
+  difference, not a gap.
+- New: Teams tab gained a **Repositories** section — every connected repo (GitHub or GitLab)
+  gets its own one-click Cockpit view (`GET /api/v1/teams/repos`, same scope semantics as the
+  existing team picker), closing the gap where a GitLab repo's own DORA numbers were only
+  reachable by first assigning it to a team.
+- New: `ConnectorAutoRefreshService` (api-core, ADR-0006) periodically re-triggers backfill for
+  every known Jira project / Jenkins job (`@Scheduled`, 30 min default,
+  `CONNECTOR_AUTO_REFRESH_INTERVAL_MS`) so their Admin console health no longer requires a human
+  to click "Refresh" just to prove the connector still works — neither has a live webhook wired
+  up in this deployment, so nothing else kept `staging.connector_activity.last_checked_at`
+  moving. Reuses the same `/internal/backfill` endpoints and existing V11 staleness signal; no
+  connector-side or schema changes. GitHub/GitLab intentionally excluded (see ADR-0006) — they
+  already have "Refresh"/"Refresh all" and a real webhook path, and blanket re-polling every
+  known repo on a timer would burn rate-limit quota for no benefit.
+- Root-caused both connectors actually going `STALE`: `connector-jira`/`connector-jenkins` were
+  simply running with no `JIRA_*`/`JENKINS_*` credentials configured in this environment (not a
+  code bug) — reconnected against the real local Jenkins (`localhost:9090`, job `aie-pipeline`)
+  and the real Jira Cloud site, verified both flip to `CONNECTED` with a fresh `lastCheckedAt`
+  even though `lastDataChangeAt` correctly stays frozen (no new issues/builds since last check).
+- connector-github: root-caused recurring "rate limit reached" on Admin console
+  Refresh/"Refresh all" to an **expired** fine-grained PAT (`mallify-local`, silently past its
+  30-day expiry) rather than `GITHUB_TOKEN` never having been set — rotated to a new
+  `Public repositories`-scoped token (least-privilege: every connected GitHub repo is public, so
+  no owned-repo access was needed) and confirmed a 13-repo "Refresh all" burst completes cleanly
+  against the fresh 5,000/hour budget (a handful of very large repos — `prettier/prettier`'s 579
+  PR reviews, `github/docs`'s full history — did exhaust that budget mid-burst once; the
+  remaining 3 repos completed on retry after the hourly reset, not a bug).
+- connector-gitlab: verified end-to-end for the first time in this environment — the Docker
+  image had never actually been built before (not "not needed", just never run). Built and
+  started it, connected a real test GitLab.com project, and drove a full add-branch → open-MR →
+  merge cycle through the real GitLab API to confirm `pull_request_state` and Cockpit's PR
+  velocity/cycle-time tiles populate correctly for a `gitlab:`-prefixed repo end to end.
+
 ## 2026-09-09
 - GitLab wired end to end: `ingestion-writer` now maps `merge_request`/`pipeline` events into
   the same `pull_request_state`/`workflow_run_state` tables GitHub/Jenkins share (`repo` values

@@ -142,6 +142,17 @@ is the one exception, packaged as a Docker image built via `infra/docker-compose
 Connectors also poll for historical backfill on first connect (target: first insight < 30 min)
 and to heal webhook gaps. Same envelope, same idempotent path — replay-safe by design.
 
+**Scheduled auto-refresh (ADR-0006):** Jira and Jenkins have no live webhook wired up in this
+deployment, so nothing keeps their Admin console health signal current on its own.
+`ConnectorAutoRefreshService` (api-core, `@Scheduled`, every 30 min by default) re-triggers
+`/internal/backfill` for every Jira project key / Jenkins job name already staged — the same
+endpoint a manual Admin "Refresh" click hits. Both backfill services republish a snapshot per
+issue/build every call (not only deltas), so `staging.connector_activity.last_checked_at`
+(§6, V11) advances even on a cycle that finds nothing new, keeping the connector's status
+`CONNECTED` instead of aging into `STALE` purely from nobody clicking a button. GitHub/GitLab are
+intentionally excluded — they have a real webhook path and manual "Refresh"/"Refresh all", and
+blanket-repolling their full repo list on a timer would burn API rate-limit quota for no benefit.
+
 ### 5.3 Dashboard query
 FE → API Core (JWT verified, RBAC + visibility filters applied server-side) → mart queries
 (pre-aggregated; org→team→IC drill-down levels permission-checked per request).
@@ -209,4 +220,5 @@ outage; dashboards serve last-computed metrics with a freshness indicator.
 
 See [decisions/](decisions/). Current: ADR-0001 (technology stack), ADR-0002 (queue-isolated
 connectors, single Postgres for MVP), ADR-0003 (event envelope contract and queue topology),
-ADR-0004 (authentication, RBAC, and audit enforcement in api-core).
+ADR-0004 (authentication, RBAC, and audit enforcement in api-core), ADR-0005 (containerize
+connector-gitlab), ADR-0006 (scheduled connector auto-refresh for Jira/Jenkins).

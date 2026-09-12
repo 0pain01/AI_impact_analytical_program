@@ -30,6 +30,9 @@ Health: `GET http://localhost:8080/actuator/health`
 | `SERVER_PORT` | `8080` | HTTP port |
 | `CONNECTOR_GITHUB_BASE_URL` | `http://localhost:8081` | Where `ConnectorAdminService` calls connector-github's internal backfill endpoints when an ADMIN connects a repo/org from the Admin console |
 | `CONNECTOR_GITLAB_BASE_URL` | `http://localhost:8088` | Same, for connector-gitlab (project/group connect) |
+| `CONNECTOR_JIRA_BASE_URL` | `http://localhost:8083` | Same, for connector-jira — called only by `ConnectorAutoRefreshService`'s scheduled re-check (ADR-0006), no manual Jira connect endpoint exists yet |
+| `CONNECTOR_JENKINS_BASE_URL` | `http://localhost:8086` | Same, for connector-jenkins |
+| `CONNECTOR_AUTO_REFRESH_INTERVAL_MS` | `1800000` (30 min) | How often `ConnectorAutoRefreshService` re-triggers backfill for every known Jira project / Jenkins job, so their Admin console health doesn't go `STALE` just because nobody clicked Refresh (ADR-0006) |
 | `COPILOT_MONTHLY_SEAT_COST_USD` | `19` | Per-seat monthly cost for AI Cost Track's assumptions block — must match ingestion-writer's own copy (see its README); both compute against the same dollar figure independently rather than one reading it back from the other |
 | `AI_LICENSED_SEATS` | `30` | Denominator for AI-03 adoption rate — combined across every connected AI-telemetry tool (see metric-definitions.md's AI adoption/spend/ROI status note on why this is capped at 100%) |
 | `AI_BLENDED_HOURLY_RATE_USD` | `85` | AI-05 ROI's dollar-per-hour conversion for `estimatedHoursSaved → dollarValueRecovered` — an explicit, adjustable assumption, never a hidden constant |

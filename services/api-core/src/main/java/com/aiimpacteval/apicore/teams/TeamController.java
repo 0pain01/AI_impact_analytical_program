@@ -31,4 +31,10 @@ public class TeamController {
     public List<TeamSummary> listTeams() {
         return queryService.listTeams(scopeResolver.resolve("*"));
     }
+
+    /** Repo list for the Cockpit org → repo drill-down picker — see {@link TeamQueryService#listRepos}. */
+    @GetMapping("/repos")
+    public List<String> listRepos() {
+        return queryService.listRepos(scopeResolver.resolve("*"));
+    }
 }

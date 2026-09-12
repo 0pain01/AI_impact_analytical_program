@@ -13,15 +13,22 @@ GitLab CI/CD pipeline data (PRD F3, FR-1.3) flows through this connector — liv
 webhook (`pipeline` object_kind), history via backfill. Group-structure import (PRD E2-S2,
 FR-1.5) fetches a group's projects (incl. subgroups) + members and publishes one snapshot per
 group for the identity service to normalize into `core.team`, same as a GitHub org's teams.
+Merge-request **approvals** (`GET /merge_requests/:iid/approvals`, one extra call per MR during
+backfill — same N+1 shape connector-github's PR-review fetch already uses) land in the same
+`pull_request_review_state` table GitHub PR reviews use, so Code Review Analytics' cycle-stage
+breakdown and reviewer-load leaderboard work for GitLab the same way they do for GitHub —
+verified against a real approval on a real GitLab.com project, not assumed from docs.
 
-**Known fidelity gap:** GitHub Actions workflow runs and Jenkins jobs both carry a **name** the
+**Known fidelity gaps:** GitHub Actions workflow runs and Jenkins jobs both carry a **name** the
 deploy/hotfix detection pattern matches against; GitLab pipelines don't — the closest available
 field is the pipeline's **git ref**. Set `METRICS_DEPLOY_WORKFLOW_PATTERN`/
 `METRICS_HOTFIX_WORKFLOW_PATTERN` (metrics-engine) to include your deploy branch (e.g.
 `main|production`) or GitLab deployments won't be detected at all — see
-metric-definitions.md's GitLab section. Also not yet: merge-request approvals/discussions
-backfill (GitLab's approval model doesn't map 1:1 onto GitHub's PR reviews — needs its own
-design pass), job-level pipeline detection, adaptive rate-limit throttling, webhook-gap healing
+metric-definitions.md's GitLab section. GitLab's approval model also has no equivalent to
+GitHub's "changes requested"/"commented" review states — only "approved, by whom, when" — so
+every GitLab review row is `APPROVED`; this is a real difference between the two platforms, not
+an implementation gap, and nothing here guesses a mapping for unresolved discussion threads.
+Also not yet: job-level pipeline detection, adaptive rate-limit throttling, webhook-gap healing
 poller.
 
 This is currently the only connector packaged as a Docker image (ADR-0005) — the others
@@ -42,7 +49,9 @@ locally via `mvn spring-boot:run` per their own READMEs.
 `gitlab.<object_kind>` (e.g. `gitlab.merge_request`, `gitlab.push`, `gitlab.pipeline`) for live
 webhooks — `object_kind` is GitLab's own event-type field on every project webhook payload;
 `gitlab.merge_request.snapshot` / `gitlab.commit.snapshot` / `gitlab.pipeline.snapshot` /
-`gitlab.group.snapshot` for backfill. Like `team.snapshot` in connector-github,
+`gitlab.merge_request_approval.snapshot` / `gitlab.group.snapshot` for backfill — the approval
+snapshot is one event per approver per MR (`approved_by[]` from the approvals endpoint), not per
+merge request. Like `team.snapshot` in connector-github,
 `group.snapshot`'s sourceId includes the current instant rather than an entity timestamp
 (GitLab exposes no single "updated at" for a group's membership/project set) — every run
 publishes a fresh snapshot, and the identity service's own upsert logic keeps repeated imports

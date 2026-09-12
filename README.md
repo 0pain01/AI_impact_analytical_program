@@ -38,8 +38,8 @@ AI Impact Evaluation is an AI-native **Software Engineering Intelligence (SEI)**
 - **Planned:** SonarQube (code quality), PagerDuty (incidents) — named in the BRD, not yet built
 
 ### Analytics & Metrics — live end-to-end
-- **All four DORA metrics:** deployment frequency, lead time for changes, change failure rate, MTTR — computed at repo, org, and team scope from real ingested data, not mocks; Cockpit's window is togglable (30/90 days) with a CSV export of everything on screen
-- **PR analytics:** PR velocity and cycle-time p50
+- **All four DORA metrics:** deployment frequency, lead time for changes, change failure rate, MTTR — computed at repo, org, and team scope from real ingested data, not mocks; Cockpit's window is togglable (30/90 days) with a CSV export of everything on screen. The Teams tab lists every connected repo — GitHub or GitLab — with its own one-click Cockpit view, no team assignment required to see a single repo's numbers
+- **PR analytics:** PR velocity and cycle-time p50, plus a full Code Review Analytics tab (cycle-stage breakdown, reviewer load, aging-PR worklist) fed identically by GitHub PR reviews and GitLab merge-request approvals — same table, same queries, no source-specific gaps
 - **AI Cost Track (E9, AI-01..AI-05):** total AI spend, cost per PR/dev-day, adoption rate, AI-assisted-vs-non-AI cycle-time delta, and a dollar ROI figure — all computed by real formulas against connected usage/PR data (currently sample usage-report data + real connected-repo PRs; the UI says "Demo data · real API schema" rather than "Live" until a genuine enterprise usage export is connected). Never fabricates a headline number: figures show `null`/"Not available yet" rather than a guess when the underlying sample is too small
 - **Investment Profile:** classifies PRs as Planned/Unplanned/Rework by joining a Jira issue key parsed from the PR title against `staging.jira_issue_state` — genuinely "Unclassifiable" for repos with no matching Jira project, not a bug
 

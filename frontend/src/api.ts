@@ -464,6 +464,12 @@ export async function fetchTeams(): Promise<Team[]> {
   return res.json()
 }
 
+// LIVE: GET /api/v1/teams/repos
+export async function fetchRepos(): Promise<string[]> {
+  const res = await authFetch('/api/v1/teams/repos')
+  return res.json()
+}
+
 // LIVE: GET /api/v1/setup/status
 export async function fetchSetupStatus(): Promise<SetupStatus> {
   const res = await authFetch('/api/v1/setup/status')

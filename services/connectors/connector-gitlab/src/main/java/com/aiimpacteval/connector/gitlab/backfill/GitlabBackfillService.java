@@ -67,12 +67,12 @@ public class GitlabBackfillService {
     public BackfillResult backfillProject(String project) {
         String projectPath = resolveProjectPath(project);
         Instant since = Instant.now(clock).minus(Duration.ofDays(backfillDays));
-        int mergeRequests = backfillMergeRequests(project, projectPath, since);
+        MergeRequestBackfillResult mrResult = backfillMergeRequests(project, projectPath, since);
         int commits = backfillCommits(project, projectPath, since);
         int pipelines = backfillPipelines(project, projectPath, since);
-        log.info("Backfill {} complete: {} merge requests, {} commits, {} pipelines since {}",
-                project, mergeRequests, commits, pipelines, since);
-        return new BackfillResult(mergeRequests, commits, pipelines, since);
+        log.info("Backfill {} complete: {} merge requests, {} approvals, {} commits, {} pipelines since {}",
+                project, mrResult.mergeRequests(), mrResult.approvals(), commits, pipelines, since);
+        return new BackfillResult(mrResult.mergeRequests(), mrResult.approvals(), commits, pipelines, since);
     }
 
     /** See class javadoc — every published entity gets stamped with this resolved path. */
@@ -87,8 +87,9 @@ public class GitlabBackfillService {
         return resolved != null ? resolved : project;
     }
 
-    private int backfillMergeRequests(String project, String projectPath, Instant since) {
+    private MergeRequestBackfillResult backfillMergeRequests(String project, String projectPath, Instant since) {
         int published = 0;
+        int approvalsPublished = 0;
         for (int page = 1; ; page++) {
             final int currentPage = page;
             JsonNode items = fetcher.fetch(() -> restClient.get()
@@ -97,7 +98,7 @@ public class GitlabBackfillService {
                     .retrieve()
                     .body(String.class));
             if (items == null || items.isEmpty()) {
-                return published;
+                return new MergeRequestBackfillResult(published, approvalsPublished);
             }
             for (JsonNode mr : items) {
                 stampProjectPath(mr, projectPath);
@@ -110,11 +111,58 @@ public class GitlabBackfillService {
                         CONNECTOR_VERSION,
                         mr));
                 published++;
+                approvalsPublished += backfillMergeRequestApprovals(project, projectPath, mr);
             }
             if (items.size() < PAGE_SIZE) {
-                return published;
+                return new MergeRequestBackfillResult(published, approvalsPublished);
             }
         }
+    }
+
+    /**
+     * Who approved a merge request, and when (Code Review tab's cycle-stage breakdown and
+     * reviewer-load both need this — same role as connector-github's per-PR
+     * {@code /pulls/{number}/reviews} call). Not available on the merge-requests list/get
+     * endpoints — a separate call per MR, same N+1 shape GitHub's backfill already accepts.
+     *
+     * <p>GitLab's approval model has no equivalent to GitHub's "changes requested"/"commented"
+     * review states — {@code approved_by} only ever tells you who approved and when. Publishing
+     * only APPROVED here (rather than inventing a mapping for unresolved discussion threads or
+     * similar) is deliberate: real data GitLab actually reports, not a guessed equivalence.
+     */
+    private int backfillMergeRequestApprovals(String project, String projectPath, JsonNode mr) {
+        long mrIid = mr.get("iid").asLong();
+        JsonNode approvals = fetcher.fetch(() -> restClient.get()
+                .uri("/projects/{project}/merge_requests/{iid}/approvals", project, mrIid)
+                .retrieve()
+                .body(String.class));
+        JsonNode approvedBy = approvals == null ? null : approvals.get("approved_by");
+        if (approvedBy == null || !approvedBy.isArray() || approvedBy.isEmpty()) {
+            return 0;
+        }
+        int published = 0;
+        for (JsonNode entry : approvedBy) {
+            JsonNode user = entry.get("user");
+            String username = user == null ? null : textOrNull(user, "username");
+            String approvedAt = textOrNull(entry, "approved_at");
+            if (username == null || approvedAt == null) {
+                continue;
+            }
+            ObjectNode approval = ((ObjectNode) entry).objectNode();
+            approval.put("project_path_with_namespace", projectPath);
+            approval.put("merge_request_iid", mrIid);
+            approval.set("user", user);
+            approval.put("approved_at", approvedAt);
+            publisher.publish(new EventEnvelope(
+                    "gitlab",
+                    "mr_approval:" + mr.get("id").asLong() + ":" + username,
+                    "merge_request_approval.snapshot",
+                    Instant.now(clock),
+                    CONNECTOR_VERSION,
+                    approval));
+            published++;
+        }
+        return published;
     }
 
     private int backfillCommits(String project, String projectPath, Instant since) {
@@ -191,6 +239,9 @@ public class GitlabBackfillService {
         }
     }
 
-    public record BackfillResult(int mergeRequests, int commits, int pipelines, Instant since) {
+    public record BackfillResult(int mergeRequests, int approvals, int commits, int pipelines, Instant since) {
+    }
+
+    private record MergeRequestBackfillResult(int mergeRequests, int approvals) {
     }
 }

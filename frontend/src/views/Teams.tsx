@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { fetchTeams, type Team } from '../api'
+import { fetchTeams, fetchRepos, type Team } from '../api'
 import Cockpit from './Cockpit'
+
+/** "gitlab:namespace/project" -> "namespace/project"; anything else is already a GitHub repo. */
+function repoDisplayName(repo: string): string {
+  return repo.startsWith('gitlab:') ? repo.slice('gitlab:'.length) : repo
+}
+
+function repoSourceLabel(repo: string): 'GitLab' | 'GitHub' {
+  return repo.startsWith('gitlab:') ? 'GitLab' : 'GitHub'
+}
 
 const ACCENTS = ['#00338D', '#0091DA', '#0d9488', '#f59e0b', '#dc2626', '#478aff']
 
@@ -36,6 +45,11 @@ export default function Teams() {
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Team | null>(null)
 
+  const [repos, setRepos] = useState<string[] | null>(null)
+  const [reposError, setReposError] = useState<string | null>(null)
+  const [reposLoading, setReposLoading] = useState(true)
+  const [selectedRepo, setSelectedRepo] = useState<string | null>(null)
+
   function load() {
     setError(null)
     fetchTeams()
@@ -44,7 +58,16 @@ export default function Teams() {
       .finally(() => setLoading(false))
   }
 
+  function loadRepos() {
+    setReposError(null)
+    fetchRepos()
+      .then(setRepos)
+      .catch((e: Error) => setReposError(e.message))
+      .finally(() => setReposLoading(false))
+  }
+
   useEffect(load, [])
+  useEffect(loadRepos, [])
 
   if (selected) {
     return (
@@ -56,6 +79,24 @@ export default function Teams() {
           ← All teams
         </button>
         <Cockpit scope={selected.id} title={selected.name} />
+      </div>
+    )
+  }
+
+  if (selectedRepo) {
+    return (
+      <div>
+        <button
+          onClick={() => setSelectedRepo(null)}
+          className="mb-4 text-sm font-medium text-slate-500 hover:text-slate-900"
+        >
+          ← All repositories
+        </button>
+        <Cockpit
+          scope={selectedRepo}
+          title={repoDisplayName(selectedRepo)}
+          scopeLabel={`${repoSourceLabel(selectedRepo)} repository`}
+        />
       </div>
     )
   }
@@ -121,6 +162,63 @@ export default function Teams() {
         <p className="mt-4 text-sm text-slate-400">
           Teams appear once connector-github's team backfill imports them (PRD E2-S2).
         </p>
+      )}
+
+      <div className="mb-1 mt-10 flex items-center gap-2">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-kpmg-600 to-cobalt-600 text-sm text-white">
+          ▤
+        </span>
+        <h2 className="text-xl font-bold tracking-tight text-slate-900">Repositories</h2>
+      </div>
+      <p className="mb-6 text-sm text-slate-500">
+        {reposLoading && 'Loading repositories…'}
+        {reposError && `Could not load repositories: ${reposError}`}
+        {!reposLoading && !reposError && repos?.length === 0 && 'No repositories connected yet.'}
+        {!reposLoading && !reposError && repos && repos.length > 0 &&
+          "Every connected repo — GitHub or GitLab — has its own Cockpit. Pick one to see its numbers directly, no team assignment needed."}
+      </p>
+      {reposError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          The repos API is unreachable. Check that api-core is running, then reload.
+        </div>
+      )}
+      {!reposError && (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          {(repos ?? []).map((repo) => {
+            const source = repoSourceLabel(repo)
+            return (
+              <button
+                key={repo}
+                onClick={() => setSelectedRepo(repo)}
+                className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 text-left shadow-sm shadow-slate-100 transition hover:-translate-y-0.5 hover:shadow-md hover:shadow-slate-200"
+              >
+                <span
+                  className="absolute inset-y-0 left-0 w-1.5"
+                  style={{ backgroundColor: source === 'GitLab' ? '#fc6d26' : '#24292f' }}
+                />
+                <div className="pl-2">
+                  <div className="flex items-center gap-2">
+                    <p className="truncate font-semibold text-slate-900">{repoDisplayName(repo)}</p>
+                    <span
+                      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                        source === 'GitLab' ? 'bg-orange-50 text-orange-600' : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {source}
+                    </span>
+                  </div>
+                  <span className="mt-3 inline-flex items-center text-xs font-medium text-kpmg-600 opacity-0 transition group-hover:opacity-100">
+                    View Cockpit →
+                  </span>
+                </div>
+              </button>
+            )
+          })}
+          {reposLoading &&
+            [1, 2, 3].map((i) => (
+              <div key={i} className="h-20 animate-pulse rounded-2xl border border-slate-100 bg-white" />
+            ))}
+        </div>
       )}
     </section>
   )

@@ -34,6 +34,18 @@ connectors:
     # Default matches connector-gitlab's own SERVER_PORT default (8088) — see its README for why
     # 8080-8087 were already taken.
     base-url: ${CONNECTOR_GITLAB_BASE_URL:http://localhost:8088}
+  jira:
+    # Used by ConnectorAutoRefreshService to periodically re-check every known Jira project —
+    # connector-jira has no live webhook wired up in this deployment, so this is the only thing
+    # that keeps its Admin console health from going STALE after 24h of nobody clicking Refresh.
+    base-url: ${CONNECTOR_JIRA_BASE_URL:http://localhost:8083}
+  jenkins:
+    # Same role as connectors.jira above, for connector-jenkins.
+    base-url: ${CONNECTOR_JENKINS_BASE_URL:http://localhost:8086}
+  # How often ConnectorAutoRefreshService re-checks known Jira projects/Jenkins jobs. 30 minutes
+  # comfortably clears AdminConnectorService's 24h STALE_AFTER window without polling either
+  # vendor API aggressively.
+  auto-refresh-interval-ms: ${CONNECTOR_AUTO_REFRESH_INTERVAL_MS:1800000}
 
 ai-cost:
   # Org-configurable AI Cost Track assumptions (AI-01/AI-03 edge cases, metric-definitions.md) —
