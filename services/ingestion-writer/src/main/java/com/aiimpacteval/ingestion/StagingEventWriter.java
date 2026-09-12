@@ -209,6 +209,7 @@ public class StagingEventWriter {
     private static final Set<String> GITLAB_MERGE_REQUEST_EVENT_TYPES =
             Set.of("merge_request", "merge_request.snapshot");
     private static final Set<String> GITLAB_PIPELINE_EVENT_TYPES = Set.of("pipeline", "pipeline.snapshot");
+    private static final Set<String> GITLAB_APPROVAL_EVENT_TYPES = Set.of("merge_request_approval.snapshot");
     private static final Set<String> AI_USAGE_EVENT_TYPES = Set.of("usage.snapshot");
     private static final int DAYS_PER_MONTH = 30;
 
@@ -271,6 +272,8 @@ public class StagingEventWriter {
                 upsertGitlabMergeRequestState(envelope);
             } else if (GITLAB_PIPELINE_EVENT_TYPES.contains(envelope.eventType())) {
                 upsertGitlabPipelineState(envelope);
+            } else if (GITLAB_APPROVAL_EVENT_TYPES.contains(envelope.eventType())) {
+                upsertGitlabApprovalState(envelope);
             }
         } else if (("claude_code".equals(envelope.source()) || "copilot".equals(envelope.source()))
                 && AI_USAGE_EVENT_TYPES.contains(envelope.eventType())) {
@@ -592,6 +595,40 @@ public class StagingEventWriter {
             ps.setTimestamp(12, Timestamp.from(envelope.receivedAt()));
             return ps;
         });
+    }
+
+    /**
+     * GitLab merge-request approvals → the same {@code pull_request_review_state} table
+     * GitHub's PR reviews use (Code Review tab's cycle-stage breakdown and reviewer-load both
+     * read this table regardless of source). GitLab's approval model has no equivalent to
+     * GitHub's "changes requested"/"commented" review states — only "approved, by whom, when" —
+     * so {@code state} is always {@code APPROVED} here; connector-gitlab's
+     * {@code backfillMergeRequestApprovals} javadoc explains why nothing broader is guessed.
+     *
+     * <p>{@code review_id} has no natural GitLab equivalent (unlike a GitHub review's own numeric
+     * id) — synthesized as {@code "gitlab:" + mergeRequestId + ":" + username}, unique per
+     * approver per MR and stable across re-backfills (ADR-0003).
+     */
+    private void upsertGitlabApprovalState(EventEnvelope envelope) {
+        JsonNode payload = envelope.payload();
+        JsonNode user = payload.get("user");
+        String username = user == null ? null : textOrNull(user, "username");
+        String approvedAt = textOrNull(payload, "approved_at");
+        Long mrIid = longOrNull(textOrNull(payload, "merge_request_iid"));
+        if (username == null || approvedAt == null || mrIid == null) {
+            return;
+        }
+        String repo = "gitlab:" + firstNonBlank(
+                textOrNull(payload, "project_path_with_namespace"), "unknown");
+        // sourceId ("mr_approval:{id}:{username}") already carries the MR's internal id, so a
+        // per-user review_id keyed on the same MR + username stays stable across re-backfills.
+        String reviewId = "gitlab:" + envelope.sourceId();
+        Instant submittedAt = instantOrNull(approvedAt);
+
+        jdbcTemplate.update(UPSERT_PULL_REQUEST_REVIEW_SQL,
+                repo, mrIid, reviewId, username, "APPROVED",
+                submittedAt == null ? null : Timestamp.from(submittedAt),
+                Timestamp.from(envelope.receivedAt()));
     }
 
     // GitHub's PR state is a plain open/closed pair (a merged PR still reports state=closed;

@@ -3,6 +3,15 @@
 One line per user-visible or architecturally significant change. Newest first.
 
 ## 2026-09-12
+- New: GitLab merge-request **approvals** now feed `staging.pull_request_review_state` — the
+  same table GitHub PR reviews use (`connector-gitlab` fetches `GET
+  /merge_requests/:iid/approvals` per MR during backfill, one extra call per MR, same N+1 shape
+  connector-github's PR-review fetch already uses). Closes the one remaining GitHub/GitLab
+  asymmetry in Code Review Analytics — cycle-stage breakdown and reviewer-load now populate for
+  GitLab exactly like GitHub, verified against a real approval + merge on a real GitLab.com
+  project. GitLab has no equivalent to GitHub's "changes requested"/"commented" review states —
+  only every approver and when — so GitLab review rows are always `APPROVED`; a real platform
+  difference, not a gap.
 - New: `ConnectorAutoRefreshService` (api-core, ADR-0006) periodically re-triggers backfill for
   every known Jira project / Jenkins job (`@Scheduled`, 30 min default,
   `CONNECTOR_AUTO_REFRESH_INTERVAL_MS`) so their Admin console health no longer requires a human
