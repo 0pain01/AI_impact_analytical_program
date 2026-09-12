@@ -2,7 +2,23 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-09-13
+- Docs: three new top-level reference documents — [`docs/01-product/functional-specification.md`](01-product/functional-specification.md)
+  (what the product does: user roles, every dashboard's purpose/business rules, data sources,
+  explicit out-of-scope list), [`docs/03-architecture/technical-specification.md`](03-architecture/technical-specification.md)
+  (how it's built: full data model, real API surface derived from the controllers rather than the
+  drifted OpenAPI spec, the algorithm behind every metric, security/resilience mechanics, testing
+  strategy), and [`docs/04-operations/aws-deployment-plan.md`](04-operations/aws-deployment-plan.md)
+  (a concrete, sized-and-costed AWS deployment for a ≤20-developer team — two tiers, single-EC2
+  vs. managed RDS/Amazon MQ/ECS Fargate, with a line-item monthly cost estimate for each). Root
+  README and the docs index both link all three.
+
 ## 2026-09-12
+- Docs: new [`docs/04-operations/deployment-guide.md`](04-operations/deployment-guide.md) — the
+  first document to cover every service's function, why it's a separate service, exactly how the
+  pieces connect, Docker image status per service (and how to containerize the rest), and a full
+  cloud-deployment walkthrough with a consolidated env-var/secret reference per integration.
+  Root README, docs index, and system-architecture.md all link to it now.
 - New: GitLab merge-request **approvals** now feed `staging.pull_request_review_state` — the
   same table GitHub PR reviews use (`connector-gitlab` fetches `GET
   /merge_requests/:iid/approvals` per MR during backfill, one extra call per MR, same N+1 shape

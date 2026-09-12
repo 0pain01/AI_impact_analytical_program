@@ -1,5 +1,9 @@
 # Operations — Runbooks & Deployment
 
+- **[deployment-guide.md](deployment-guide.md)** — what each service does and why, how they
+  connect, what's containerized today, and the full cloud-deployment walkthrough (prerequisites,
+  deployment order, consolidated env-var/secret reference per service).
+
 Populated as services ship. **Rule:** anything that can page a human gets a runbook here
 before it ships (connector outage, queue backlog/DLQ growth, ingestion lag > 15 min,
 metric-recompute failure).
