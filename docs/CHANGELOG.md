@@ -2,6 +2,22 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-09-12
+- New: `ConnectorAutoRefreshService` (api-core, ADR-0006) periodically re-triggers backfill for
+  every known Jira project / Jenkins job (`@Scheduled`, 30 min default,
+  `CONNECTOR_AUTO_REFRESH_INTERVAL_MS`) so their Admin console health no longer requires a human
+  to click "Refresh" just to prove the connector still works — neither has a live webhook wired
+  up in this deployment, so nothing else kept `staging.connector_activity.last_checked_at`
+  moving. Reuses the same `/internal/backfill` endpoints and existing V11 staleness signal; no
+  connector-side or schema changes. GitHub/GitLab intentionally excluded (see ADR-0006) — they
+  already have "Refresh"/"Refresh all" and a real webhook path, and blanket re-polling every
+  known repo on a timer would burn rate-limit quota for no benefit.
+- Root-caused both connectors actually going `STALE`: `connector-jira`/`connector-jenkins` were
+  simply running with no `JIRA_*`/`JENKINS_*` credentials configured in this environment (not a
+  code bug) — reconnected against the real local Jenkins (`localhost:9090`, job `aie-pipeline`)
+  and the real Jira Cloud site, verified both flip to `CONNECTED` with a fresh `lastCheckedAt`
+  even though `lastDataChangeAt` correctly stays frozen (no new issues/builds since last check).
+
 ## 2026-09-09
 - GitLab wired end to end: `ingestion-writer` now maps `merge_request`/`pipeline` events into
   the same `pull_request_state`/`workflow_run_state` tables GitHub/Jenkins share (`repo` values
