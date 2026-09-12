@@ -1,0 +1,1 @@
+{"nodes": [{"id": "pkg_com_aiimpacteval_ai_impact_evaluation_services", "label": "com.aiimpacteval:ai-impact-evaluation-services", "file_type": "code", "type": "package", "ecosystem": "maven", "source_file": "services/pom.xml", "source_location": "L1", "version": "0.1.0-SNAPSHOT"}], "edges": []}
