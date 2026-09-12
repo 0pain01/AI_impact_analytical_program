@@ -134,6 +134,20 @@ paths:
                     id: { type: string, format: uuid }
                     name: { type: string }
                     repoCount: { type: integer, description: Number of repositories mapped to this team. }
+  /teams/repos:
+    get:
+      operationId: listRepos
+      summary: List connected repos for the Cockpit org → repo drill-down picker (GitHub and GitLab alike)
+      description: >
+        Every repo currently feeding pull_request_state/workflow_run_state, `gitlab:`-prefixed
+        ones included — the same source-agnostic union Cockpit itself reads. Lets any repo's own
+        DORA/PR numbers be viewed directly without first assigning it to a team.
+      responses:
+        "200":
+          description: Repo full names (or gitlab:namespace/project for GitLab), alphabetical.
+          content:
+            application/json:
+              schema: { type: array, items: { type: string } }
   /setup/status:
     get:
       operationId: getSetupStatus

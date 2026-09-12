@@ -41,4 +41,37 @@ public class TeamQueryService {
 
     public record TeamSummary(UUID id, String name, int repoCount) {
     }
+
+    /**
+     * Every connected repo (GitHub and GitLab alike — a plain UNION of the same two tables
+     * Cockpit itself reads, so a repo shows up here the moment it's actually feeding metrics,
+     * nothing repo-source-specific) for the Cockpit org → repo drill-down picker: a MANAGER
+     * pinned to one team currently can only reach a repo's own numbers by going through that
+     * team's aggregate, which hides a repo whenever a team has more than one. Same scope
+     * semantics as {@link #listTeams}: {@code "*"} for every repo, a team UUID for just that
+     * team's repos.
+     */
+    public List<String> listRepos(String scope) {
+        boolean orgWide = scope == null || "*".equals(scope);
+        String sql = orgWide
+                ? """
+                  SELECT DISTINCT repo FROM (
+                      SELECT repo FROM staging.pull_request_state
+                      UNION
+                      SELECT repo FROM staging.workflow_run_state
+                  ) x WHERE repo <> 'unknown' ORDER BY repo
+                  """
+                : """
+                  SELECT DISTINCT repo FROM (
+                      SELECT repo FROM staging.pull_request_state
+                      UNION
+                      SELECT repo FROM staging.workflow_run_state
+                  ) x
+                  WHERE repo <> 'unknown' AND repo IN (SELECT repo FROM core.team_repo WHERE team_id = ?::uuid)
+                  ORDER BY repo
+                  """;
+        return orgWide
+                ? jdbcTemplate.queryForList(sql, String.class)
+                : jdbcTemplate.queryForList(sql, String.class, scope);
+    }
 }

@@ -12,6 +12,10 @@ One line per user-visible or architecturally significant change. Newest first.
   project. GitLab has no equivalent to GitHub's "changes requested"/"commented" review states —
   only every approver and when — so GitLab review rows are always `APPROVED`; a real platform
   difference, not a gap.
+- New: Teams tab gained a **Repositories** section — every connected repo (GitHub or GitLab)
+  gets its own one-click Cockpit view (`GET /api/v1/teams/repos`, same scope semantics as the
+  existing team picker), closing the gap where a GitLab repo's own DORA numbers were only
+  reachable by first assigning it to a team.
 - New: `ConnectorAutoRefreshService` (api-core, ADR-0006) periodically re-triggers backfill for
   every known Jira project / Jenkins job (`@Scheduled`, 30 min default,
   `CONNECTOR_AUTO_REFRESH_INTERVAL_MS`) so their Admin console health no longer requires a human

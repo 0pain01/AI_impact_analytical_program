@@ -378,7 +378,15 @@ function downloadCsv(filename: string, content: string) {
 }
 
 /** Reusable Cockpit view (E4-S1/E4-S2): scope is a repo, "*" for org, or a team id. */
-export default function Cockpit({ scope = '*', title = 'Cockpit' }: { scope?: string; title?: string }) {
+export default function Cockpit({
+  scope = '*',
+  title = 'Cockpit',
+  scopeLabel,
+}: {
+  scope?: string
+  title?: string
+  scopeLabel?: string
+}) {
   const [data, setData] = useState<CockpitResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -419,7 +427,7 @@ export default function Cockpit({ scope = '*', title = 'Cockpit' }: { scope?: st
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            {scope === '*' ? 'Organization' : 'Team'}
+            {scopeLabel ?? (scope === '*' ? 'Organization' : 'Team')}
           </p>
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h2>
         </div>
