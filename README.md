@@ -85,16 +85,17 @@ The platform follows a **message-queue-isolated** microservices architecture:
         │                      │                          │
         │                      └────────────┬─────────────┘
         ▼                                   ▼
-┌─────────────────────┐        ┌───────────────────────────────────────────┐
-│  PostgreSQL          │        │           Message Queue (RabbitMQ)         │
-│  staging → core →    │◀───────┤                                             │
-│  mart schemas         │        └───────┬──────────┬──────────┬───────────┬──┘
-└─────────────────────┘                 │          │          │           │
-                                          ▼          ▼          ▼           ▼
-                                ┌───────────┐┌──────────┐┌──────────┐┌────────────┐
-                                │Connector: ││Connector:││Connector:││ Connector:  │
-                                │ GitHub    ││ Jira     ││ Jenkins  ││ AI Telemetry│
-                                └───────────┘└──────────┘└──────────┘└────────────┘
+┌──────────────────────┐        ┌─────────────────────────────────────────────────────┐
+│  PostgreSQL           │        │              Message Queue (RabbitMQ)                │
+│  staging → core →     │◀───────┤                                                       │
+│  mart schemas         │        └────┬────────┬────────┬────────┬────────┬─────────────┘
+└──────────────────────┘              │        │        │        │        │
+                                       ▼        ▼        ▼        ▼        ▼
+                              ┌──────────┐┌──────────┐┌────────┐┌────────┐┌────────────┐
+                              │Connector:││Connector:││Conn.:  ││Conn.:  ││ Connector:  │
+                              │ GitHub   ││ GitLab   ││ Jira   ││Jenkins ││ AI Telemetry│
+                              │(+ Actions)││(+ CI/CD) ││        ││        ││             │
+                              └──────────┘└──────────┘└────────┘└────────┘└────────────┘
 ```
 
 > **Key Architectural Decisions:**
@@ -102,6 +103,7 @@ The platform follows a **message-queue-isolated** microservices architecture:
 > - **Contract-first API** — OpenAPI specs are the source of truth
 > - All metrics are **computed from tool data** — no manual tagging required
 > - CI/CD sources are **provider-agnostic at the schema level** — GitHub Actions and Jenkins both write into the same `staging.workflow_run_state` table, so DORA queries don't need to know which tool built a given commit
+> - **GitHub and GitLab are held to strict feature parity** — DORA metrics, PR analytics, and Code Review Analytics (including merge-request/PR reviews) work identically for both, since GitLab is the platform's real target-customer surface (private repos) and GitHub only ever served as the build/demo vehicle
 
 For detailed C4 diagrams and data flows, see [System Architecture](docs/03-architecture/system-architecture.md).
 
@@ -186,6 +188,12 @@ For detailed C4 diagrams and data flows, see [System Architecture](docs/03-archi
    ./infra/stop-backend.sh          # stops backend services only
    docker compose -f infra/docker-compose.yml down   # stops infrastructure too
    ```
+
+> **Deploying this somewhere real (cloud/production)?** This Quick Start is local-dev only. See
+> the **[Deployment Guide](docs/04-operations/deployment-guide.md)** for what each service needs
+> to run in a real environment: required secrets per integration (GitHub/GitLab/Jira/Jenkins),
+> deployment order, Docker image status per service, and production-hardening gaps to close
+> first (the dev-token auth bridge in particular **must** be disabled before going live).
 
 ### Running a Single Service
 
@@ -325,11 +333,15 @@ All project documentation lives in the `docs/` directory. Documentation is **par
 |----------|---------|
 | [BRD Summary](docs/01-product/brd-summary.md) | What we're building and why (condensed BRD) |
 | [PRD v1.0](docs/01-product/prd.md) | Product requirements (epics E1–E11 with acceptance criteria + delivery status appendix) |
+| [Functional Specification](docs/01-product/functional-specification.md) | **What the product does**, module by module: user roles, every dashboard's purpose/business rules, data sources, out-of-scope items |
 | [Metric Definitions](docs/01-product/metric-definitions.md) | Formulas, data sources, and edge cases for all metrics |
 | [Engineering Standards](docs/02-standards/engineering-standards.md) | Coding, git, testing, API, and data standards |
 | [Security & Privacy Standards](docs/02-standards/security-and-privacy-standards.md) | Security, privacy, and audit requirements |
 | [System Architecture](docs/03-architecture/system-architecture.md) | C4 diagrams, data flows, component tables |
+| [Technical Specification](docs/03-architecture/technical-specification.md) | **How it's built**: data model (every table), full API surface, algorithms behind every metric, security/resilience mechanics, testing strategy |
 | [ADRs](docs/03-architecture/decisions/) | Architecture Decision Records — numbered sequentially |
+| [Deployment Guide](docs/04-operations/deployment-guide.md) | **What each service does, why, and how they connect** — plus Docker images and a full cloud-deployment walkthrough with the env vars/secrets every service needs |
+| [AWS Deployment Plan](docs/04-operations/aws-deployment-plan.md) | **Sized and costed for a ≤20-developer team** — AWS service mapping, a monthly cost estimate, and step-by-step deployment |
 | [Runbooks](docs/04-operations/) | On-call runbooks for ingestion failures, connector outages, etc. |
 | [CHANGELOG](docs/CHANGELOG.md) | One-line log of user-visible / architecturally significant changes |
 

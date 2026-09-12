@@ -111,6 +111,12 @@ Backend services otherwise run as local processes (`infra/start-backend.sh`); `c
 is the one exception, packaged as a Docker image built via `infra/docker-compose.yml` (ADR-0005)
 — the template for containerizing further services if/when that becomes the norm.
 
+**For a full narrative walkthrough** — what each service does in detail, why it's shaped this
+way, exactly how the pieces connect, what's containerized today, and a complete cloud-deployment
+guide with the env var/secret every service needs — see
+[`docs/04-operations/deployment-guide.md`](../04-operations/deployment-guide.md). This section
+stays the quick-reference table.
+
 ## 4. Container responsibilities
 
 | Container | Responsibilities | Phase |
