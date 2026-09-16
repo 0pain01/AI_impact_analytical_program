@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { getSession, logout, type Session } from './api'
 import { TAB_ACCESS, defaultViewFor, type View } from './roleAccess'
-import aiImpactEvaluationLogo from './assets/ai-impact-evaluation-logo.png'
 import Cockpit from './views/Cockpit'
 import Teams from './views/Teams'
 import InvestmentProfile from './views/InvestmentProfile'
@@ -171,12 +170,10 @@ function AppShell({ session, onLogout }: { session: Session; onLogout: () => voi
 
       <div className="flex flex-1 overflow-hidden">
         <aside className="flex w-64 shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-white">
-          <div className="flex items-center gap-2.5 border-b border-slate-100 p-4">
-            <img
-              src={aiImpactEvaluationLogo}
-              alt="AI Impact Evaluation"
-              className="h-7 w-7 rounded-lg object-cover ring-1 ring-slate-900/5"
-            />
+          <div className="flex items-center gap-2 border-b border-slate-100 p-4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-400">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Menu</p>
           </div>
           <nav className="flex-1 space-y-0.5 p-3">
