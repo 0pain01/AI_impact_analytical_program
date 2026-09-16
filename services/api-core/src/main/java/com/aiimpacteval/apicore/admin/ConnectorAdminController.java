@@ -1,5 +1,7 @@
 package com.aiimpacteval.apicore.admin;
 
+import com.aiimpacteval.apicore.admin.ConnectorAdminService.JenkinsJobSyncStatus;
+import com.aiimpacteval.apicore.admin.ConnectorAdminService.JiraProjectSyncStatus;
 import com.aiimpacteval.apicore.admin.ConnectorAdminService.RepoSyncStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -20,7 +22,10 @@ import java.util.UUID;
  * Lets an ADMIN connect a new GitHub repo (optionally assigning it to a team in the same step),
  * import an org's teams, or check live per-repo sync status from the Admin console (PRD
  * E1-S4/E8), instead of calling connector-github's internal backfill endpoints from a terminal.
- * ADMIN-only — covered by the existing {@code /api/v1/admin/**} rule in SecurityConfig.
+ * GitLab (project/group) follows the identical shape. Jira (project) and Jenkins (job) get their
+ * own connect/list/disconnect trio too, minus team assignment — see
+ * {@link ConnectorAdminService}'s javadoc for why. ADMIN-only — covered by the existing
+ * {@code /api/v1/admin/**} rule in SecurityConfig.
  */
 @RestController
 @RequestMapping("/api/v1/admin/connectors")
@@ -105,6 +110,62 @@ public class ConnectorAdminController {
         }
         connectorAdminService.connectGitlabGroup(auth.getName(), request.group().trim(), servletRequest.getRemoteAddr());
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new TriggeredResponse(true));
+    }
+
+    public record ConnectJiraProjectRequest(String projectKey) {
+    }
+
+    @PostMapping("/jira-projects")
+    public ResponseEntity<TriggeredResponse> connectJiraProject(@RequestBody ConnectJiraProjectRequest request,
+                                                                  Authentication auth, HttpServletRequest servletRequest) {
+        if (isBlank(request.projectKey())) {
+            return ResponseEntity.badRequest().build();
+        }
+        connectorAdminService.connectJiraProject(auth.getName(), request.projectKey().trim(), servletRequest.getRemoteAddr());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new TriggeredResponse(true));
+    }
+
+    @GetMapping("/jira-projects")
+    public List<JiraProjectSyncStatus> listJiraProjectSyncStatus() {
+        return connectorAdminService.listJiraProjectSyncStatus();
+    }
+
+    @DeleteMapping("/jira-projects")
+    public ResponseEntity<Void> disconnectJiraProject(@RequestParam String projectKey, Authentication auth,
+                                                        HttpServletRequest servletRequest) {
+        if (isBlank(projectKey)) {
+            return ResponseEntity.badRequest().build();
+        }
+        connectorAdminService.disconnectJiraProject(auth.getName(), projectKey.trim(), servletRequest.getRemoteAddr());
+        return ResponseEntity.noContent().build();
+    }
+
+    public record ConnectJenkinsJobRequest(String jobName) {
+    }
+
+    @PostMapping("/jenkins-jobs")
+    public ResponseEntity<TriggeredResponse> connectJenkinsJob(@RequestBody ConnectJenkinsJobRequest request,
+                                                                 Authentication auth, HttpServletRequest servletRequest) {
+        if (isBlank(request.jobName())) {
+            return ResponseEntity.badRequest().build();
+        }
+        connectorAdminService.connectJenkinsJob(auth.getName(), request.jobName().trim(), servletRequest.getRemoteAddr());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new TriggeredResponse(true));
+    }
+
+    @GetMapping("/jenkins-jobs")
+    public List<JenkinsJobSyncStatus> listJenkinsJobSyncStatus() {
+        return connectorAdminService.listJenkinsJobSyncStatus();
+    }
+
+    @DeleteMapping("/jenkins-jobs")
+    public ResponseEntity<Void> disconnectJenkinsJob(@RequestParam String jobName, Authentication auth,
+                                                       HttpServletRequest servletRequest) {
+        if (isBlank(jobName)) {
+            return ResponseEntity.badRequest().build();
+        }
+        connectorAdminService.disconnectJenkinsJob(auth.getName(), jobName.trim(), servletRequest.getRemoteAddr());
+        return ResponseEntity.noContent().build();
     }
 
     private static boolean isBlank(String s) {

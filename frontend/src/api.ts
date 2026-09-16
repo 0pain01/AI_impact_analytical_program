@@ -2,9 +2,11 @@
 // TODO(standards §3): replace with a client generated from the OpenAPI spec once codegen
 // tooling lands in CI — do not let these drift by hand.
 //
-// Functions marked `// LIVE:` call the real api-core backend. A few views (Investment Profile,
-// AI Cost Track) are still backed by deterministic mock data pending the Jira/AI-assistant
-// connectors — see `frontend/src/mock/mockData.ts` and each view's own import for which.
+// Functions marked `// LIVE:` call the real api-core backend. Every view is live now (verified
+// 2026-09-17: no view imports frontend/src/mock/mockData.ts anymore — Investment Profile and AI
+// Cost Track, this comment's previous exception list, both wired up since; SCRUM-7 in the real
+// Jira project tracked the Investment Profile half of that and is now closed). mockData.ts
+// itself is unused dead code at this point, left in place rather than deleted unprompted.
 
 const API_BASE_URL = 'http://localhost:8080'
 
@@ -729,6 +731,55 @@ export async function connectGitlabProject(project: string, teamId: string | nul
 // (projects + members, including subgroups), GitLab's analogue of connectGithubOrgTeams above.
 export async function connectGitlabGroup(group: string): Promise<void> {
   await authFetch('/api/v1/admin/connectors/gitlab-groups', { method: 'POST', body: { group } })
+}
+
+// LIVE: POST/GET/DELETE /api/v1/admin/connectors/jira-projects — Jira's analogue of connectRepo/
+// fetchRepoSyncStatus/disconnectRepo above, minus team assignment (no project→team mapping
+// exists yet — see JiraDashboardController's javadoc in api-core).
+export interface JiraProjectSyncStatus {
+  projectKey: string
+  lastSyncAt: string | null
+  eventCount: number
+  syncState: 'IN_PROGRESS' | 'COMPLETED' | 'FAILED'
+  syncError: string | null
+}
+
+export async function connectJiraProject(projectKey: string): Promise<void> {
+  await authFetch('/api/v1/admin/connectors/jira-projects', { method: 'POST', body: { projectKey } })
+}
+
+export async function fetchJiraProjectSyncStatus(): Promise<JiraProjectSyncStatus[]> {
+  const res = await authFetch('/api/v1/admin/connectors/jira-projects')
+  return res.json()
+}
+
+export async function disconnectJiraProject(projectKey: string): Promise<void> {
+  const params = new URLSearchParams({ projectKey })
+  await authFetch(`/api/v1/admin/connectors/jira-projects?${params.toString()}`, { method: 'DELETE' })
+}
+
+// LIVE: POST/GET/DELETE /api/v1/admin/connectors/jenkins-jobs — Jenkins' analogue of the same
+// trio, keyed by job name rather than repo/project.
+export interface JenkinsJobSyncStatus {
+  jobName: string
+  lastSyncAt: string | null
+  eventCount: number
+  syncState: 'IN_PROGRESS' | 'COMPLETED' | 'FAILED'
+  syncError: string | null
+}
+
+export async function connectJenkinsJob(jobName: string): Promise<void> {
+  await authFetch('/api/v1/admin/connectors/jenkins-jobs', { method: 'POST', body: { jobName } })
+}
+
+export async function fetchJenkinsJobSyncStatus(): Promise<JenkinsJobSyncStatus[]> {
+  const res = await authFetch('/api/v1/admin/connectors/jenkins-jobs')
+  return res.json()
+}
+
+export async function disconnectJenkinsJob(jobName: string): Promise<void> {
+  const params = new URLSearchParams({ jobName })
+  await authFetch(`/api/v1/admin/connectors/jenkins-jobs?${params.toString()}`, { method: 'DELETE' })
 }
 
 // LIVE: POST/GET/DELETE /api/v1/admin/teams/** — manual team/repo-structure administration

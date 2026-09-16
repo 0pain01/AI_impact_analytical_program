@@ -2,6 +2,31 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-09-17
+- New: **Admin console Jira/Jenkins connector parity** — a "Jira & Jenkins" section (mirroring
+  the existing GitHub/GitLab repo controls) to connect a Jira project or Jenkins job, see live
+  per-item sync status, Refresh, and Delete. New endpoints `POST/GET/DELETE
+  /api/v1/admin/connectors/jira-projects` and `.../jenkins-jobs` in `ConnectorAdminService`/
+  `ConnectorAdminController`, same async trigger-and-poll pattern as repos, minus team assignment
+  (no project/job-to-team mapping exists yet). **Discovered while verifying this**, not
+  introduced by it: Delete-then-Refresh on the same item doesn't reliably restore it when nothing
+  changed upstream since the last sync — every connector's deterministic idempotency key
+  (Jira/Jenkins/GitHub/GitLab alike) gets deduplicated by `staging.raw_event`'s own uniqueness
+  constraint on a republish, so the backfill call "succeeds" but reprocesses nothing. Documented
+  as a known, cross-connector limitation in `docs/01-product/functional-specification.md` §4.8
+  rather than silently patched — the real fix touches every connector's idempotency contract
+  (ADR-0003) and needs its own ADR-level decision first.
+- Infra: **`connector-jenkins` containerized** (ADR-0007, same multi-stage-build template
+  ADR-0005 established for `connector-gitlab`) and the local Jenkins CI server (previously a
+  standalone `docker run`, not part of any compose project) brought into
+  `infra/docker-compose.yml`'s `ai-impact-evaluation` stack — reusing its pre-existing
+  `jenkins_home` volume so real job history isn't lost. `docker compose up -d gitlab jenkins
+  connector-jenkins` now brings up both containerized connectors and the Jenkins server they
+  need, so the Admin console's "Refresh" works for GitLab- and Jenkins-backed connections
+  without a separate manual `mvn spring-boot:run` per service. `infra/.env.example` gained
+  placeholder entries for the vars these services actually consume
+  (`GITLAB_TOKEN`/`GITLAB_WEBHOOK_SECRET`/`JENKINS_USERNAME`/`JENKINS_API_TOKEN`).
+
 ## 2026-09-16
 - New: **Jira Work Items** dashboard (ADMIN/ENG_LEADER/MANAGER) — `GET
   /api/v1/metrics/jira-work-items`, backed by `staging.jira_issue_state`. KPIs (open issues,

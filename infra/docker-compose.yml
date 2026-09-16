@@ -38,8 +38,9 @@ services:
       timeout: 5s
       retries: 10
 
-  # Only this connector is containerized so far — see ADR-0005. The others (github, jira,
-  # jenkins, ai-telemetry) still run locally via `mvn spring-boot:run` per their READMEs.
+  # connector-gitlab and connector-jenkins are containerized — see ADR-0005/ADR-0007. The
+  # others (github, jira, ai-telemetry) still run locally via `mvn spring-boot:run` per their
+  # READMEs.
   gitlab:
     build:
       context: ../services
@@ -63,6 +64,57 @@ services:
       timeout: 5s
       retries: 10
 
+  # The real Jenkins CI server used for local dev/testing (ADR-0007) — not application code we
+  # build, so no Dockerfile of our own, same treatment as postgres/rabbitmq above. Reuses the
+  # pre-existing `jenkins_home` named volume (external: true, see below) so job history/config
+  # from before this was brought under compose survives unchanged.
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "${JENKINS_PORT:-9090}:8080"
+      - "${JENKINS_AGENT_PORT:-50000}:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/login >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  # Backfills Jenkins build history into the shared pipeline (ADR-0007, same containerization
+  # template ADR-0005 established for connector-gitlab). JENKINS_BASE_URL points at the `jenkins`
+  # service by its compose network name/port, not localhost:9090 (host-only, unreachable from
+  # inside this container) — that host-facing default is what connector-jenkins's README/
+  # application.yml still use for the "run locally without Docker" path.
+  connector-jenkins:
+    build:
+      context: ../services
+      dockerfile: connectors/connector-jenkins/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      jenkins:
+        condition: service_healthy
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USERNAME: aiimpacteval
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-aiimpacteval_local}
+      JENKINS_BASE_URL: http://jenkins:8080
+      JENKINS_USERNAME: ${JENKINS_USERNAME:-}
+      JENKINS_API_TOKEN: ${JENKINS_API_TOKEN:-}
+    ports:
+      - "${CONNECTOR_JENKINS_PORT:-8086}:8086"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8086/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
 volumes:
   pgdata:
   mqdata:
+  # External: this volume already existed (created by a previously-standalone `jenkins`
+  # container run outside compose) and holds real job history/config — reused as-is, never
+  # recreated, so bringing Jenkins under this stack (ADR-0007) doesn't lose it.
+  jenkins_home:
+    external: true

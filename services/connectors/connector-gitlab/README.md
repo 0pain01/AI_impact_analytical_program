@@ -31,9 +31,9 @@ an implementation gap, and nothing here guesses a mapping for unresolved discuss
 Also not yet: job-level pipeline detection, adaptive rate-limit throttling, webhook-gap healing
 poller.
 
-This is currently the only connector packaged as a Docker image (ADR-0005) — the others
-(`connector-github`, `connector-jira`, `connector-jenkins`, `connector-ai-telemetry`) still run
-locally via `mvn spring-boot:run` per their own READMEs.
+This and `connector-jenkins` (ADR-0007) are the only connectors packaged as Docker images
+(ADR-0005) — the others (`connector-github`, `connector-jira`, `connector-ai-telemetry`) still
+run locally via `mvn spring-boot:run` per their own READMEs.
 
 ## Endpoints
 
