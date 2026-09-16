@@ -3,6 +3,28 @@
 One line per user-visible or architecturally significant change. Newest first.
 
 ## 2026-09-17
+- Repo hygiene: removed files that don't belong in a code repo and gitignored their categories
+  so they can't silently come back. `Mallify_Client_Presentation.pptx` (old pre-rename branding —
+  the 2026-07-14 Mallify→AI Impact Evaluation rename pass had explicitly deferred this, see this
+  file's entry for that date)
+  and three `frontend/vite.config.ts.timestamp-*.mjs` files (Vite's own transient build output,
+  committed by accident) are gone. Also found and removed genuine **cross-contamination from an
+  unrelated project** ("OFFICE iQ," a catalog/ticket-import tool with no connection to this
+  platform): `ai-impact-evaluation-project-pack.json`, `project-pack-template.json`, and the
+  entire `templates/` directory. `.gitignore` gained `*.pptx`/`*.ppt`, `*.timestamp-*.mjs`, and
+  path-pinned entries for the three contamination paths.
+- Fix: **`infra/start-backend.sh` still tried to start `connector-jenkins` as a plain process**
+  (port 8086) after ADR-0007 containerized it — the script's own bare `docker compose ... up -d
+  --wait` call (no service names) starts *every* service the compose file defines, which now
+  includes `connector-jenkins`, so the two would have port-conflicted. Removed the redundant
+  plain-process start; `connector-jenkins` now comes up via Docker only, same as
+  `connector-gitlab` already did. Found while auditing docs for GitLab/Jenkins accuracy — also
+  caught and fixed a real documentation bug in the process: `infra/README.md` claimed a bare
+  `docker compose up -d` only starts Postgres/RabbitMQ, when it actually starts every defined
+  service (that's just how Compose works with no service names given) — corrected there and in
+  `technical-specification.md`/`README.md`/`deployment-guide.md`, along with several stale
+  "8 backend services" / "only one containerized" counts left over from ADR-0007 (now 7 plain
+  processes + 2 containerized connectors + the Jenkins CI server, consistently).
 - Docs/tooling: refreshed `docs/04-operations/deployment-guide.md` (containerization state,
   credential table, Jira Work Items + Admin Jira/Jenkins parity history — was stale since
   Sep 12); added `docs/04-operations/frontend-backend-map.md` — new doc mapping every frontend

@@ -285,11 +285,14 @@ gap is called out in its respective service's README rather than left undocument
 
 ## 10. CI/CD and local development
 
-- **Local dev:** `infra/start-backend.sh` builds the full Maven reactor once, then starts eight
-  of the nine backend services as plain `java -jar` processes with health-check polling;
-  `connector-gitlab` is started separately via `docker compose -f infra/docker-compose.yml up
-  --build gitlab` since it's the one containerized service. `infra/docker-compose.yml` also
-  starts Postgres and RabbitMQ for local dev.
+- **Local dev:** `infra/start-backend.sh` builds the full Maven reactor once, then starts seven
+  of the nine backend services as plain `java -jar` processes with health-check polling.
+  `connector-gitlab` and `connector-jenkins` (the two containerized services, ADR-0005/ADR-0007)
+  come up automatically instead, via the script's own bare `docker compose -f
+  infra/docker-compose.yml up -d --wait` call — a bare `docker compose up` with no service names
+  starts every service the compose file defines, so Postgres, RabbitMQ, both containerized
+  connectors, and the real Jenkins CI server `connector-jenkins` talks to all start together, no
+  separate step needed.
 - **Contract-first API changes:** the OpenAPI spec is meant to be updated before implementing an
   endpoint change (engineering standards §5); §5 above notes where this has drifted in practice —
   treat that as a backlog item, not a template to repeat.

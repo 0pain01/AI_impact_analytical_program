@@ -14,23 +14,21 @@ cp .env.example .env   # first time only
 docker compose up -d
 ```
 
-Provides:
+A bare `docker compose up -d` (no service names) starts **every** service defined in
+`docker-compose.yml`, not just Postgres/RabbitMQ — that now includes the two containerized
+connectors (ADR-0005/ADR-0007) and the real Jenkins CI server they need. Provides:
 
 | Service | Endpoint | Credentials (local default) |
 |---|---|---|
 | PostgreSQL 16 | `localhost:5442` (host port; container 5432), db `aiimpacteval` | `aiimpacteval` / `aiimpacteval_local` |
 | RabbitMQ 3 | `localhost:5672` (AMQP), `localhost:25672` (management UI) | `aiimpacteval` / `aiimpacteval_local` |
-
-`docker compose up -d` alone only starts the two above. Two connectors are also containerized
-(ADR-0005/ADR-0007) but not started by a bare `up -d` unless you list them — start them
-explicitly, e.g. `docker compose up -d gitlab jenkins connector-jenkins`, or just `docker compose
-up -d` a second time naming everything if you want the whole stack:
-
-| Service | Endpoint | Notes |
-|---|---|---|
-| `gitlab` (connector) | `localhost:8088` | Set `GITLAB_TOKEN` in `.env` first (see connector-gitlab's README) |
+| `gitlab` (connector) | `localhost:8088` | Set `GITLAB_TOKEN` in `.env` first (see connector-gitlab's README) — it still starts fine without one, just rate-limited |
 | `jenkins` (real CI server) | `localhost:9090` | `jenkins/jenkins:lts`, reuses the pre-existing `jenkins_home` volume (ADR-0007) — real job history, not a fresh instance |
 | `connector-jenkins` | `localhost:8086` | Talks to the `jenkins` service above over the compose network; set `JENKINS_USERNAME`/`JENKINS_API_TOKEN` in `.env` |
+
+If you only want Postgres/RabbitMQ (e.g. no GitLab/Jenkins credentials yet and you'd rather not
+build those images), name the services explicitly instead of the bare command above:
+`docker compose up -d postgres rabbitmq`.
 
 > Management UI defaults to 25672, not RabbitMQ's usual 15672 — 15672 falls inside a Windows
 > Hyper-V/WSL reserved port-exclusion range on some machines, blocking Docker from binding it.
@@ -39,8 +37,11 @@ up -d` a second time naming everything if you want the whole stack:
 
 ## Run the platform
 
-All 8 backend services + infra in one command (builds with `mvn package`, starts each
-service detached, waits for `/actuator/health`, logs to `/tmp/aiimpacteval-<service>.log`):
+All 7 plain-process backend services + infra (which now also brings up the two containerized
+connectors — `gitlab`, `connector-jenkins` — and the Jenkins CI server they need, since a bare
+`docker compose up` starts every service in `docker-compose.yml`) in one command (builds with
+`mvn package`, starts each plain-process service detached, waits for `/actuator/health`, logs to
+`/tmp/aiimpacteval-<service>.log`):
 
 ```bash
 ./infra/start-backend.sh
