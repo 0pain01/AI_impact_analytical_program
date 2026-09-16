@@ -6,6 +6,7 @@ import Cockpit from './views/Cockpit'
 import Teams from './views/Teams'
 import InvestmentProfile from './views/InvestmentProfile'
 import CodeReview from './views/CodeReview'
+import Jira from './views/Jira'
 import AiCostTrack from './views/AiCostTrack'
 import Personal from './views/Personal'
 import Admin from './views/Admin'
@@ -47,6 +48,14 @@ function NavIcon({ id }: { id: View }) {
           <path d="M16 4l5 8-5 8" />
         </svg>
       )
+    case 'jira':
+      return (
+        <svg {...common} stroke="currentColor">
+          <path d="M12 2.5 7 7.5h10L12 2.5z" />
+          <path d="M12 21.5 17 16.5H7l5 5z" />
+          <path d="M12 7.5v9" />
+        </svg>
+      )
     case 'ai-cost':
       return (
         <svg {...common} stroke="currentColor">
@@ -84,6 +93,7 @@ const NAV_LABELS: Record<View, string> = {
   teams: 'Teams',
   investment: 'Investment Profile',
   'code-review': 'Code Review',
+  jira: 'Jira Work Items',
   'ai-cost': 'AI Cost Track',
   personal: 'Personal Activity',
   setup: 'Setup',
@@ -226,6 +236,7 @@ function AppShell({ session, onLogout }: { session: Session; onLogout: () => voi
               {view === 'teams' && <Teams />}
               {view === 'investment' && <InvestmentProfile />}
               {view === 'code-review' && <CodeReview />}
+              {view === 'jira' && <Jira />}
               {view === 'ai-cost' && <AiCostTrack />}
               {view === 'personal' && <Personal />}
               {view === 'setup' && <Setup />}

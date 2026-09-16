@@ -42,6 +42,7 @@ AI Impact Evaluation is an AI-native **Software Engineering Intelligence (SEI)**
 - **PR analytics:** PR velocity and cycle-time p50, plus a full Code Review Analytics tab (cycle-stage breakdown, reviewer load, aging-PR worklist) fed identically by GitHub PR reviews and GitLab merge-request approvals — same table, same queries, no source-specific gaps
 - **AI Cost Track (E9, AI-01..AI-05):** total AI spend, cost per PR/dev-day, adoption rate, AI-assisted-vs-non-AI cycle-time delta, and a dollar ROI figure — all computed by real formulas against connected usage/PR data (currently sample usage-report data + real connected-repo PRs; the UI says "Demo data · real API schema" rather than "Live" until a genuine enterprise usage export is connected). Never fabricates a headline number: figures show `null`/"Not available yet" rather than a guess when the underlying sample is too small
 - **Investment Profile:** classifies PRs as Planned/Unplanned/Rework by joining a Jira issue key parsed from the PR title against `staging.jira_issue_state` — genuinely "Unclassifiable" for repos with no matching Jira project, not a bug
+- **Jira Work Items:** a Jira-specific detail dashboard — open issue count, resolved-in-window, median resolution time, reopen rate, overdue count, a To Do/In Progress/Done pipeline-shape chart, open-backlog breakdowns by type/priority/assignee, a "topics" view of the most common labels, a weekly resolution-time trend, and a searchable/sortable/paged open-issue worklist scoped to one Jira project or all of them. Only standard Jira fields (never an instance-specific custom field guess) — see `metric-definitions.md`
 
 ### Role-Based Dashboards — real RBAC, server-enforced
 Five roles (RS256 JWT resource server, ADR-0004): **Admin**, **Engineering Leader** (org-wide, exec/leader access), **Manager** (team-scoped — pinned server-side, not just client-side), **Individual Contributor** (opt-in personal activity only — no org/team surveillance surface), **Finance (read-only)**.
@@ -66,8 +67,9 @@ The platform follows a **message-queue-isolated** microservices architecture:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Frontend (React)                        │
-│         Cockpit · Teams · Investment Profile · Code Review ·    │
-│         AI Cost Track · Personal · Setup · Admin (role-gated)   │
+│    Cockpit · Teams · Investment Profile · Code Review · Jira    │
+│    Work Items · AI Cost Track · Personal · Setup · Admin        │
+│                        (role-gated)                              │
 └─────────────────────────────┬───────────────────────────────────┘
                               │
                               ▼
@@ -290,7 +292,7 @@ AI_impact_analytical_program/
 │   └── CHANGELOG.md             # User-visible / architecturally significant changes
 ├── frontend/                    # React + TypeScript dashboard app
 │   ├── src/
-│   │   ├── views/                # Cockpit, Teams, InvestmentProfile, CodeReview,
+│   │   ├── views/                # Cockpit, Teams, InvestmentProfile, CodeReview, Jira,
 │   │   │                         # AiCostTrack, Personal, Setup, Admin, Login, Landing
 │   │   └── api.ts                # Typed client mirroring api-core's OpenAPI contract
 │   ├── public/
@@ -424,8 +426,10 @@ Built with:
 **Status:** Phase 1 MVP well underway, with an E9 (AI Adoption & ROI) slice already live —
 5 connectors (GitHub, GitLab, Jira, Jenkins, AI Telemetry — GitLab deploy detection matches
 pipeline git ref, not a job name; see connector-gitlab's README), all four DORA metrics
-computed end-to-end at repo/org/team scope with a 30/90-day toggle and CSV export, AI Cost Track
-computing real spend/adoption/impact/ROI (AI-01..AI-05) from connected usage and PR data,
+computed end-to-end at repo/org/team scope with a 30/90-day toggle and CSV export, a Jira Work
+Items dashboard (backlog composition, resolution metrics, open-issue worklist) computed from real
+connected Jira data, AI Cost Track computing real spend/adoption/impact/ROI (AI-01..AI-05) from
+connected usage and PR data,
 server-enforced RBAC across 5 roles, and a live Admin console (connector health, repo/team
 connect + sync-status + delete, user administration, audit log). See the
 [PRD's delivery status appendix](docs/01-product/prd.md) for epic-by-epic detail and what's still

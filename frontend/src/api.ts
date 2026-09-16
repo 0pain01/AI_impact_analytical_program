@@ -193,6 +193,85 @@ export interface CodeReviewResponse {
   agingPrs: AgingPrsPage
 }
 
+// GET /api/v1/metrics/jira-work-items — mirrors services/api-core/.../jira/JiraDashboardDtos.java.
+// openIssues/overdueCount/typeBreakdown/priorityBreakdown/topAssignees/topLabels/issues reflect
+// CURRENT backlog state (unwindowed); resolvedInWindow/medianResolutionHoursP50/reopenRate/
+// resolutionTrend are scoped to `days`; statusBreakdown is windowed but NOT filtered to open
+// issues (it's the one chart meant to show the full To Do/In Progress/Done pipeline shape).
+export interface JiraKpis {
+  openIssues: number
+  resolvedInWindow: number
+  medianResolutionHoursP50: number | null
+  reopenRate: number | null
+  overdueCount: number
+}
+
+export interface JiraStatusCount {
+  statusCategory: 'new' | 'indeterminate' | 'done' | 'unknown'
+  label: string
+  count: number
+}
+
+export interface JiraTypeCount {
+  issueType: string
+  count: number
+}
+
+export interface JiraPriorityCount {
+  priority: string
+  count: number
+}
+
+export interface JiraAssigneeLoad {
+  assignee: string
+  openCount: number
+}
+
+export interface JiraLabelCount {
+  label: string
+  count: number
+}
+
+export interface JiraResolutionTrendPoint {
+  weekStart: string
+  medianResolutionHours: number | null
+}
+
+export interface JiraIssue {
+  issueKey: string
+  summary: string
+  projectKey: string
+  issueType: string | null
+  status: string | null
+  statusCategory: string | null
+  priority: string | null
+  assignee: string | null
+  reporter: string | null
+  ageDays: number
+  dueDate: string | null
+  overdue: boolean
+  labels: string[]
+}
+
+export interface JiraIssuesPage {
+  items: JiraIssue[]
+  page: number
+  pageSize: number
+  totalCount: number
+}
+
+export interface JiraDashboardResponse {
+  windowLabel: string
+  kpis: JiraKpis
+  statusBreakdown: JiraStatusCount[]
+  typeBreakdown: JiraTypeCount[]
+  priorityBreakdown: JiraPriorityCount[]
+  topAssignees: JiraAssigneeLoad[]
+  topLabels: JiraLabelCount[]
+  resolutionTrend: JiraResolutionTrendPoint[]
+  issues: JiraIssuesPage
+}
+
 export type Role = 'ADMIN' | 'ENG_LEADER' | 'MANAGER' | 'IC' | 'FINANCE_READONLY'
 
 export interface Session {
@@ -512,6 +591,32 @@ export async function fetchCodeReview(params: CodeReviewParams = {}): Promise<Co
   })
   if (repo) query.set('repo', repo)
   const res = await authFetch(`/api/v1/metrics/code-review?${query.toString()}`)
+  return res.json()
+}
+
+// LIVE: GET /api/v1/metrics/jira-work-items?days=&project=&q=&sortBy=&sortDir=&page=&pageSize=
+export interface JiraDashboardParams {
+  days?: number
+  project?: string
+  q?: string
+  sortBy?: 'age' | 'priority' | 'project'
+  sortDir?: 'asc' | 'desc'
+  page?: number
+  pageSize?: number
+}
+
+export async function fetchJiraDashboard(params: JiraDashboardParams = {}): Promise<JiraDashboardResponse> {
+  const { days = 30, project = '*', q, sortBy = 'age', sortDir = 'desc', page = 0, pageSize = 20 } = params
+  const query = new URLSearchParams({
+    days: String(days),
+    project,
+    sortBy,
+    sortDir,
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+  if (q) query.set('q', q)
+  const res = await authFetch(`/api/v1/metrics/jira-work-items?${query.toString()}`)
   return res.json()
 }
 

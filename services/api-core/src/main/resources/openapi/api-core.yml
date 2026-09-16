@@ -116,6 +116,60 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AiCostTrackResponse" }
+  /metrics/jira-work-items:
+    get:
+      operationId: getJiraWorkItems
+      summary: Jira Work Items dashboard — backlog composition, resolution metrics, issue worklist
+      description: >
+        Computed from staging.jira_issue_state (V10/V14). openIssues/overdueCount/typeBreakdown/
+        priorityBreakdown/topAssignees/topLabels/issues reflect CURRENT backlog state (open =
+        resolved_at IS NULL), not windowed by `days` — an old open issue must not vanish from the
+        backlog view just because it predates the window. resolvedInWindow/
+        medianResolutionHoursP50/reopenRate/resolutionTrend ARE windowed by `days`.
+        statusBreakdown is windowed by `days` on created_at but, unlike the others, is NOT
+        filtered to open issues — it's the one chart meant to show the full To Do/In Progress/Done
+        pipeline shape. Requires an analytical role (ADMIN, ENG_LEADER, MANAGER,
+        FINANCE_READONLY); IC is denied.
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 90, default: 30 }
+          description: Trailing window in days for the window-scoped fields (see description above).
+        - name: project
+          in: query
+          required: false
+          schema: { type: string, default: "*" }
+          description: >
+            Jira project key, or "*" for every connected project. Never a team UUID — no
+            project-to-team mapping exists yet.
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+          description: Free-text filter on the issues worklist — matches issue key or summary substring.
+        - name: sortBy
+          in: query
+          required: false
+          schema: { type: string, enum: [age, priority, project], default: age }
+        - name: sortDir
+          in: query
+          required: false
+          schema: { type: string, enum: [asc, desc], default: desc }
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: pageSize
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: Jira Work Items dashboard for the requested project scope and window.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JiraDashboardResponse" }
   /teams:
     get:
       operationId: listTeams
@@ -466,6 +520,95 @@ components:
             licensedSeatsAssumed: { type: integer }
             blendedHourlyRateUsd: { type: number }
             methodologyNote: { type: string }
+    JiraDashboardResponse:
+      type: object
+      required: [windowLabel, kpis, statusBreakdown, typeBreakdown, priorityBreakdown,
+                 topAssignees, topLabels, resolutionTrend, issues]
+      properties:
+        windowLabel: { type: string }
+        kpis:
+          type: object
+          required: [openIssues, resolvedInWindow, overdueCount]
+          properties:
+            openIssues: { type: integer, description: "Current backlog size (resolved_at IS NULL), unwindowed." }
+            resolvedInWindow: { type: integer, description: "Issues resolved within the `days` window." }
+            medianResolutionHoursP50:
+              type: [number, "null"]
+              description: "Median created→resolved hours for issues resolved in the window; null if resolvedInWindow is 0."
+            reopenRate:
+              type: [number, "null"]
+              description: "Percent (0-100) of issues resolved in the window that were ever reopened; null if resolvedInWindow is 0."
+            overdueCount: { type: integer, description: "Open issues with due_date in the past. Unwindowed." }
+        statusBreakdown:
+          type: array
+          description: "Full pipeline shape (all issues, not just open) — see endpoint description."
+          items:
+            type: object
+            required: [statusCategory, label, count]
+            properties:
+              statusCategory: { type: string, enum: [new, indeterminate, done, unknown] }
+              label: { type: string, description: "e.g. \"To Do\", \"In Progress\", \"Done\"." }
+              count: { type: integer }
+        typeBreakdown:
+          type: array
+          items:
+            type: object
+            required: [issueType, count]
+            properties: { issueType: { type: string }, count: { type: integer } }
+        priorityBreakdown:
+          type: array
+          items:
+            type: object
+            required: [priority, count]
+            properties: { priority: { type: string }, count: { type: integer } }
+        topAssignees:
+          type: array
+          description: "Top 10 by open-issue count, like Code Review's reviewer-load leaderboard."
+          items:
+            type: object
+            required: [assignee, openCount]
+            properties: { assignee: { type: string }, openCount: { type: integer } }
+        topLabels:
+          type: array
+          description: "\"Topics\" — top 10 Jira labels by frequency across the open backlog."
+          items:
+            type: object
+            required: [label, count]
+            properties: { label: { type: string }, count: { type: integer } }
+        resolutionTrend:
+          type: array
+          items:
+            type: object
+            required: [weekStart, medianResolutionHours]
+            properties:
+              weekStart: { type: string, format: date }
+              medianResolutionHours: { type: [number, "null"] }
+        issues:
+          type: object
+          required: [items, page, pageSize, totalCount]
+          properties:
+            page: { type: integer }
+            pageSize: { type: integer }
+            totalCount: { type: integer }
+            items:
+              type: array
+              items:
+                type: object
+                required: [issueKey, summary, projectKey, issueType, status, statusCategory, ageDays, overdue, labels]
+                properties:
+                  issueKey: { type: string }
+                  summary: { type: string }
+                  projectKey: { type: string }
+                  issueType: { type: [string, "null"] }
+                  status: { type: [string, "null"] }
+                  statusCategory: { type: [string, "null"] }
+                  priority: { type: [string, "null"] }
+                  assignee: { type: [string, "null"] }
+                  reporter: { type: [string, "null"] }
+                  ageDays: { type: integer }
+                  dueDate: { type: [string, "null"], format: date }
+                  overdue: { type: boolean }
+                  labels: { type: array, items: { type: string } }
     CockpitResponse:
       type: object
       required: [asOf, windowDays, scope, tiles]

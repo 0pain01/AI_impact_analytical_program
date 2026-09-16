@@ -211,8 +211,59 @@ name-pattern heuristic) are both tracked as follow-up work, not implemented.
   shown alongside the figure per the BRD's "calculation assumptions visible and adjustable"
   requirement — never presented as a hidden constant.
 
+## Jira Work Items — v1 (2026-09-16)
+
+> **Status:** live. Computed by `JiraDashboardQueryService` in api-core directly from
+> `staging.jira_issue_state` (V10, widened by V14) — no mart rollup yet, same shape as Code
+> Review's metrics. Backed by real Jira issue data via `connector-jira`'s backfill/webhook path;
+> not sample/demo data. `openIssues`/`overdueCount` and the type/priority/assignee/label
+> breakdowns and the issue worklist are **current backlog state**, not windowed by the `days`
+> parameter — an issue that's been open for eight months is still real backlog and must not
+> disappear from those views just because it predates the trailing window.
+
+- **Open issues:** `count(*) WHERE resolved_at IS NULL)`, optionally filtered to one project.
+  Unwindowed (current state).
+- **Resolved (window):** `count(*) WHERE resolved_at IS NOT NULL AND resolved_at >= now() - window`.
+- **Median resolution time:** `percentile_cont(0.5)` of `resolved_at - created_at` (hours), over
+  issues resolved in the window. **Edge cases:** `null` (never `0`) when nothing resolved in the
+  window — an honest "not enough data," not a fabricated zero.
+- **Reopen rate:** `count(reopened AND resolved in window) / count(resolved in window) × 100`.
+  **Sources:** the same heuristic `reopened` flag Investment Profile's Rework classification
+  already uses (a status transition away from a default terminal status name — Done/Closed/
+  Resolved — seen in the issue's changelog; custom workflows with differently-named terminal
+  statuses undercount rather than overcount). **Edge cases:** `null` when `resolvedInWindow` is 0.
+- **Overdue count:** `count(*) WHERE resolved_at IS NULL AND due_date < current_date`. Unwindowed
+  (current state) — an issue is overdue today regardless of when the window starts.
+- **Pipeline shape (status breakdown):** issue count grouped by Jira's own three-value
+  `statusCategory` (`new`/`indeterminate`/`done`, surfaced as "To Do"/"In Progress"/"Done") —
+  stable across arbitrarily renamed custom workflow statuses, unlike matching on status name.
+  Windowed by `created_at`, but **not** filtered to open issues (the one section on this dashboard
+  that intentionally isn't backlog-only) — otherwise "Done" could never appear in a chart whose
+  whole point is showing the full pipeline shape.
+- **Backlog composition (type / priority / assignee / topics):** open-issue counts grouped by
+  `issue_type`, `priority`, `assignee`, and (via `unnest(labels)`) each label. Assignee workload is
+  a team-scoped count of open issues, the same "leaderboard, not surveillance" framing as Code
+  Review's reviewer-load metric — never an individual activity/keystroke/idle signal (BRD §5.3).
+  "Topics" are Jira labels, an engineer-applied tag already part of normal Jira usage, not a
+  tagging scheme invented for this platform (no-manual-tagging rule, BRD §2).
+- **Resolution trend:** `percentile_cont(0.5)` of resolution hours, bucketed by
+  `date_trunc('week', resolved_at)`, over issues resolved in the window.
+- **Sources:** `connector-jira` (issue backfill + webhook), `staging.jira_issue_state` (V10/V14).
+- **Known, intentional limitation:** only standard Jira fields present on every instance
+  regardless of workflow/custom-field configuration are used (`priority`, `labels`, `reporter`,
+  `duedate`, `status.statusCategory`). Story points and epic link are **not** supported — both
+  live behind instance-specific `customfield_XXXXX` IDs; guessing one would silently mislabel data
+  on some customers' Jira sites, which the no-fabrication rule this platform holds itself to
+  forbids.
+
 ## Changelog
 
+- 2026-09-16 — Jira Work Items dashboard definitions authored and shipped live: open issues,
+  resolved-in-window, median resolution time, reopen rate, overdue count, pipeline-shape
+  (status-category), type/priority/assignee/label backlog breakdowns, resolution trend, and a
+  paged open-issue worklist. `staging.jira_issue_state` widened (V14) with `priority`,
+  `status_category`, `reporter`, `labels[]`, `due_date` — standard Jira fields only, no
+  instance-specific custom fields.
 - 2026-08-21 (2) — AI-04/AI-05 went live: `staging.pull_request_state.ai_assisted` (V13
   migration) detects AI co-author trailers on PR title/body/labels; `AiCostTrackQueryService`
   segments merged-PR cycle time by that flag (AI-04) and derives hours-saved/dollar-value/ROI-

@@ -103,7 +103,7 @@ though other services read from or write to `staging`/`core` at runtime.
 | `pull_request_state` | `ingestion-writer` | Latest known state per PR/MR (GitHub and GitLab, `gitlab:`-prefixed repo values for the latter) — repo, number, title, author, state, timestamps, `requested_reviewers[]`, `ai_assisted` flag (V13) |
 | `pull_request_review_state` | `ingestion-writer` | Latest state per review/approval — repo, pr_number, review_id, reviewer_login, state (`APPROVED`/`CHANGES_REQUESTED`/`COMMENTED`/`DISMISSED` for GitHub; always `APPROVED` for GitLab), submitted_at |
 | `workflow_run_state` | `ingestion-writer` | Latest state per CI run — shared by GitHub Actions, GitLab pipelines, **and** Jenkins builds; `conclusion` normalized to one lowercase vocabulary across all three so `metrics-engine`'s DORA queries never need to know which tool built a given commit |
-| `jira_issue_state` | `ingestion-writer` | Latest state per issue — project_key, issue_type, status, assignee, timestamps, a heuristic `reopened` flag (Investment Profile's Rework signal) |
+| `jira_issue_state` | `ingestion-writer` | Latest state per issue — project_key, issue_type, status, status_category, priority, assignee, reporter, labels[], due_date, timestamps, a heuristic `reopened` flag (Investment Profile's Rework signal; V10, widened by V14 for the Jira Work Items dashboard — standard fields only, no instance-specific customfield IDs) |
 | `ai_usage_state` | `ingestion-writer` | One row per `(source, actor_key, day)` — sessions, LOC, commits, PRs, cost, tokens; `actor_key` is per-tool (email for Claude Code, GitHub login for Copilot) — **not** assumed to be the same person across tools |
 | `connector_activity` | `ingestion-writer` | One row per source, `last_checked_at` — advances on **every** event processed including exact duplicates, so it answers "did we hear from this source at all" independent of `raw_event`'s "did anything actually change" |
 
@@ -147,6 +147,7 @@ ground truth, and the spec as due for a resync pass.
 | `GET /metrics/cockpit?days=&scope=` | analytical roles | DORA + PR tiles, `scope` = repo / `*` / team UUID |
 | `GET /metrics/code-review?days=&scope=&repo=&sortBy=&sortDir=&page=&pageSize=` | analytical roles | Cycle-stage breakdown, reviewer load, paged aging-PR worklist |
 | `GET /metrics/investment-profile?days=&scope=` | analytical roles | Planned/Unplanned/Rework/Unclassifiable breakdown |
+| `GET /metrics/jira-work-items?days=&project=&q=&sortBy=&sortDir=&page=&pageSize=` | analytical roles | Backlog composition (status/type/priority/assignee/label breakdowns, overdue count), window-scoped resolution metrics, paged open-issue worklist; `project` = Jira project key or `*` |
 | `GET /metrics/ai-cost-track?days=` | analytical roles | AI-01..AI-05 |
 | `GET /personal/activity` | IC, self only | Opt-in personal trend |
 | `GET /teams` | analytical roles | Team picker list |
@@ -207,6 +208,17 @@ implemented" summary.
   ai_assisted_cycle_time_p50)`; `dollar_value_recovered = estimated_hours_saved ×
   blended_hourly_rate`; `roi_multiple = dollar_value_recovered / total_ai_spend`. Returns `null`
   (not zero) when either PR bucket has fewer than 3 merged PRs in the window.
+- **Jira median resolution time / reopen rate:** `percentile_cont(0.5)` over
+  `EXTRACT(EPOCH FROM (resolved_at − created_at))` for issues resolved in the window; reopen rate
+  = `count(reopened AND resolved in window) / count(resolved in window) × 100`. Both `null` (not
+  zero) when nothing resolved in the window — a true `0%` reopen rate on zero resolutions would be
+  a fabricated number, not an honest one.
+- **Jira open backlog vs. pipeline shape:** "open" is `resolved_at IS NULL`, unwindowed by design
+  — an old open issue is still real backlog and must not disappear from type/priority/assignee/
+  label breakdowns just because it predates the trailing window. `statusBreakdown` is the one
+  exception: it includes resolved issues too (windowed by `created_at`), since it exists
+  specifically to show the full To Do/In Progress/Done shape of the pipeline, not just what's
+  still open.
 
 ## 7. Security architecture
 
