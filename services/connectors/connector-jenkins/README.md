@@ -9,6 +9,11 @@ per ADR-0003. Owns **no business logic** (ADR-0002); writes into the same provid
 Webhook Trigger plugin wired up). No incremental "since" cursor — each backfill call re-fetches
 the job's full build list (bounded by Jenkins' own build retention).
 
+Packaged as a Docker image (ADR-0007, following `connector-gitlab`'s ADR-0005 template) — see
+"Run with Docker" below. `infra/docker-compose.yml` also runs a real Jenkins CI server
+(`jenkins/jenkins:lts`) alongside this connector, so `docker compose up` exercises the whole
+Jenkins path without any manual steps.
+
 ## Endpoints
 
 | Endpoint | Purpose |
@@ -42,6 +47,36 @@ GitHub Actions rows. Two things are Jenkins-specific there, both load-bearing:
 | `JENKINS_USERNAME` / `JENKINS_API_TOKEN` | *(empty)* | Basic auth (Jenkins user profile → Configure → API Token) |
 | `RABBITMQ_HOST/PORT/USERNAME/PASSWORD` | localhost defaults | Queue connection |
 | `SERVER_PORT` | `8086` | HTTP port |
+
+## Run locally (without Docker)
+
+```
+mvn -pl connectors/connector-jenkins -am spring-boot:run
+```
+
+Requires RabbitMQ reachable per the env vars above (`infra/docker-compose.yml` starts it), and
+`JENKINS_BASE_URL` pointing at a real Jenkins instance — `http://localhost:9090` if using the
+Jenkins server `infra/docker-compose.yml` also runs (see below).
+
+## Run with Docker
+
+Build context is the Maven reactor root (`services/`), since the image needs the parent POM
+and `platform-common`:
+
+```
+docker build -f connectors/connector-jenkins/Dockerfile -t connector-jenkins .
+docker run --rm -p 8086:8086 \
+  -e RABBITMQ_HOST=host.docker.internal \
+  -e JENKINS_BASE_URL=http://host.docker.internal:9090 \
+  connector-jenkins
+```
+
+Or via compose from the repo root — this also starts the real Jenkins CI server and wires this
+connector to it and to the shared RabbitMQ over the compose network (ADR-0007):
+
+```
+docker compose -f infra/docker-compose.yml up --build jenkins connector-jenkins
+```
 
 ## Tests
 

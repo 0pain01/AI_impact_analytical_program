@@ -108,8 +108,10 @@ flowchart TB
 `mart`) — see ADR-0002. The schema separation preserves a clean migration path to a dedicated
 analytical store (ClickHouse or warehouse) when event volume demands it, without re-architecture.
 Backend services otherwise run as local processes (`infra/start-backend.sh`); `connector-gitlab`
-is the one exception, packaged as a Docker image built via `infra/docker-compose.yml` (ADR-0005)
-— the template for containerizing further services if/when that becomes the norm.
+(ADR-0005) and `connector-jenkins` (ADR-0007) are the exceptions, packaged as Docker images built
+via `infra/docker-compose.yml` — the template for containerizing further services if/when that
+becomes the norm. The compose stack also runs a real Jenkins CI server (`jenkins/jenkins:lts`,
+ADR-0007) as local dev/test infrastructure, alongside Postgres and RabbitMQ.
 
 **For a full narrative walkthrough** — what each service does in detail, why it's shaped this
 way, exactly how the pieces connect, what's containerized today, and a complete cloud-deployment
@@ -227,4 +229,5 @@ outage; dashboards serve last-computed metrics with a freshness indicator.
 See [decisions/](decisions/). Current: ADR-0001 (technology stack), ADR-0002 (queue-isolated
 connectors, single Postgres for MVP), ADR-0003 (event envelope contract and queue topology),
 ADR-0004 (authentication, RBAC, and audit enforcement in api-core), ADR-0005 (containerize
-connector-gitlab), ADR-0006 (scheduled connector auto-refresh for Jira/Jenkins).
+connector-gitlab), ADR-0006 (scheduled connector auto-refresh for Jira/Jenkins), ADR-0007
+(containerize connector-jenkins; bring the local Jenkins CI server under the compose stack).
