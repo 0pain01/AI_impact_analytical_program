@@ -121,7 +121,7 @@ stays the quick-reference table.
 
 | Container | Responsibilities | Phase |
 |---|---|---|
-| **Web App** (React/TS) | Cockpit, team dashboards, Investment Profile, RAG indicators, drill-down (permission-gated), export; opt-in personal view | 1+ |
+| **Web App** (React/TS) | Cockpit, team dashboards, Investment Profile, Code Review Analytics, Jira Work Items, RAG indicators, drill-down (permission-gated), export; opt-in personal view | 1+ |
 | **API Core** (Spring Boot) | OIDC/JWT auth, RBAC + data-visibility filters, dashboard/report APIs, goals/OKR, admin console APIs, audit logging, export generation | 1+ |
 | **Metrics Engine** | Consumes normalized events; computes DORA (deployment frequency, lead time, CFR, MTTR), lead-time stage breakdown, ticket lead time, PR analytics; materializes metric tables; incremental recompute ≤ 15 min | 1+ |
 | **Identity Service** | Reconciles contributor identities across tools (email/name/user-ID heuristics + manual override UI via API Core); org > team > sub-team structure import (FR-1.4, FR-1.5) | 1+ |

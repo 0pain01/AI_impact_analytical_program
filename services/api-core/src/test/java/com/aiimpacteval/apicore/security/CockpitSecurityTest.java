@@ -37,6 +37,13 @@ class CockpitSecurityTest {
                 }
             };
         }
+
+        // CockpitController now takes a ScopeResolver too (see its javadoc) — without this bean
+        // the slice context fails to load and every test in this class errors before running.
+        @Bean
+        ScopeResolver scopeResolver() {
+            return new ScopeResolver();
+        }
     }
 
     @Autowired

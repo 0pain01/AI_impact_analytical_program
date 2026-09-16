@@ -65,6 +65,27 @@ class StagingEventWriterIntegrationTest {
                 """);
         // Mirrors api-core's V12 migration — needed since the constructor now always requires a
         // seat-cost value, even though these tests only exercise the raw_event/github path.
+        // Mirrors api-core's V10 + V14 migrations — needed for the Jira issue-state tests below.
+        jdbc.execute("""
+                CREATE TABLE staging.jira_issue_state (
+                    issue_key        TEXT PRIMARY KEY,
+                    issue_id         TEXT NOT NULL,
+                    project_key      TEXT NOT NULL,
+                    issue_type       TEXT,
+                    status           TEXT,
+                    summary          TEXT,
+                    assignee         TEXT,
+                    created_at       TIMESTAMPTZ,
+                    resolved_at      TIMESTAMPTZ,
+                    reopened         BOOLEAN NOT NULL DEFAULT FALSE,
+                    priority         TEXT,
+                    status_category  TEXT,
+                    reporter         TEXT,
+                    labels           TEXT[] NOT NULL DEFAULT '{}',
+                    due_date         DATE,
+                    last_received_at TIMESTAMPTZ NOT NULL
+                )
+                """);
         jdbc.execute("""
                 CREATE TABLE staging.ai_usage_state (
                     source                TEXT NOT NULL,
@@ -93,6 +114,7 @@ class StagingEventWriterIntegrationTest {
     void setUp() {
         jdbc.update("DELETE FROM staging.raw_event");
         jdbc.update("DELETE FROM staging.connector_activity");
+        jdbc.update("DELETE FROM staging.jira_issue_state");
         writer = new StagingEventWriter(jdbc, MAPPER, BigDecimal.valueOf(19));
     }
 
@@ -114,6 +136,44 @@ class StagingEventWriterIntegrationTest {
         assertTrue(writer.write(envelope("delivery-2", "pull_request")));
         assertTrue(writer.write(envelope("delivery-2", "push")));
         assertEquals(2, countRows());
+    }
+
+    @Test
+    void upsertsJiraIssueStateWithStandardFieldsOnly() {
+        var fields = MAPPER.createObjectNode();
+        fields.putObject("project").put("key", "ENG");
+        fields.putObject("issuetype").put("name", "Bug");
+        var status = fields.putObject("status");
+        status.put("name", "In Progress");
+        status.putObject("statusCategory").put("key", "indeterminate");
+        fields.put("summary", "Fix the thing");
+        fields.putObject("assignee").put("displayName", "Ada Lovelace");
+        fields.putObject("reporter").put("displayName", "Grace Hopper");
+        fields.putObject("priority").put("name", "High");
+        fields.putArray("labels").add("backend").add("flaky-test");
+        fields.put("duedate", "2026-08-01");
+        fields.put("created", "2026-07-01T10:00:00.000+0000");
+
+        var issue = MAPPER.createObjectNode();
+        issue.put("key", "ENG-42");
+        issue.put("id", "10042");
+        issue.set("fields", fields);
+
+        var envelope = new EventEnvelope("jira", "issue-1", "issue.snapshot",
+                Instant.parse("2026-08-01T00:00:00Z"), "0.1.0", issue);
+
+        assertTrue(writer.write(envelope));
+
+        var row = jdbc.queryForMap("""
+                SELECT priority, status_category, reporter, due_date,
+                       array_to_string(labels, ',') AS labels_csv
+                FROM staging.jira_issue_state WHERE issue_key = 'ENG-42'
+                """);
+        assertEquals("High", row.get("priority"));
+        assertEquals("indeterminate", row.get("status_category"));
+        assertEquals("Grace Hopper", row.get("reporter"));
+        assertEquals(java.sql.Date.valueOf("2026-08-01"), row.get("due_date"));
+        assertEquals("backend,flaky-test", row.get("labels_csv"));
     }
 
     private static EventEnvelope envelope(String sourceId, String eventType) {

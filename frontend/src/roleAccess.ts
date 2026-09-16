@@ -1,6 +1,6 @@
 import type { Role } from './api'
 
-export type View = 'cockpit' | 'teams' | 'investment' | 'code-review' | 'ai-cost' | 'personal' | 'setup' | 'admin'
+export type View = 'cockpit' | 'teams' | 'investment' | 'code-review' | 'jira' | 'ai-cost' | 'personal' | 'setup' | 'admin'
 
 // Role-aware navigation (PRD §8: "users see only surfaces their role and scope permit").
 // This app only has 5 roles, so a couple of PRD personas fold together:
@@ -11,9 +11,9 @@ export type View = 'cockpit' | 'teams' | 'investment' | 'code-review' | 'ai-cost
 // org/team analytics surface IC is explicitly denied server-side (SecurityConfig), so showing
 // them in the nav would just be a dead link.
 export const TAB_ACCESS: Record<Role, View[]> = {
-  ADMIN: ['cockpit', 'teams', 'investment', 'code-review', 'ai-cost', 'setup', 'admin'],
-  ENG_LEADER: ['cockpit', 'teams', 'investment', 'ai-cost', 'setup'],
-  MANAGER: ['teams', 'code-review', 'investment'],
+  ADMIN: ['cockpit', 'teams', 'investment', 'code-review', 'jira', 'ai-cost', 'setup', 'admin'],
+  ENG_LEADER: ['cockpit', 'teams', 'investment', 'jira', 'ai-cost', 'setup'],
+  MANAGER: ['teams', 'code-review', 'jira', 'investment'],
   FINANCE_READONLY: ['investment', 'ai-cost'],
   IC: ['personal'],
 }

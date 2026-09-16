@@ -192,6 +192,33 @@ every action is written to the audit log.
 - **Audit log:** every configuration change, access grant, and connect/disconnect/delete action,
   newest first, with actor, action, target, and before/after state where applicable.
 
+### 4.9 Jira Work Items
+
+**Purpose:** a Jira-specific detail view — what's actually in the backlog (items), what it's
+tagged with (topics), and whether the team is keeping up with it — distinct from Investment
+Profile's cross-tool Planned/Unplanned/Rework lens on the same underlying issue data.
+
+- **KPIs:** open issue count, issues resolved in the window, median resolution time
+  (created → resolved), reopen rate, and overdue count (open issues past their due date).
+- **Pipeline shape:** issue counts by Jira's own To Do / In Progress / Done status category —
+  stable across arbitrarily renamed custom workflow statuses.
+- **Backlog composition:** open issues broken down by type and by priority.
+- **Assignee workload:** a leaderboard of who is currently carrying the most open issues — the
+  same "workload leaderboard, not individual surveillance" framing as Code Review's reviewer
+  load (BRD rule 1, §2 above): a team-scoped count, never a keystroke/idle/activity signal.
+- **Topics:** the most common Jira labels across the open backlog, sized by frequency.
+- **Resolution trend:** median resolution time by week, over the window.
+- **Issue worklist:** every open issue, searchable by key/summary, sortable by age/priority/
+  project, filterable to one Jira project — the "flag before it slips" table, mirroring Code
+  Review's aging-PRs worklist.
+
+**Known, intentional limitation:** only standard Jira fields present on every instance regardless
+of workflow or custom-field configuration are shown (priority, labels, reporter, due date, status
+category). Story points and epic link are **not** surfaced — both live behind Jira custom field
+IDs that vary per instance, and guessing one would mean silently mislabeling data on some
+customers' Jira sites. Per the no-manual-tagging rule (§2 above), nothing here is derived from
+anything an engineer has to enter beyond using Jira normally.
+
 ## 5. Data sources (what feeds the platform)
 
 | Source | What's ingested | Live or backfill-only |
@@ -199,7 +226,7 @@ every action is written to the audit log.
 | GitHub | Pull requests, commits, PR reviews, org teams | Both (webhook + backfill) |
 | GitHub Actions | Workflow runs / deployment statuses | Both |
 | GitLab | Merge requests, commits, pipelines, MR approvals, group projects/members | Both |
-| Jira | Issues with full status-transition history | Both |
+| Jira | Issues with full status-transition history, priority, status category, reporter, labels, due date | Both |
 | Jenkins | Build history per job | Backfill/polling only (no webhook trigger wired up yet) |
 | Claude Code | Per-day usage/cost export | Backfill only (file-based today; see the Technical Specification for the real-API swap seam) |
 | GitHub Copilot | Per-day usage export | Backfill only (same caveat as Claude Code) |

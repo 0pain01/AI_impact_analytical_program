@@ -19,6 +19,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -89,6 +90,11 @@ import java.util.regex.Pattern;
  * {@code METRICS_DEPLOY_WORKFLOW_PATTERN}/{@code METRICS_HOTFIX_WORKFLOW_PATTERN} must include
  * the deploy branch (e.g. {@code main|production}) for GitLab deployments to be detected; see
  * connector-gitlab's README.
+ *
+ * <p>V14 widened {@code jira_issue_state} with {@code priority}/{@code status_category}/
+ * {@code reporter}/{@code labels}/{@code due_date} for the Jira Work Items dashboard — only
+ * standard Jira fields present on every instance regardless of workflow configuration, never a
+ * {@code customfield_XXXXX} guess (story points / epic link stay unsupported for that reason).
  */
 @Component
 public class StagingEventWriter {
@@ -165,15 +171,18 @@ public class StagingEventWriter {
     private static final String UPSERT_JIRA_ISSUE_SQL = """
             INSERT INTO staging.jira_issue_state
                 (issue_key, issue_id, project_key, issue_type, status, summary, assignee,
-                 created_at, resolved_at, reopened, last_received_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 created_at, resolved_at, reopened, priority, status_category, reporter, labels,
+                 due_date, last_received_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (issue_key) DO UPDATE SET
                 issue_id = EXCLUDED.issue_id, project_key = EXCLUDED.project_key,
                 issue_type = EXCLUDED.issue_type, status = EXCLUDED.status,
                 summary = EXCLUDED.summary, assignee = EXCLUDED.assignee,
                 created_at = EXCLUDED.created_at, resolved_at = EXCLUDED.resolved_at,
                 reopened = staging.jira_issue_state.reopened OR EXCLUDED.reopened,
-                last_received_at = EXCLUDED.last_received_at
+                priority = EXCLUDED.priority, status_category = EXCLUDED.status_category,
+                reporter = EXCLUDED.reporter, labels = EXCLUDED.labels,
+                due_date = EXCLUDED.due_date, last_received_at = EXCLUDED.last_received_at
             WHERE EXCLUDED.last_received_at > staging.jira_issue_state.last_received_at
             """;
 
@@ -407,16 +416,37 @@ public class StagingEventWriter {
         String assignee = textAtPath(fields, "assignee", "displayName");
         Instant createdAt = jiraInstantOrNull(textOrNull(fields, "created"));
         Instant resolvedAt = jiraInstantOrNull(textOrNull(fields, "resolutiondate"));
+        String priority = textAtPath(fields, "priority", "name");
+        String statusCategory = textAtPath(fields, "status", "statusCategory", "key");
+        String reporter = textAtPath(fields, "reporter", "displayName");
+        String[] labels = extractPlainStrings(fields.get("labels"));
+        LocalDate dueDate = jiraDateOrNull(textOrNull(fields, "duedate"));
 
         JsonNode changelog = payload.has("changelog") ? payload.get("changelog") : issue.get("changelog");
         boolean reopened = wasReopened(changelog);
 
-        jdbcTemplate.update(UPSERT_JIRA_ISSUE_SQL,
-                issueKey, issueId, projectKey, issueType, status, summary, assignee,
-                createdAt == null ? null : Timestamp.from(createdAt),
-                resolvedAt == null ? null : Timestamp.from(resolvedAt),
-                reopened,
-                Timestamp.from(envelope.receivedAt()));
+        // Plain jdbcTemplate.update(...) can't portably bind a text[] parameter (labels), so this
+        // needs a PreparedStatementCreator — same reason upsertPullRequestState does.
+        jdbcTemplate.update(con -> {
+            var ps = con.prepareStatement(UPSERT_JIRA_ISSUE_SQL);
+            ps.setString(1, issueKey);
+            ps.setString(2, issueId);
+            ps.setString(3, projectKey);
+            ps.setString(4, issueType);
+            ps.setString(5, status);
+            ps.setString(6, summary);
+            ps.setString(7, assignee);
+            ps.setTimestamp(8, createdAt == null ? null : Timestamp.from(createdAt));
+            ps.setTimestamp(9, resolvedAt == null ? null : Timestamp.from(resolvedAt));
+            ps.setBoolean(10, reopened);
+            ps.setString(11, priority);
+            ps.setString(12, statusCategory);
+            ps.setString(13, reporter);
+            ps.setArray(14, con.createArrayOf("text", labels));
+            ps.setDate(15, dueDate == null ? null : Date.valueOf(dueDate));
+            ps.setTimestamp(16, Timestamp.from(envelope.receivedAt()));
+            return ps;
+        });
     }
 
     /**
@@ -966,6 +996,35 @@ public class StagingEventWriter {
         try {
             return Long.parseLong(s);
         } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    // fields.labels is a Jira standard field: a bare array of strings (unlike requested_reviewers'
+    // array of objects), so this only needs to filter out nulls, not project a sub-field.
+    private static String[] extractPlainStrings(JsonNode arrayNode) {
+        if (arrayNode == null || !arrayNode.isArray()) {
+            return new String[0];
+        }
+        List<String> values = new ArrayList<>();
+        for (JsonNode item : arrayNode) {
+            if (item != null && !item.isNull()) {
+                values.add(item.asText());
+            }
+        }
+        return values.toArray(new String[0]);
+    }
+
+    // fields.duedate is a bare "yyyy-MM-dd" date, unlike Jira's other timestamp fields
+    // (created/resolutiondate/updated) which carry a full offset-datetime — see jiraInstantOrNull.
+    private static LocalDate jiraDateOrNull(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(raw);
+        } catch (Exception e) {
+            log.warn("Unparseable Jira date '{}' — leaving null", raw);
             return null;
         }
     }

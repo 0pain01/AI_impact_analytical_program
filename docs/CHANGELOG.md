@@ -2,6 +2,18 @@
 
 One line per user-visible or architecturally significant change. Newest first.
 
+## 2026-09-16
+- New: **Jira Work Items** dashboard (ADMIN/ENG_LEADER/MANAGER) — `GET
+  /api/v1/metrics/jira-work-items`, backed by `staging.jira_issue_state`. KPIs (open issues,
+  resolved-in-window, median resolution time, reopen rate, overdue count), a status-category
+  pipeline-shape chart, open-backlog breakdowns by type/priority/assignee, a "topics" view of the
+  most common labels, a weekly resolution-time trend, and a searchable/sortable/paged open-issue
+  worklist scoped to one Jira project or all of them. `staging.jira_issue_state` widened (V14
+  migration) with `priority`, `status_category`, `reporter`, `labels[]`, `due_date` — standard
+  Jira fields only (see metric-definitions.md for why story points/epic link are deliberately not
+  supported). See `docs/01-product/metric-definitions.md`'s new "Jira Work Items" section and
+  `docs/01-product/functional-specification.md` §4.9 for the full definitions.
+
 ## 2026-09-13
 - Docs: three new top-level reference documents — [`docs/01-product/functional-specification.md`](01-product/functional-specification.md)
   (what the product does: user roles, every dashboard's purpose/business rules, data sources,

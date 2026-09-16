@@ -57,6 +57,7 @@ Contract-first: [`src/main/resources/openapi/api-core.yml`](src/main/resources/o
 | `GET /api/v1/audit?limit=100` | ADMIN | Recent audit entries, newest first (E8-S3) |
 | `GET /api/v1/admin/connectors` | ADMIN | Per-connector health (status/last sync/event count) derived from `staging.raw_event` timestamps (E1-S4/E8) |
 | `GET /api/v1/metrics/ai-cost-track?days=30` | analytical roles | AI spend/adoption/impact/ROI KPIs (E9, AI-01..AI-05) from `staging.ai_usage_state` and `staging.pull_request_state.ai_assisted`; `impact`/`roi` are `null` when a window's AI-assisted or non-AI-assisted PR sample has fewer than 3 merged PRs |
+| `GET /api/v1/metrics/jira-work-items?days=30&project=*&q=&sortBy=age&sortDir=desc&page=0&pageSize=20` | analytical roles | Jira Work Items dashboard from `staging.jira_issue_state` (V10/V14): current backlog composition (status/type/priority/assignee/label breakdowns, overdue count), window-scoped resolution metrics (median resolution time, reopen rate, weekly trend), and a paged/sortable/filterable open-issue worklist. `project` is a Jira project key or `*`, never a team UUID |
 | `DELETE /api/v1/admin/teams/{teamId}` | ADMIN | Deletes a team (cascades its own repo/member mappings). 409 if a user is pinned to it via `team_id` or another team references it as parent — reassign/reparent first rather than a silent scope change. Audited as `TEAM_DELETED` |
 | `GET /actuator/health` | public | Liveness/readiness |
 

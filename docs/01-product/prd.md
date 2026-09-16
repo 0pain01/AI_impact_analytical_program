@@ -362,7 +362,7 @@ Repo-only appendix (not in the signed docx) — updated as increments land. Lege
 | Epic / story | Status | Notes |
 |---|---|---|
 | E1-S1 Git provider | 🟡 | `connector-github`: signature-verified webhooks + PR/commit backfill live; GitHub App install flow, repo scoping UI, GitLab pending |
-| E1-S2 Jira | 🟡 | `connector-jira`: token-verified webhooks + issue backfill with changelogs; project→team mapping UI pending |
+| E1-S2 Jira | 🟡 | `connector-jira`: token-verified webhooks + issue backfill with changelogs; project→team mapping UI pending. Repo-only addition (not a distinct signed-PRD story): a **Jira Work Items dashboard** (`GET /api/v1/metrics/jira-work-items`, frontend `Jira.tsx`) now surfaces this connector's data directly — backlog composition, resolution metrics, open-issue worklist — see `docs/01-product/functional-specification.md` §4.9 |
 | E1-S3 CI/CD | 🟡 | GitHub Actions via `connector-github` (workflow-run backfill + live events); deployment-rule mapping pending (OQ-4 answered as GitHub Actions for pilot) |
 | E1-S4 Resilient ingestion | 🟡 | Queue + retry + DLQ + idempotent staging writes live and smoke-verified; `GET /api/v1/admin/connectors` (ADMIN) now surfaces per-connector status/last-sync/event-count derived from `staging.raw_event`, rendered live in the Admin console; proactive alerting (paging) on top of this signal still pending |
 | E1-S5 30-min TTV | 🟡 | `GET /api/v1/setup/status` (ADMIN/ENG_LEADER) derives a 4-item checklist (git/ticketing/CI/dashboard) and a `firstConnectionAt`→`firstDashboardAt` time-to-value figure entirely from `staging.raw_event`/`mart.metric_daily` timestamps — no manual flags; frontend Setup view renders it. Guided remediation steps (e.g. deep links to reconnect a failed connector) pending |
