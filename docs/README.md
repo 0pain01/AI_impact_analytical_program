@@ -8,7 +8,7 @@ see the Documentation Policy in the root [CLAUDE.md](../CLAUDE.md).
 | [01-product/](01-product/) | BRD summary, [functional specification](01-product/functional-specification.md), requirements traceability, metric definitions |
 | [02-standards/](02-standards/) | Engineering standards, security & privacy standards |
 | [03-architecture/](03-architecture/) | System architecture (C4), [technical specification](03-architecture/technical-specification.md), data model, ADRs |
-| [04-operations/](04-operations/) | Runbooks, [deployment guide](04-operations/deployment-guide.md), [AWS deployment plan](04-operations/aws-deployment-plan.md), monitoring |
+| [04-operations/](04-operations/) | Runbooks, [deployment guide](04-operations/deployment-guide.md), [frontend↔backend call map](04-operations/frontend-backend-map.md), [AWS deployment plan](04-operations/aws-deployment-plan.md), monitoring |
 | [CHANGELOG.md](CHANGELOG.md) | One-line log of user-visible / architecturally significant changes |
 
 ## Key documents
@@ -24,6 +24,7 @@ see the Documentation Policy in the root [CLAUDE.md](../CLAUDE.md).
 - **Technical specification (data model, API contract, algorithms, security mechanics):** [03-architecture/technical-specification.md](03-architecture/technical-specification.md)
 - **Decision log (ADRs):** [03-architecture/decisions/](03-architecture/decisions/)
 - **What each service does, how they connect, Docker images, and the full cloud-deployment walkthrough:** [04-operations/deployment-guide.md](04-operations/deployment-guide.md)
+- **Every screen's API calls and what happens downstream ("what triggers what"), both directions:** [04-operations/frontend-backend-map.md](04-operations/frontend-backend-map.md)
 - **AWS deployment plan, sized and costed for a ≤20-developer team:** [04-operations/aws-deployment-plan.md](04-operations/aws-deployment-plan.md)
 
 ## Documentation rules (enforced)

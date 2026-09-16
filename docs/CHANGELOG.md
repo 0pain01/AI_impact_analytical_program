@@ -3,6 +3,17 @@
 One line per user-visible or architecturally significant change. Newest first.
 
 ## 2026-09-17
+- Docs/tooling: refreshed `docs/04-operations/deployment-guide.md` (containerization state,
+  credential table, Jira Work Items + Admin Jira/Jenkins parity history — was stale since
+  Sep 12); added `docs/04-operations/frontend-backend-map.md` — new doc mapping every frontend
+  screen's action to its exact API call and downstream effect (which controller/service, which
+  DB table or queue, which connector), both directions, since that connective tissue didn't
+  exist as one document before (scattered across `api.ts` comments and various READMEs); and
+  added a `.claude/skills/project-reference/` skill routing any project question (business/PM/
+  SWE — API surface, services, frontend, Docker, credentials, "what calls what," metrics,
+  delivery status, security posture) to the right existing doc, so it's answered cheaply from
+  reference lookup instead of via a full `/graphify` knowledge-graph query (the wrong, far more
+  expensive tool for this class of question).
 - New: **Admin console Jira/Jenkins connector parity** — a "Jira & Jenkins" section (mirroring
   the existing GitHub/GitLab repo controls) to connect a Jira project or Jenkins job, see live
   per-item sync status, Refresh, and Delete. New endpoints `POST/GET/DELETE

@@ -129,9 +129,10 @@ server-side runtime of its own.
 **What:** the only door into the system from the outside. Owns authentication (JWT resource
 server, RS256, ADR-0004), RBAC (`ADMIN`/`ENG_LEADER`/`MANAGER`/`IC`/`FINANCE_READONLY`), every
 dashboard-facing API (Cockpit metrics, Code Review Analytics, AI Cost Track, Investment Profile,
-Teams/Repos listing, Setup checklist), the Admin console's APIs (connect a repo/project, import
-an org/group, connector health, user role assignment, audit log), and the Flyway migrations that
-define every Postgres schema in the system.
+Jira Work Items, Teams/Repos listing, Setup checklist), the Admin console's APIs (connect a
+repo/project/Jira project/Jenkins job, import an org/group, connector health, user role
+assignment, audit log), and the Flyway migrations that define every Postgres schema in the
+system.
 
 **Why separate:** it's the only service that needs to know about "who is asking and what are
 they allowed to see" — centralizing that here means every other service can stay unauthenticated
@@ -272,24 +273,29 @@ moving to a managed multi-instance setup) is a connection-string change, not a r
   `ingestion-writer` can't process (malformed JSON, etc.) is rejected without requeue, landing in
   the DLQ rather than being silently dropped or retried forever.
 
-### 5.3 Docker images — what's containerized today, and why only one thing is
+### 5.3 Docker images — what's containerized today, and how much is left
 
 | Service | Containerized? | Notes |
 |---|---|---|
 | **connector-gitlab** | **Yes** (ADR-0005) | Multi-stage build: `maven:3.9-eclipse-temurin-21-alpine` compiles, `eclipse-temurin:21-jre-alpine` ships (no build toolchain in the runtime image), runs as a non-root user created in the image. Build context is the Maven **reactor root** (`services/`), because the image needs the parent POM and `platform-common` — see `services/connectors/connector-gitlab/Dockerfile`. |
-| Everything else (frontend, api-core, metrics-engine, identity-service, ingestion-writer, connector-github/jira/jenkins/ai-telemetry) | No — plain process | Run via `mvn spring-boot:run` / `java -jar` (backend) or `npm run dev` / a static build (frontend), started by `infra/start-backend.sh` for local dev. |
+| **connector-jenkins** | **Yes** (ADR-0007) | Same template as connector-gitlab, exactly — see `services/connectors/connector-jenkins/Dockerfile`. |
+| **Jenkins CI server itself** | **Yes**, as infra (ADR-0007) | Not application code — `jenkins/jenkins:lts` run as a plain `infra/docker-compose.yml` service (`jenkins`), same treatment as Postgres/RabbitMQ. Needed only for local dev/testing against a real Jenkins instance; a real deployment points `JENKINS_BASE_URL` at whatever Jenkins your org already runs, and doesn't need this service at all. |
+| Everything else (frontend, api-core, metrics-engine, identity-service, ingestion-writer, connector-github/jira/ai-telemetry) | No — plain process | Run via `mvn spring-boot:run` / `java -jar` (backend) or `npm run dev` / a static build (frontend), started by `infra/start-backend.sh` for local dev. |
 
-**Why only one service is containerized:** connector-gitlab was the newest addition at the point
-Docker packaging was introduced, and containerizing it first established the template (base
-images, build strategy, non-root user) deliberately, rather than containerizing everything at
-once and discovering the pattern was wrong across nine services simultaneously. ADR-0005
-explicitly scopes itself to just this one service and defers "containerize everything" as a
-follow-up decision. **If you're taking this to a real cloud deployment, that follow-up is where
-you start** — see §6.
+**Why not everything is containerized yet:** connector-gitlab was the newest addition at the
+point Docker packaging was introduced, and containerizing it first established the template
+(base images, build strategy, non-root user) deliberately, rather than containerizing everything
+at once and discovering the pattern was wrong across nine services simultaneously. ADR-0005
+explicitly scoped itself to just that one service; ADR-0007 later extended the same template to
+connector-jenkins (plus brought the local Jenkins CI server under the same compose stack) for the
+identical reason — friction actually observed (the Admin console's Jenkins "Refresh" needing a
+manually-started connector every time), not a blanket policy change. **Six backend services are
+still plain processes. If you're taking this to a real cloud deployment, containerizing the rest
+is where you start** — see §6.
 
 ## 6. Containerizing the rest, for a real deployment
 
-None of the other eight services need any code change to run in a container — they're already
+None of the other six services need any code change to run in a container — they're already
 plain Spring Boot (or, for the frontend, static-buildable) apps with all configuration already
 externalized to environment variables (see §4 and §8). Copy `connector-gitlab`'s Dockerfile
 pattern for each: a `maven:3.9-eclipse-temurin-21-alpine` build stage (with the same reactor-root
@@ -326,10 +332,25 @@ they're supplied:
 | Jenkins | A Jenkins API token for a user with read access to the jobs you want ingested | Jenkins → user profile → Configure → API Token |
 | AI telemetry | Real usage-report exports from Anthropic's Admin API / GitHub's Copilot Metrics API (the connector currently reads a file shaped exactly like each API's real response — see connector-ai-telemetry's README for the exact swap point) | Anthropic Console / GitHub org settings |
 
+**If you're pointing at a Jenkins instance you're standing up yourself** (rather than an
+existing org Jenkins), note that the Jenkins server itself needs its own one-time setup wizard
+completed (unlock key, admin user, initial plugins) before an API token can even be generated for
+it — this is unrelated to `connector-jenkins`, which is just an HTTP client against whatever
+Jenkins server already exists.
+
 **Webhook reachability:** any connector meant to receive *live* webhooks (GitHub, GitLab, Jira)
 needs a publicly reachable HTTPS URL once deployed — this is automatic once the connector is
 actually deployed behind your ingress/load balancer; it's only a local-dev problem (needing a
 tunnel like ngrok), not a cloud-deployment one.
+
+**Local-dev gotcha, not a cloud-deployment one:** `infra/docker-compose.yml` reads `infra/.env`
+automatically for the two containerized connectors (gitlab, jenkins). A connector started
+directly via `mvn spring-boot:run` (github, jira, ai-telemetry — or gitlab/jenkins run outside
+Docker) does **not** get `infra/.env` for free; source it into your shell first
+(`set -a; source infra/.env; set +a` on bash) or it runs unauthenticated/misconfigured with no
+error at startup — the symptom shows up later as a real backfill call failing (e.g. connector-jira
+throwing `UnknownHostException: unconfigured.invalid`), not as a clear "missing credential" error
+up front.
 
 ### 7.2 Deployment order
 
@@ -431,3 +452,21 @@ full blow-by-blow lives in [`docs/CHANGELOG.md`](../CHANGELOG.md) and the indivi
   DORA metrics already worked correctly for GitLab, but the only way to *see* a single repo's own
   numbers was to first assign it to a team. Given GitLab is the platform's real target-customer
   surface, "technically correct but two clicks of indirection away" wasn't good enough.
+- **Jira Work Items dashboard** — a Jira-specific detail view (backlog composition, resolution
+  metrics, an open-issue worklist) distinct from Investment Profile's cross-tool
+  Planned/Unplanned/Rework lens on the same underlying Jira data; `staging.jira_issue_state`
+  widened (V14) with standard Jira fields only (priority, status category, reporter, labels, due
+  date — never an instance-specific custom-field guess).
+- **connector-jenkins containerized, and the local Jenkins CI server brought under the compose
+  stack** (ADR-0007) — extends connector-gitlab's containerization template (ADR-0005) to the
+  second connector, specifically to remove the friction of the Admin console's Jenkins "Refresh"
+  needing a manually-started connector every time.
+- **Admin console gained Jira/Jenkins connector parity** — connect a Jira project or Jenkins job,
+  see live sync status, Refresh, Delete — mirroring the GitHub/GitLab repo controls exactly
+  (minus team assignment, since neither has a project/job-to-team mapping). Verifying this
+  surfaced a real, pre-existing, cross-connector limitation: deleting an item and immediately
+  reconnecting it doesn't reliably restore its data when nothing changed upstream, because every
+  connector's backfill republishes events under a deterministic idempotency key that
+  `staging.raw_event`'s own uniqueness constraint silently deduplicates before the projection
+  is rebuilt. Documented, not silently patched — the real fix touches ADR-0003's idempotency
+  contract for every connector, not just Jira/Jenkins, and needs its own decision first.
