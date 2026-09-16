@@ -289,13 +289,14 @@ at once and discovering the pattern was wrong across nine services simultaneousl
 explicitly scoped itself to just that one service; ADR-0007 later extended the same template to
 connector-jenkins (plus brought the local Jenkins CI server under the same compose stack) for the
 identical reason — friction actually observed (the Admin console's Jenkins "Refresh" needing a
-manually-started connector every time), not a blanket policy change. **Six backend services are
-still plain processes. If you're taking this to a real cloud deployment, containerizing the rest
-is where you start** — see §6.
+manually-started connector every time), not a blanket policy change. **Seven backend services
+(api-core, metrics-engine, identity-service, ingestion-writer, connector-github, connector-jira,
+connector-ai-telemetry) are still plain processes. If you're taking this to a real cloud
+deployment, containerizing the rest is where you start** — see §6.
 
 ## 6. Containerizing the rest, for a real deployment
 
-None of the other six services need any code change to run in a container — they're already
+None of the other seven services need any code change to run in a container — they're already
 plain Spring Boot (or, for the frontend, static-buildable) apps with all configuration already
 externalized to environment variables (see §4 and §8). Copy `connector-gitlab`'s Dockerfile
 pattern for each: a `maven:3.9-eclipse-temurin-21-alpine` build stage (with the same reactor-root

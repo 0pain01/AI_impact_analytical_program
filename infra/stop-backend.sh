@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Stops all backend services started by start-backend.sh. Infra (postgres/rabbitmq) is left
-# running — use `docker compose -f infra/docker-compose.yml down` to stop that too.
+# Stops the plain-process backend services started by start-backend.sh. Infra and the
+# containerized connectors (postgres/rabbitmq/gitlab/jenkins/connector-jenkins) are left
+# running — use `docker compose -f infra/docker-compose.yml down` to stop those too.
 set -uo pipefail
 
 PID_FILE="/tmp/aiimpacteval-backend.pids"

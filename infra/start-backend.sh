@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-# Single-command local dev startup: infra (Postgres + RabbitMQ) + all eight backend services.
+# Single-command local dev startup: infra (Postgres + RabbitMQ) + all seven remaining plain-
+# process backend services. connector-gitlab and connector-jenkins are NOT started here — both
+# are containerized (ADR-0005/ADR-0007) and come up via the bare `docker compose up` call below
+# instead, same as the real Jenkins CI server `connector-jenkins` talks to. A bare `docker
+# compose up` with no service names starts every service defined in docker-compose.yml, so all
+# three come up automatically with infra — don't also add a `start connector-jenkins` line below,
+# it would port-conflict with the containerized one on :8086.
 # connector-ai-telemetry needs CLAUDE_CODE_USAGE_FILE / COPILOT_USAGE_FILE exported before
 # running this script to actually backfill anything (it starts fine without them, same as
 # connector-github starts fine without GITHUB_TOKEN) — point them at
@@ -13,7 +19,7 @@ JAVA_BIN="${JAVA_HOME:+$JAVA_HOME/bin/}java"
 PID_FILE="/tmp/aiimpacteval-backend.pids"
 : > "$PID_FILE"
 
-echo "1/3 Starting infra (postgres + rabbitmq)..."
+echo "1/3 Starting infra (postgres + rabbitmq + gitlab + jenkins + connector-jenkins)..."
 docker compose -f "$ROOT/infra/docker-compose.yml" up -d --wait
 
 echo "2/3 Building all services (mvn package -DskipTests)..."
@@ -33,7 +39,6 @@ start connector-github         connectors/connector-github     8081
 start connector-jira           connectors/connector-jira       8083
 start metrics-engine           metrics-engine                  8084
 start identity-service         identity-service                8085
-start connector-jenkins        connectors/connector-jenkins    8086
 start connector-ai-telemetry   connectors/connector-ai-telemetry 8087
 
 wait_healthy() { # url, name
@@ -55,6 +60,6 @@ wait_healthy http://localhost:8086/actuator/health "connector-jenkins"
 wait_healthy http://localhost:8087/actuator/health "connector-ai-telemetry"
 
 echo
-echo "All 8 backend services + infra are up. PIDs recorded in $PID_FILE."
+echo "All 7 backend services + infra (incl. containerized gitlab/jenkins/connector-jenkins) are up. PIDs recorded in $PID_FILE."
 echo "Frontend: cd frontend && npm install && npm run dev"
 echo "Stop everything: ./infra/stop-backend.sh"
