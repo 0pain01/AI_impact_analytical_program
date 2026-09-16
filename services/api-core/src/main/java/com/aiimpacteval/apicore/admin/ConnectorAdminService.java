@@ -43,6 +43,16 @@ import java.util.concurrent.Executors;
  * keyed under {@code "gitlab:" + project} in {@link #triggers} to match the prefix
  * {@code StagingEventWriter} stamps onto GitLab's rows in the same shared state tables (see its
  * class javadoc) — {@link #listRepoSyncStatus()} needs no source-specific branching as a result.
+ *
+ * <p>Jira project and Jenkins job connect/sync-status/disconnect follow the same trigger-and-poll
+ * shape as {@link #connectRepo}, but track their own separate {@link #jiraTriggers}/
+ * {@link #jenkinsTriggers} maps and expose their own list endpoints rather than folding into
+ * {@link #listRepoSyncStatus()} — a Jira project key or Jenkins job name isn't a "repo" the way
+ * {@code pull_request_state}/{@code workflow_run_state} key their rows, and (unlike GitHub/GitLab)
+ * neither has a project→team mapping to assign in the same call (see
+ * {@code JiraDashboardController}'s javadoc for why that gap exists). "Known" project keys/job
+ * names for the auto-discovery a fresh backfill result feeds are queried the same way
+ * {@link ConnectorAutoRefreshService} already does — see its javadoc.
  */
 @Service
 public class ConnectorAdminService {
@@ -60,13 +70,25 @@ public class ConnectorAdminService {
                                  String syncError, List<String> teams) {
     }
 
+    public record JiraProjectSyncStatus(String projectKey, Instant lastSyncAt, long eventCount,
+                                        SyncState syncState, String syncError) {
+    }
+
+    public record JenkinsJobSyncStatus(String jobName, Instant lastSyncAt, long eventCount,
+                                       SyncState syncState, String syncError) {
+    }
+
     private final RestClient githubClient;
     private final RestClient gitlabClient;
+    private final RestClient jiraClient;
+    private final RestClient jenkinsClient;
     private final AuditLog auditLog;
     private final JdbcTemplate jdbcTemplate;
     private final TeamAdminService teamAdminService;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final Map<String, Trigger> triggers = new ConcurrentHashMap<>();
+    private final Map<String, Trigger> jiraTriggers = new ConcurrentHashMap<>();
+    private final Map<String, Trigger> jenkinsTriggers = new ConcurrentHashMap<>();
 
     // This call blocks for the connector's ENTIRE backfill (large repos genuinely take several
     // minutes — the N+1 per-PR review fetch in GithubBackfillService, see its javadoc). 30
@@ -83,12 +105,20 @@ public class ConnectorAdminService {
     public ConnectorAdminService(RestClient.Builder restClientBuilder,
                                  @Value("${connectors.github.base-url}") String githubBaseUrl,
                                  @Value("${connectors.gitlab.base-url}") String gitlabBaseUrl,
+                                 @Value("${connectors.jira.base-url}") String jiraBaseUrl,
+                                 @Value("${connectors.jenkins.base-url}") String jenkinsBaseUrl,
                                  AuditLog auditLog, JdbcTemplate jdbcTemplate, TeamAdminService teamAdminService) {
         this.githubClient = TimeoutRestClients.withTimeouts(restClientBuilder, Duration.ofSeconds(10), CONNECTOR_CLIENT_READ_TIMEOUT)
                 .baseUrl(githubBaseUrl)
                 .build();
         this.gitlabClient = TimeoutRestClients.withTimeouts(restClientBuilder, Duration.ofSeconds(10), CONNECTOR_CLIENT_READ_TIMEOUT)
                 .baseUrl(gitlabBaseUrl)
+                .build();
+        this.jiraClient = TimeoutRestClients.withTimeouts(restClientBuilder, Duration.ofSeconds(10), CONNECTOR_CLIENT_READ_TIMEOUT)
+                .baseUrl(jiraBaseUrl)
+                .build();
+        this.jenkinsClient = TimeoutRestClients.withTimeouts(restClientBuilder, Duration.ofSeconds(10), CONNECTOR_CLIENT_READ_TIMEOUT)
+                .baseUrl(jenkinsBaseUrl)
                 .build();
         this.auditLog = auditLog;
         this.jdbcTemplate = jdbcTemplate;
@@ -286,5 +316,179 @@ public class ConnectorAdminService {
                     teamsByRepo.getOrDefault(repo, List.of())));
         }
         return result;
+    }
+
+    /**
+     * Connects a Jira project (triggers connector-jira's backfill), same async trigger-and-poll
+     * shape as {@link #connectRepo} — no team assignment, since no project→team mapping exists
+     * yet (see class javadoc).
+     */
+    public void connectJiraProject(String actorEmail, String projectKey, String sourceIp) {
+        auditLog.write(new AuditEvent(actorEmail, "JIRA_PROJECT_CONNECT_TRIGGERED", "jira_project", projectKey,
+                null, null, sourceIp));
+        jiraTriggers.put(projectKey, new Trigger(SyncState.IN_PROGRESS, Instant.now(), null));
+        executor.submit(() -> {
+            try {
+                jiraClient.post()
+                        .uri("/internal/backfill?projectKey={projectKey}", projectKey)
+                        .retrieve()
+                        .toBodilessEntity();
+                jiraTriggers.put(projectKey, new Trigger(SyncState.COMPLETED, Instant.now(), null));
+                log.info("Jira project connect backfill for {} completed", projectKey);
+            } catch (Exception e) {
+                jiraTriggers.put(projectKey, new Trigger(SyncState.FAILED, Instant.now(), e.getMessage()));
+                log.warn("Jira project connect backfill for {} failed: {}", projectKey, e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Removes a Jira project from every view Admin/Investment Profile/Jira Work Items actually
+     * read: {@code staging.jira_issue_state} rows for that project. Same "stop showing it, not a
+     * GDPR erasure" semantics as {@link #disconnectRepo} — {@code staging.raw_event} is
+     * untouched, so reconnecting re-derives the same data.
+     */
+    public void disconnectJiraProject(String actorEmail, String projectKey, String sourceIp) {
+        int rows = jdbcTemplate.update("DELETE FROM staging.jira_issue_state WHERE project_key = ?", projectKey);
+        jiraTriggers.remove(projectKey);
+        auditLog.write(new AuditEvent(actorEmail, "JIRA_PROJECT_DISCONNECTED", "jira_project", projectKey,
+                null, "{\"issueRows\":" + rows + "}", sourceIp));
+        log.info("Disconnected Jira project {}: {} issue rows removed", projectKey, rows);
+    }
+
+    /** One row per Jira project key that's either ever landed data or was just triggered. */
+    public List<JiraProjectSyncStatus> listJiraProjectSyncStatus() {
+        Map<String, Object[]> dbInfo = new HashMap<>();
+        jdbcTemplate.query("""
+                SELECT project_key, max(last_received_at) AS last_sync, count(*) AS cnt
+                FROM staging.jira_issue_state
+                WHERE project_key <> 'unknown'
+                GROUP BY project_key
+                """, rs -> {
+            while (rs.next()) {
+                dbInfo.put(rs.getString("project_key"),
+                        new Object[]{rs.getTimestamp("last_sync"), rs.getLong("cnt")});
+            }
+            return null;
+        });
+
+        TreeSet<String> allProjects = new TreeSet<>();
+        allProjects.addAll(dbInfo.keySet());
+        allProjects.addAll(jiraTriggers.keySet());
+
+        List<JiraProjectSyncStatus> result = new ArrayList<>();
+        for (String projectKey : allProjects) {
+            Object[] db = dbInfo.get(projectKey);
+            Instant lastSyncAt = db == null ? null : ((Timestamp) db[0]).toInstant();
+            long eventCount = db == null ? 0 : (Long) db[1];
+            var resolved = resolveState(jiraTriggers.get(projectKey), lastSyncAt);
+            result.add(new JiraProjectSyncStatus(projectKey, lastSyncAt, eventCount, resolved.state(), resolved.error()));
+        }
+        return result;
+    }
+
+    /**
+     * Connects a Jenkins job (triggers connector-jenkins's backfill), same async trigger-and-poll
+     * shape as {@link #connectRepo} — no team assignment, same reason as
+     * {@link #connectJiraProject}.
+     */
+    public void connectJenkinsJob(String actorEmail, String jobName, String sourceIp) {
+        auditLog.write(new AuditEvent(actorEmail, "JENKINS_JOB_CONNECT_TRIGGERED", "jenkins_job", jobName,
+                null, null, sourceIp));
+        jenkinsTriggers.put(jobName, new Trigger(SyncState.IN_PROGRESS, Instant.now(), null));
+        executor.submit(() -> {
+            try {
+                jenkinsClient.post()
+                        .uri("/internal/backfill?jobName={jobName}", jobName)
+                        .retrieve()
+                        .toBodilessEntity();
+                jenkinsTriggers.put(jobName, new Trigger(SyncState.COMPLETED, Instant.now(), null));
+                log.info("Jenkins job connect backfill for {} completed", jobName);
+            } catch (Exception e) {
+                jenkinsTriggers.put(jobName, new Trigger(SyncState.FAILED, Instant.now(), e.getMessage()));
+                log.warn("Jenkins job connect backfill for {} failed: {}", jobName, e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Removes a Jenkins job's builds from {@code staging.workflow_run_state} — the same table
+     * GitHub Actions/GitLab pipelines share, so this is scoped to this job's {@code run_id}
+     * prefix ({@code "jenkins:{jobName}:"}) only, never a blanket delete. Same "stop showing it"
+     * semantics as {@link #disconnectRepo}.
+     */
+    public void disconnectJenkinsJob(String actorEmail, String jobName, String sourceIp) {
+        int rows = jdbcTemplate.update(
+                "DELETE FROM staging.workflow_run_state WHERE run_id LIKE ?", "jenkins:" + jobName + ":%");
+        jenkinsTriggers.remove(jobName);
+        auditLog.write(new AuditEvent(actorEmail, "JENKINS_JOB_DISCONNECTED", "jenkins_job", jobName,
+                null, "{\"buildRows\":" + rows + "}", sourceIp));
+        log.info("Disconnected Jenkins job {}: {} build rows removed", jobName, rows);
+    }
+
+    /**
+     * One row per Jenkins job name that's either ever landed data or was just triggered. Jenkins
+     * rows in {@code workflow_run_state} store the job name in the {@code name} column (see
+     * {@code StagingEventWriter.upsertJenkinsBuildState}) — scoped to Jenkins rows via the
+     * {@code run_id} prefix so this never picks up a GitHub Actions/GitLab workflow whose name
+     * happens to collide with a Jenkins job name.
+     */
+    public List<JenkinsJobSyncStatus> listJenkinsJobSyncStatus() {
+        Map<String, Object[]> dbInfo = new HashMap<>();
+        jdbcTemplate.query("""
+                SELECT name AS job_name, max(last_received_at) AS last_sync, count(*) AS cnt
+                FROM staging.workflow_run_state
+                WHERE run_id LIKE 'jenkins:%'
+                GROUP BY name
+                """, rs -> {
+            while (rs.next()) {
+                dbInfo.put(rs.getString("job_name"),
+                        new Object[]{rs.getTimestamp("last_sync"), rs.getLong("cnt")});
+            }
+            return null;
+        });
+
+        TreeSet<String> allJobs = new TreeSet<>();
+        allJobs.addAll(dbInfo.keySet());
+        allJobs.addAll(jenkinsTriggers.keySet());
+
+        List<JenkinsJobSyncStatus> result = new ArrayList<>();
+        for (String jobName : allJobs) {
+            Object[] db = dbInfo.get(jobName);
+            Instant lastSyncAt = db == null ? null : ((Timestamp) db[0]).toInstant();
+            long eventCount = db == null ? 0 : (Long) db[1];
+            var resolved = resolveState(jenkinsTriggers.get(jobName), lastSyncAt);
+            result.add(new JenkinsJobSyncStatus(jobName, lastSyncAt, eventCount, resolved.state(), resolved.error()));
+        }
+        return result;
+    }
+
+    private record ResolvedState(SyncState state, String error) {
+    }
+
+    /**
+     * Shared trigger-vs-staged-data reconciliation logic — factored out of the inline version
+     * that used to live only in {@link #listRepoSyncStatus()} (kept there unchanged, for the
+     * repo/team-carrying case) so {@link #listJiraProjectSyncStatus()}/
+     * {@link #listJenkinsJobSyncStatus()} don't duplicate the stuck-trigger/failed/completed
+     * decision tree a third and fourth time.
+     */
+    private static ResolvedState resolveState(Trigger trigger, Instant lastSyncAt) {
+        if (trigger != null && trigger.state() == SyncState.IN_PROGRESS
+                && trigger.at().isBefore(Instant.now().minus(STUCK_AFTER))) {
+            return new ResolvedState(SyncState.FAILED,
+                    "No response after " + STUCK_AFTER.toMinutes() + " minutes — connector may be stuck; try Refresh.");
+        }
+        if (trigger != null && trigger.state() == SyncState.IN_PROGRESS) {
+            return new ResolvedState(SyncState.IN_PROGRESS, null);
+        }
+        if (trigger != null && trigger.state() == SyncState.FAILED
+                && (lastSyncAt == null || trigger.at().isAfter(lastSyncAt))) {
+            return new ResolvedState(SyncState.FAILED, trigger.error());
+        }
+        if (lastSyncAt != null) {
+            return new ResolvedState(SyncState.COMPLETED, null);
+        }
+        return new ResolvedState(SyncState.IN_PROGRESS, null);
     }
 }

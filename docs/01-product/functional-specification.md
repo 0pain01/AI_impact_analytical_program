@@ -182,9 +182,26 @@ every action is written to the audit log.
   Jenkins re-check themselves automatically on a schedule (every 30 minutes by default) precisely
   so this status never goes stale purely because nobody clicked "Refresh."
 - **Connect a repo/project**, or **import a whole GitHub org's / GitLab group's** teams and repos
-  in one action, from the UI — no terminal command required.
-- **Sync status** per connected repo: Syncing / Synced / Failed, with a manual Refresh and Delete
-  per row.
+  in one action, from the UI — no terminal command required. **Connect a Jira project** or a
+  **Jenkins job** the same way, in their own "Jira & Jenkins" section — minus team assignment,
+  since neither has a project/job-to-team mapping yet.
+- **Sync status** per connected repo, Jira project, or Jenkins job: Syncing / Synced / Failed,
+  with a manual Refresh and Delete per row (delete removes only that source's own staging rows —
+  `staging.raw_event` stays untouched).
+- **Known, intentional-until-someone-hits-it limitation (all sources, not new to Jira/Jenkins):**
+  Delete-then-Refresh on the *same* item does not reliably restore it. Every connector's backfill
+  publishes events under a deterministic idempotency key (e.g. Jira's `issue:{id}:{updated}`,
+  Jenkins' `jenkins:{job}:{buildNumber}`) — `staging.raw_event`'s own uniqueness constraint on
+  that key silently skips reprocessing an event it has already stored, so if nothing changed
+  upstream since the last successful sync, a fresh Refresh republishes the identical key, gets
+  deduplicated, and the just-deleted projection row is never rebuilt. Recovery requires deleting
+  the matching `staging.raw_event` rows too before re-triggering (an operator/support action, not
+  exposed in the UI) — discovered verifying this Admin section's Jira/Jenkins parity work
+  (2026-09-17), confirmed to affect GitHub/GitLab identically (their PR/commit sourceIds follow
+  the same pattern), not something introduced by that change. Not fixed here: the right fix
+  (should Delete also purge matching `raw_event` rows? should backfill support a "force
+  republish" bypass?) is an architectural decision affecting every connector's idempotency
+  contract (ADR-0003), not a one-line patch — needs its own ADR-level discussion before changing.
 - **Team management:** create teams by hand, assign/unassign repos, delete a team (blocked with a
   clear error if a user or another team still depends on it, rather than silently breaking their
   access).

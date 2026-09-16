@@ -4,14 +4,20 @@ import {
   connectGithubOrgTeams,
   connectGitlabGroup,
   connectGitlabProject,
+  connectJenkinsJob,
+  connectJiraProject,
   connectRepo,
   createAdminUser,
   createOrUpdateTeam,
   deleteTeam,
+  disconnectJenkinsJob,
+  disconnectJiraProject,
   disconnectRepo,
   fetchAdminConnectors,
   fetchAdminUsers,
   fetchAuditLog,
+  fetchJenkinsJobSyncStatus,
+  fetchJiraProjectSyncStatus,
   fetchRepoSyncStatus,
   fetchTeams,
   removeTeamRepo,
@@ -21,6 +27,8 @@ import {
   type AdminUser,
   type AuditEntry,
   type ConnectorHealth,
+  type JenkinsJobSyncStatus,
+  type JiraProjectSyncStatus,
   type RepoSyncStatus,
   type Role,
   type Team,
@@ -791,6 +799,372 @@ function RepoTeamsPanel() {
   )
 }
 
+function ConnectJiraProjectForm({ onConnected }: { onConnected: () => void }) {
+  const [projectKey, setProjectKey] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!projectKey.trim()) {
+      setError('Project key is required.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    setMessage(null)
+    try {
+      await connectJiraProject(projectKey.trim())
+      setMessage(`Connecting ${projectKey.trim()} — watch its progress in the sync status table below.`)
+      setProjectKey('')
+      onConnected()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not connect project.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
+      <div>
+        <label className="mb-1 block text-xs text-slate-400">Jira project key</label>
+        <input
+          value={projectKey}
+          onChange={(e) => setProjectKey(e.target.value)}
+          placeholder="ENG"
+          className="w-32 rounded-md border border-slate-200 px-2 py-1 text-sm"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={busy}
+        className="rounded-md bg-slate-900 px-3 py-1 text-sm font-medium text-white disabled:opacity-50"
+      >
+        {busy ? 'Connecting…' : 'Connect project'}
+      </button>
+      {error && <p className="w-full text-sm text-red-600">{error}</p>}
+      {message && <p className="w-full text-sm text-emerald-700">{message}</p>}
+    </form>
+  )
+}
+
+function JiraProjectSyncTable({ refreshSignal }: { refreshSignal: number }) {
+  const [rows, setRows] = useState<JiraProjectSyncStatus[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [busyProject, setBusyProject] = useState<string | null>(null)
+
+  function load() {
+    fetchJiraProjectSyncStatus()
+      .then((r) => setRows(r))
+      .catch((e: Error) => setError(e.message))
+  }
+
+  useEffect(load, [refreshSignal])
+
+  useEffect(() => {
+    if (!rows || !rows.some((r) => r.syncState === 'IN_PROGRESS')) return
+    const id = setInterval(load, 15000)
+    return () => clearInterval(id)
+  }, [rows])
+
+  async function handleRefresh(projectKey: string) {
+    setBusyProject(projectKey)
+    setError(null)
+    try {
+      await connectJiraProject(projectKey)
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not refresh project.')
+    } finally {
+      setBusyProject(null)
+    }
+  }
+
+  async function handleDelete(projectKey: string) {
+    if (!confirm(`Remove ${projectKey} from Admin/Investment Profile/Jira Work Items? Its raw ingested events stay in the audit log — reconnecting later re-derives the same data.`)) {
+      return
+    }
+    setBusyProject(projectKey)
+    setError(null)
+    try {
+      await disconnectJiraProject(projectKey)
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete project.')
+    } finally {
+      setBusyProject(null)
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Jira sync status</p>
+        <button onClick={load} className="text-xs font-medium text-slate-500 hover:text-slate-900">
+          Refresh all
+        </button>
+      </div>
+      {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
+      {!rows && <p className="text-xs text-slate-400">Loading…</p>}
+      {rows && rows.length === 0 && (
+        <p className="text-xs text-slate-400">No Jira projects connected yet — use the form above.</p>
+      )}
+      {rows && rows.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-200 uppercase tracking-wide text-slate-400">
+                <th className="pb-2 pr-3">Project</th>
+                <th className="pb-2 pr-3">Status</th>
+                <th className="pb-2 pr-3">Last synced</th>
+                <th className="pb-2 pr-3">Issues</th>
+                <th className="pb-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.projectKey} className="border-b border-slate-100 last:border-0">
+                  <td className="py-2 pr-3 font-medium text-slate-700">{r.projectKey}</td>
+                  <td className="py-2 pr-3">
+                    <span className={`rounded px-2 py-0.5 font-medium ${syncStateBadge(r.syncState)}`}>
+                      {syncStateLabel(r.syncState)}
+                    </span>
+                    {r.syncError && <p className="mt-0.5 max-w-[16rem] text-[11px] text-red-600">{r.syncError}</p>}
+                  </td>
+                  <td className="py-2 pr-3 text-slate-600">{formatTimestamp(r.lastSyncAt)}</td>
+                  <td className="py-2 pr-3 text-slate-600">{r.eventCount.toLocaleString()}</td>
+                  <td className="py-2 text-right">
+                    <div className="flex justify-end gap-3">
+                      <button
+                        onClick={() => handleRefresh(r.projectKey)}
+                        disabled={busyProject === r.projectKey || r.syncState === 'IN_PROGRESS'}
+                        className="text-xs font-medium text-slate-500 hover:text-slate-900 disabled:opacity-50"
+                      >
+                        {r.syncState === 'IN_PROGRESS' ? 'Syncing…' : 'Refresh'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(r.projectKey)}
+                        disabled={busyProject === r.projectKey}
+                        className="text-xs font-medium text-slate-500 hover:text-red-600 disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ConnectJenkinsJobForm({ onConnected }: { onConnected: () => void }) {
+  const [jobName, setJobName] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!jobName.trim()) {
+      setError('Job name is required.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    setMessage(null)
+    try {
+      await connectJenkinsJob(jobName.trim())
+      setMessage(`Connecting ${jobName.trim()} — watch its progress in the sync status table below.`)
+      setJobName('')
+      onConnected()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not connect job.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
+      <div>
+        <label className="mb-1 block text-xs text-slate-400">Jenkins job name</label>
+        <input
+          value={jobName}
+          onChange={(e) => setJobName(e.target.value)}
+          placeholder="aie-pipeline"
+          className="w-40 rounded-md border border-slate-200 px-2 py-1 text-sm"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={busy}
+        className="rounded-md bg-slate-900 px-3 py-1 text-sm font-medium text-white disabled:opacity-50"
+      >
+        {busy ? 'Connecting…' : 'Connect job'}
+      </button>
+      {error && <p className="w-full text-sm text-red-600">{error}</p>}
+      {message && <p className="w-full text-sm text-emerald-700">{message}</p>}
+    </form>
+  )
+}
+
+function JenkinsJobSyncTable({ refreshSignal }: { refreshSignal: number }) {
+  const [rows, setRows] = useState<JenkinsJobSyncStatus[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [busyJob, setBusyJob] = useState<string | null>(null)
+
+  function load() {
+    fetchJenkinsJobSyncStatus()
+      .then((r) => setRows(r))
+      .catch((e: Error) => setError(e.message))
+  }
+
+  useEffect(load, [refreshSignal])
+
+  useEffect(() => {
+    if (!rows || !rows.some((r) => r.syncState === 'IN_PROGRESS')) return
+    const id = setInterval(load, 15000)
+    return () => clearInterval(id)
+  }, [rows])
+
+  async function handleRefresh(jobName: string) {
+    setBusyJob(jobName)
+    setError(null)
+    try {
+      await connectJenkinsJob(jobName)
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not refresh job.')
+    } finally {
+      setBusyJob(null)
+    }
+  }
+
+  async function handleDelete(jobName: string) {
+    if (!confirm(`Remove ${jobName} from Admin/Cockpit? Its raw ingested events stay in the audit log — reconnecting later re-derives the same data.`)) {
+      return
+    }
+    setBusyJob(jobName)
+    setError(null)
+    try {
+      await disconnectJenkinsJob(jobName)
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete job.')
+    } finally {
+      setBusyJob(null)
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Jenkins sync status</p>
+        <button onClick={load} className="text-xs font-medium text-slate-500 hover:text-slate-900">
+          Refresh all
+        </button>
+      </div>
+      {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
+      {!rows && <p className="text-xs text-slate-400">Loading…</p>}
+      {rows && rows.length === 0 && (
+        <p className="text-xs text-slate-400">No Jenkins jobs connected yet — use the form above.</p>
+      )}
+      {rows && rows.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-200 uppercase tracking-wide text-slate-400">
+                <th className="pb-2 pr-3">Job</th>
+                <th className="pb-2 pr-3">Status</th>
+                <th className="pb-2 pr-3">Last synced</th>
+                <th className="pb-2 pr-3">Builds</th>
+                <th className="pb-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.jobName} className="border-b border-slate-100 last:border-0">
+                  <td className="py-2 pr-3 font-medium text-slate-700">{r.jobName}</td>
+                  <td className="py-2 pr-3">
+                    <span className={`rounded px-2 py-0.5 font-medium ${syncStateBadge(r.syncState)}`}>
+                      {syncStateLabel(r.syncState)}
+                    </span>
+                    {r.syncError && <p className="mt-0.5 max-w-[16rem] text-[11px] text-red-600">{r.syncError}</p>}
+                  </td>
+                  <td className="py-2 pr-3 text-slate-600">{formatTimestamp(r.lastSyncAt)}</td>
+                  <td className="py-2 pr-3 text-slate-600">{r.eventCount.toLocaleString()}</td>
+                  <td className="py-2 text-right">
+                    <div className="flex justify-end gap-3">
+                      <button
+                        onClick={() => handleRefresh(r.jobName)}
+                        disabled={busyJob === r.jobName || r.syncState === 'IN_PROGRESS'}
+                        className="text-xs font-medium text-slate-500 hover:text-slate-900 disabled:opacity-50"
+                      >
+                        {r.syncState === 'IN_PROGRESS' ? 'Syncing…' : 'Refresh'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(r.jobName)}
+                        disabled={busyJob === r.jobName}
+                        className="text-xs font-medium text-slate-500 hover:text-red-600 disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function JiraJenkinsPanel() {
+  const [jiraRefreshSignal, setJiraRefreshSignal] = useState(0)
+  const [jenkinsRefreshSignal, setJenkinsRefreshSignal] = useState(0)
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="mb-1 flex items-center gap-2">
+        <p className="text-sm text-slate-500">Jira &amp; Jenkins</p>
+        <InfoTooltip text="Connect a Jira project to start pulling its issue history, or a Jenkins job to start pulling its build history — same connect/refresh/delete pattern as repos above. No team assignment for either: neither has a project/job-to-team mapping yet." />
+      </div>
+      <p className="mb-4 text-xs text-slate-400">
+        Connecting does not immediately populate the Jira Work Items dashboard or Cockpit — see each sync status
+        table below for progress.
+      </p>
+
+      <div className="mb-4 border-b border-slate-100 pb-4">
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
+          Connect a Jira project
+          <InfoTooltip text="Pulls issues (with full status-transition history) for this project into the pipeline — feeds Investment Profile's Planned/Unplanned/Rework classification and the Jira Work Items dashboard." />
+        </p>
+        <ConnectJiraProjectForm onConnected={() => setJiraRefreshSignal((k) => k + 1)} />
+      </div>
+      <div className="mb-4 border-b border-slate-100 pb-4">
+        <JiraProjectSyncTable refreshSignal={jiraRefreshSignal} />
+      </div>
+
+      <div className="mb-4 border-b border-slate-100 pb-4">
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
+          Connect a Jenkins job
+          <InfoTooltip text="Pulls build history for this job into the same workflow_run_state table GitHub Actions/GitLab pipelines share — feeds Cockpit's DORA metrics with zero Jenkins-specific query changes." />
+        </p>
+        <ConnectJenkinsJobForm onConnected={() => setJenkinsRefreshSignal((k) => k + 1)} />
+      </div>
+      <JenkinsJobSyncTable refreshSignal={jenkinsRefreshSignal} />
+    </div>
+  )
+}
+
 function AuditLogPanel() {
   const [entries, setEntries] = useState<AuditEntry[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -1189,6 +1563,10 @@ export default function Admin() {
 
       <div className="mt-4">
         <RepoTeamsPanel />
+      </div>
+
+      <div className="mt-4">
+        <JiraJenkinsPanel />
       </div>
 
       <div className="mt-4">

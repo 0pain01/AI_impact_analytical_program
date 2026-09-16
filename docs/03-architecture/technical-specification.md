@@ -162,6 +162,8 @@ ground truth, and the spec as due for a resync pass.
 | `POST /admin/connectors/gitlab-projects` | ADMIN | Connect a GitLab project |
 | `POST /admin/connectors/gitlab-groups` | ADMIN | Import a GitLab group |
 | `POST /admin/teams`, `POST/DELETE/GET /admin/teams/{id}/repos`, `DELETE /admin/teams/{id}` | ADMIN | Team CRUD |
+| `POST/GET/DELETE /admin/connectors/jira-projects` | ADMIN | Connect/list-sync-status/disconnect a Jira project — same trigger-and-poll shape as `/admin/connectors/repos`, minus team assignment |
+| `POST/GET/DELETE /admin/connectors/jenkins-jobs` | ADMIN | Same trio for a Jenkins job |
 | `GET/POST /admin/users` | ADMIN | User role/team assignment |
 | `GET /actuator/health` | public | Liveness/readiness, every service |
 

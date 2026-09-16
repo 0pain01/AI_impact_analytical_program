@@ -339,6 +339,102 @@ paths:
         "202": { description: Group import triggered. }
         "400": { description: Missing group. }
         "403": { description: Caller is not ADMIN. }
+  /admin/connectors/jira-projects:
+    post:
+      operationId: connectJiraProject
+      summary: Connect a Jira project from the Admin console — ADMIN only
+      description: >
+        Triggers connector-jira's backfill for one project (issues with full status-transition
+        history) — same async pattern as connectRepo above. No team assignment: unlike GitHub/
+        GitLab repos, Jira projects have no project→team mapping today.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [projectKey]
+              properties:
+                projectKey: { type: string, example: ENG }
+      responses:
+        "202": { description: Backfill triggered. }
+        "400": { description: Missing projectKey. }
+        "403": { description: Caller is not ADMIN. }
+    get:
+      operationId: listJiraProjectSyncStatus
+      summary: Live per-project Jira sync status — ADMIN only
+      description: >
+        One row per Jira project key that's either ever landed data (staging.jira_issue_state) or
+        was just triggered. Same IN_PROGRESS/COMPLETED/FAILED shape as the GitHub/GitLab repo sync
+        table, minus a teams column.
+      responses:
+        "200":
+          description: Jira project sync status, one entry per known project.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/JiraProjectSyncStatus" }
+        "403": { description: Caller is not ADMIN. }
+    delete:
+      operationId: disconnectJiraProject
+      summary: Remove a Jira project from Admin/Investment Profile/Jira Work Items — ADMIN only
+      description: >
+        Deletes the project's rows from staging.jira_issue_state — NOT staging.raw_event, which
+        stays untouched. Re-connecting later re-derives the same data.
+      parameters:
+        - { name: projectKey, in: query, required: true, schema: { type: string }, example: ENG }
+      responses:
+        "204": { description: Project removed. }
+        "400": { description: Missing projectKey. }
+        "403": { description: Caller is not ADMIN. }
+  /admin/connectors/jenkins-jobs:
+    post:
+      operationId: connectJenkinsJob
+      summary: Connect a Jenkins job from the Admin console — ADMIN only
+      description: >
+        Triggers connector-jenkins's backfill for one job's build history — same async pattern as
+        connectRepo above. No team assignment, same reason as Jira projects.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [jobName]
+              properties:
+                jobName: { type: string, example: aie-pipeline }
+      responses:
+        "202": { description: Backfill triggered. }
+        "400": { description: Missing jobName. }
+        "403": { description: Caller is not ADMIN. }
+    get:
+      operationId: listJenkinsJobSyncStatus
+      summary: Live per-job Jenkins sync status — ADMIN only
+      description: >
+        One row per Jenkins job name that's either ever landed data (staging.workflow_run_state,
+        scoped to jenkins:-prefixed run_ids) or was just triggered.
+      responses:
+        "200":
+          description: Jenkins job sync status, one entry per known job.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/JenkinsJobSyncStatus" }
+        "403": { description: Caller is not ADMIN. }
+    delete:
+      operationId: disconnectJenkinsJob
+      summary: Remove a Jenkins job's builds from Admin/Cockpit — ADMIN only
+      description: >
+        Deletes the job's rows from staging.workflow_run_state (scoped to this job's run_id
+        prefix only) — NOT staging.raw_event. Re-connecting later re-derives the same data.
+      parameters:
+        - { name: jobName, in: query, required: true, schema: { type: string }, example: aie-pipeline }
+      responses:
+        "204": { description: Job removed. }
+        "400": { description: Missing jobName. }
+        "403": { description: Caller is not ADMIN. }
   /admin/teams:
     post:
       operationId: upsertTeam
@@ -681,6 +777,24 @@ components:
           type: [boolean, "null"]
           description: Whether minutesToValue is within the 30-minute time-to-value target.
         targetMinutes: { type: integer, description: The time-to-value target (30, PRD E1-S5). }
+    JiraProjectSyncStatus:
+      type: object
+      required: [projectKey, eventCount, syncState]
+      properties:
+        projectKey: { type: string }
+        lastSyncAt: { type: [string, "null"], format: date-time }
+        eventCount: { type: integer }
+        syncState: { type: string, enum: [IN_PROGRESS, COMPLETED, FAILED] }
+        syncError: { type: [string, "null"] }
+    JenkinsJobSyncStatus:
+      type: object
+      required: [jobName, eventCount, syncState]
+      properties:
+        jobName: { type: string }
+        lastSyncAt: { type: [string, "null"], format: date-time }
+        eventCount: { type: integer }
+        syncState: { type: string, enum: [IN_PROGRESS, COMPLETED, FAILED] }
+        syncError: { type: [string, "null"] }
     ConnectorHealth:
       type: object
       required: [key, name, type, status, eventCount]
