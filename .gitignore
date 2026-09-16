@@ -13,6 +13,16 @@ dist/
 node_modules/
 .next/
 out/
+# Vite writes these next to vite.config.ts when it has to transpile the config on the fly —
+# always transient, never meant to be committed (three got committed by accident once).
+*.timestamp-*.mjs
+
+# Presentation decks that don't belong in a code repo (Mallify_Client_Presentation.pptx was
+# removed for this reason — old pre-rename branding, not needed to build/run/understand the code).
+# Keynote's own *.key extension is already covered above (under Secrets, for TLS/private keys —
+# same extension, incidental overlap, not worth a second line).
+*.pptx
+*.ppt
 
 # IDE / OS
 .idea/
@@ -26,3 +36,10 @@ out/
 # Logs & local data
 *.log
 docker-volumes/
+
+# Cross-contamination from an unrelated project ("OFFICE iQ" catalog/ticket-import tooling) that
+# ended up committed here by accident — has nothing to do with AI Impact Evaluation. Path-pinned,
+# not a general pattern, since these are one-off stray files, not something that regenerates.
+/ai-impact-evaluation-project-pack.json
+/project-pack-template.json
+/templates/
