@@ -1,13 +1,13 @@
 # Graph Report - Mallify---AI-Powered-Analytical-Platform  (2026-09-17)
 
 ## Corpus Check
-- 38 files · ~237,397 words
+- 30 files · ~235,328 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1697 nodes · 3952 edges · 122 communities (92 shown, 30 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 235 edges (avg confidence: 0.83)
-- Token cost: 0 input · 212,716 output
+- 1766 nodes · 3910 edges · 194 communities (87 shown, 107 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 231 edges (avg confidence: 0.83)
+- Token cost: 0 input · 334,487 output
 
 ## Community Hubs (Navigation)
 - Identity Resolution & Connector Event Wiring
@@ -105,6 +105,13 @@
 - GitLab Connect & Deploy-Pattern Config
 - Product Docs & ADRs
 - Frontend Entry Point
+- PostCSS Config
+- Vite Env Types
+- Tailwind Config
+- Vite Config
+- Vite Config (Timestamped Build)
+- Vite Config (Timestamped Build)
+- Vite Config (Timestamped Build)
 - README Product Concepts
 - Zero-Tagging Automation Principle
 - api-core Package
@@ -123,400 +130,463 @@
 - GitLab REST Client Internals
 - Contributor Resolution (Identity)
 - Identity Service & Infra
+- Tailwind CSS Dependency
 - Templates README
+- AI Attribution Detection
+- Api-Core API Surface
+- Core Schema
+- Event Envelope Contract
+- Investment Profile Algorithm
+- Mart Schema
+- Resilience Patterns
+- Security Architecture
+- Staging Schema
+- Testing Strategy
+- Api-Core Service
+- Cloud Deployment Steps
+- AI Telemetry Connector
+- GitHub Connector
+- Jira Connector
+- Feature History
+- Frontend Service
+- Identity Service
+- Ingestion Writer
+- Metrics Engine
+- Platform Common Library
+- Postgres Infrastructure
+- Production Hardening Gaps
+- RabbitMQ Infrastructure
+- BRD Design Forces
+- Cockpit Call Flow
+- Docker Backend Wiring
+- Login Session Flow
+- Frontend-Backend Mental Model
+- Operations README
+- Mallify Rename History
+- Documentation Index
+- Documentation Rules
+- Trust Over Surveillance
+- Zero-Tagging Automation
+- Postgres Compose Service
+- RabbitMQ Compose Service
+- Local Infra Setup
+- Api-Core Package
+- Services Maven Reactor
+- AI Telemetry Package
+- GitHub Connector Package
+- GitLab Connector Package
+- Jenkins Connector Package
+- Jira Connector Package
+- Identity Service Package
+- Ingestion Writer Package
+- Metrics Engine Package
+- Platform Common Package
+- Project Setup Commands
+- README Architecture Diagram
+- README Status Summary
+- README Tech Stack
+- Api-Core README
+- Investment Profile Endpoint
+- GitHub Backfill Endpoint
+- GitLab Backfill Endpoint
+- GitLab Webhook Endpoint
+- GitLab Retrying Fetcher
+- GitLab Connector Config
+- Jenkins Backfill Endpoint
+- Jenkins Repo Attribution
+- Contributor Identity Resolution
+- GitLab Identity Gap
+- Identity Service Config
+- Deploy Workflow Pattern
+- Hotfix Workflow Pattern
 
 ## God Nodes (most connected - your core abstractions)
 1. `StagingEventWriter` - 47 edges
 2. `EventEnvelope` - 46 edges
-3. `authFetch()` - 35 edges
+3. `authFetch()` - 36 edges
 4. `ConnectorAdminService` - 29 edges
 5. `MetricsRecomputeServiceIntegrationTest` - 27 edges
 6. `ConnectorAdminController` - 25 edges
-7. `System Architecture` - 25 edges
-8. `AppUser` - 24 edges
-9. `Role` - 23 edges
-10. `Metric Definitions` - 21 edges
+7. `AppUser` - 24 edges
+8. `Role` - 23 edges
+9. `AdminUserService` - 20 edges
+10. `IdentityEventListener` - 19 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `FR-1.8 No-data-loss guarantee` --references--> `ingestion-writer`  [INFERRED]
   docs/01-product/FRD-v1.0.pdf → services/ingestion-writer/README.md
-- `DORA & Delivery module (BRD 8.2)` --conceptually_related_to--> `DORA metrics computation`  [INFERRED]
-  docs/01-product/BRD-Summary.pdf → services/metrics-engine/README.md
 - `FR-1.4 Resilient, idempotent ingestion pipeline` --references--> `Idempotent staging writes (FR-1.8)`  [INFERRED]
   docs/01-product/FRD-v1.0.pdf → services/ingestion-writer/README.md
-- `E1: Onboarding & Connectors` --implements--> `ingestion-writer`  [INFERRED]
-  docs/01-product/prd.md → services/ingestion-writer/README.md
-- `E3: DORA & Delivery Metrics` --implements--> `metrics-engine`  [INFERRED]
-  docs/01-product/prd.md → services/metrics-engine/README.md
+- `DORA & Delivery module (BRD 8.2)` --conceptually_related_to--> `DORA metrics computation`  [INFERRED]
+  docs/01-product/BRD-Summary.pdf → services/metrics-engine/README.md
+- `AI Impact Evaluation README` --references--> `CHANGELOG`  [AMBIGUOUS]
+  README.md → docs/CHANGELOG.md
+- `README Golden Rules` --semantically_similar_to--> `No-manual-tagging product rule`  [INFERRED] [semantically similar]
+  README.md → docs/01-product/functional-specification.md
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Ingestion pipeline: connectors -> queue -> ingestion-writer** — docs_03_architecture_system_architecture_connectorgithub, docs_03_architecture_system_architecture_connectorgitlab, docs_03_architecture_system_architecture_connectorjira, docs_03_architecture_system_architecture_connectorjenkins, docs_03_architecture_system_architecture_connectoraitelemetry, docs_03_architecture_system_architecture_messagequeue, docs_03_architecture_system_architecture_ingestionwriter [EXTRACTED 1.00]
-- **Connector containerization decision lineage** — docs_03_architecture_system_architecture_adr0002, docs_03_architecture_system_architecture_adr0005, docs_03_architecture_decisions_adr_0007_containerize_connector_jenkins_adr0007 [EXTRACTED 1.00]
-- **DORA metric suite (deployment frequency, lead time, CFR, MTTR)** — docs_01_product_metric_definitions_dora1, docs_01_product_metric_definitions_dora2, docs_01_product_metric_definitions_dora2b, docs_01_product_metric_definitions_dora3, docs_01_product_metric_definitions_dora4 [EXTRACTED 1.00]
+- **Containerize-then-decontainerize decision lifecycle for connector-gitlab/connector-jenkins** — docs_03_architecture_decisions_adr_0005_containerize_connector_gitlab, docs_03_architecture_decisions_adr_0007_containerize_connector_jenkins, docs_03_architecture_decisions_adr_0008_decontainerize_connector_gitlab_and_jenkins, infra_docker_compose [INFERRED 0.85]
+- **GitLab data ingestion into shared staging/DORA pipeline** — services_connectors_connector_gitlab_readme_connector_gitlab, docs_01_product_metric_definitions_dora_1, docs_03_architecture_technical_specification_staging_schema, docs_04_operations_frontend_backend_map_admin_connect_repo_flow [INFERRED 0.80]
+- **Investment Profile PR<->Jira verification flow** — docs_01_product_functional_specification_investment_profile, docs_01_product_metric_definitions_investment_profile_drilldown, services_api_core_src_main_resources_openapi_api_core_investment_profile_prs_endpoint, services_api_core_src_main_resources_application_jira_site_base_url [INFERRED 0.85]
 - **Scheduled Connector Health Auto-Refresh** — docs_03_architecture_decisions_adr_0006_scheduled_connector_auto_refresh, services_connectors_connector_jira_src_main_resources_application_config, services_connectors_connector_jenkins_src_main_resources_application_config [EXTRACTED 0.90]
-- **GitLab Connector Containerization Flow** — docs_03_architecture_decisions_adr_0005_containerize_connector_gitlab [INFERRED 0.85]
 - **Staging to Cockpit metrics flow** — services_ingestion_writer_readme_staging_raw_event, services_metrics_engine_readme_metrics_engine, services_metrics_engine_readme_mart_metric_daily [INFERRED 0.85]
 
-## Communities (122 total, 30 thin omitted)
+## Communities (194 total, 107 thin omitted)
 
 ### Community 0 - "Identity Resolution & Connector Event Wiring"
-Cohesion: 0.06
-Nodes (22): com.aiimpacteval.common.events.EventEnvelope, com.aiimpacteval.identity.resolve.IdentityRepository, com.aiimpacteval.identity.resolve.IdentityResolver, com.aiimpacteval.identity.resolve.ObservedIdentity, com.fasterxml.jackson.databind.JsonNode, java.util.regex.Pattern, ObservedIdentity, org.springframework.amqp.rabbit.annotation.RabbitListener (+14 more)
+Cohesion: 0.05
+Nodes (24): com.aiimpacteval.common.events.EventEnvelope, com.aiimpacteval.identity.resolve.IdentityRepository, com.aiimpacteval.identity.resolve.IdentityResolver, com.aiimpacteval.identity.resolve.ObservedIdentity, com.fasterxml.jackson.databind.JsonNode, java.util.regex.Pattern, ObservedIdentity, org.springframework.amqp.rabbit.annotation.RabbitListener (+16 more)
 
 ### Community 1 - "Code Review Analytics API"
+Cohesion: 0.05
+Nodes (40): Jackson2JsonMessageConverter, org.springframework.amqp.core.Binding, org.springframework.amqp.core.TopicExchange, org.springframework.amqp.rabbit.connection.ConnectionFactory, org.springframework.amqp.rabbit.core.RabbitTemplate, org.springframework.amqp.support.converter.Jackson2JsonMessageConverter, org.springframework.context.annotation.Bean, org.springframework.context.annotation.Configuration (+32 more)
+
+### Community 2 - "Staging Writer Integration Tests"
 Cohesion: 0.08
 Nodes (27): java.sql.Array, AgingPr, AgingPrsPage, CodeReviewDtos, CodeReviewResponse, PrCycleStage, ReviewerLoad, CodeReviewQueryService (+19 more)
 
-### Community 2 - "Staging Writer Integration Tests"
+### Community 3 - "Frontend Dependencies"
 Cohesion: 0.10
 Nodes (13): java.util.concurrent.locks.ReentrantLock, org.junit.jupiter.api.BeforeAll, org.springframework.scheduling.annotation.Scheduled, org.springframework.transaction.annotation.Transactional, org.testcontainers.containers.PostgreSQLContainer, org.testcontainers.junit.jupiter.Testcontainers, JdbcTemplate, StagingEventWriterIntegrationTest (+5 more)
 
-### Community 3 - "Frontend Dependencies"
-Cohesion: 0.05
-Nodes (43): autoprefixer, dependencies, gsap, lenis, lucide-react, react, react-dom, recharts (+35 more)
-
 ### Community 4 - "Admin API Client"
-Cohesion: 0.09
-Nodes (39): AdminUser, AuditEntry, authFetch(), connectGithubOrgTeams(), connectGitlabGroup(), ConnectorHealth, createAdminUser(), createOrUpdateTeam() (+31 more)
+Cohesion: 0.05
+Nodes (42): ADR-0004, AgingPr, AgingPrsPage, AiCostAssumptions, AiCostDailySpendPoint, AiCostDeveloperAllocation, AiCostImpact, AiCostKpis (+34 more)
 
 ### Community 5 - "Frontend API Types"
 Cohesion: 0.05
-Nodes (40): ADR-0004, AgingPr, AgingPrsPage, AiCostAssumptions, AiCostDailySpendPoint, AiCostDeveloperAllocation, AiCostImpact, AiCostKpis (+32 more)
+Nodes (43): autoprefixer, dependencies, gsap, lenis, lucide-react, react, react-dom, recharts (+35 more)
 
 ### Community 6 - "Admin REST Controllers"
-Cohesion: 0.11
-Nodes (14): GithubBackfillService, GithubTeamBackfillService, org.springframework.boot.autoconfigure.condition.ConditionalOnProperty, org.springframework.web.bind.annotation.ExceptionHandler, org.springframework.web.bind.annotation.PostMapping, org.springframework.web.bind.annotation.RestController, DevTokenController, IssuedToken (+6 more)
+Cohesion: 0.10
+Nodes (15): com.aiimpacteval.apicore.security.ScopeResolver, org.springframework.web.bind.annotation.GetMapping, org.springframework.web.bind.annotation.RequestMapping, AdminController, AiCostTrackController, AuditController, CodeReviewController, InvestmentProfileController (+7 more)
 
 ### Community 7 - "Privacy & Product Rules"
-Cohesion: 0.08
-Nodes (31): CLAUDE.md — AI Agent Rules & Documentation Policy, Mandatory Documentation Policy, Non-Negotiable Product Rules, BRD Summary, AI adoption & ROI in financial terms (BO-3), Analytics layer only (never replaces tools), BRD Summary — AI Impact Evaluation, DORA & Delivery module (BRD 8.2) (+23 more)
+Cohesion: 0.09
+Nodes (38): project-reference Skill, Functional Specification, Delete-then-Refresh idempotency limitation (functional spec §4.8), Metric Definitions, GitLab deploy/hotfix detection fidelity gap, ADR-0005: Containerize connector-gitlab, Multi-stage Docker build decision for connector-gitlab, ADR-0007: Containerize connector-jenkins (+30 more)
 
 ### Community 8 - "Connector Admin Controller"
+Cohesion: 0.10
+Nodes (14): GithubBackfillService, GithubTeamBackfillService, org.springframework.boot.autoconfigure.condition.ConditionalOnProperty, org.springframework.web.bind.annotation.ExceptionHandler, org.springframework.web.bind.annotation.PostMapping, org.springframework.web.bind.annotation.RestController, DevTokenController, IssuedToken (+6 more)
+
+### Community 9 - "Animated Backgrounds & Motion"
+Cohesion: 0.09
+Nodes (28): AdminUser, AuditEntry, connectGithubOrgTeams(), connectGitlabGroup(), connectJenkinsJob(), connectJiraProject(), ConnectorHealth, createOrUpdateTeam() (+20 more)
+
+### Community 10 - "Admin REST Controllers"
 Cohesion: 0.11
 Nodes (13): com.aiimpacteval.apicore.audit.AuditLog, ConnectorAdminService, Builder, JenkinsJobSyncStatus, JiraProjectSyncStatus, RepoSyncStatus, ResolvedState, SyncState (+5 more)
 
-### Community 9 - "Animated Backgrounds & Motion"
-Cohesion: 0.11
-Nodes (26): Blob, BLOBS, GradientMeshBackground(), useCanvasSize(), EASE, prefersReducedMotion(), useCountUp(), useParallax() (+18 more)
-
-### Community 10 - "Admin REST Controllers"
-Cohesion: 0.14
-Nodes (10): org.springframework.web.bind.annotation.GetMapping, org.springframework.web.bind.annotation.RequestMapping, AuditController, AuditEntry, CodeReviewController, InvestmentProfileController, JiraDashboardController, CockpitController (+2 more)
-
 ### Community 11 - "GitHub Backfill Service"
-Cohesion: 0.12
-Nodes (12): BackfillResult, GithubBackfillService, Builder, PullRequestBackfillResult, GithubRestClients, Builder, GithubTeamBackfillService, Builder (+4 more)
+Cohesion: 0.10
+Nodes (24): authFetch(), deleteTeam(), fetchAdminUsers(), fetchInvestmentProfile(), fetchInvestmentProfileLinkedPrs(), fetchRepos(), fetchTeams(), InvestmentProfileLinkedPrsPage (+16 more)
 
 ### Community 12 - "Cockpit Dashboard (Frontend)"
 Cohesion: 0.11
-Nodes (26): CockpitResponse, CockpitTile, fetchCockpit(), MetricKey, buildCockpitCsv(), changeFailureRateTier(), Cockpit(), CORE_DORA (+18 more)
+Nodes (26): Blob, BLOBS, GradientMeshBackground(), useCanvasSize(), EASE, prefersReducedMotion(), useCountUp(), useParallax() (+18 more)
 
 ### Community 13 - "Service Entry Points"
+Cohesion: 0.11
+Nodes (26): CockpitResponse, CockpitTile, fetchCockpit(), MetricKey, buildCockpitCsv(), changeFailureRateTier(), Cockpit(), CORE_DORA (+18 more)
+
+### Community 14 - "RabbitMQ Event Publishing (Connectors)"
 Cohesion: 0.10
 Nodes (11): org.springframework.boot.autoconfigure.SpringBootApplication, org.springframework.scheduling.annotation.EnableScheduling, ApiCoreApplication, ConnectorAiTelemetryApplication, ConnectorGithubApplication, ConnectorGitlabApplication, ConnectorJenkinsApplication, ConnectorJiraApplication (+3 more)
 
-### Community 14 - "RabbitMQ Event Publishing (Connectors)"
-Cohesion: 0.17
-Nodes (10): org.springframework.amqp.rabbit.connection.ConnectionFactory, org.springframework.amqp.rabbit.core.RabbitTemplate, org.springframework.stereotype.Component, RabbitEventPublisher, RabbitEventPublisher, Override, RabbitEventPublisher, RabbitEventPublisher (+2 more)
-
 ### Community 15 - "Identity Event Extraction"
-Cohesion: 0.13
-Nodes (8): IdentityRepository, IdentityResolver, ObservedIdentity, Alias, Contributor, IdentityResolverTest, InMemoryRepository, Override
+Cohesion: 0.18
+Nodes (9): org.springframework.web.bind.annotation.PatchMapping, AdminUserController, CreateUserRequest, SetActiveRequest, UpdateGithubLoginRequest, UpdateRoleRequest, AdminUserService, AppUserView (+1 more)
 
 ### Community 16 - "Queue Config & Test Beans"
-Cohesion: 0.16
-Nodes (8): org.springframework.amqp.core.Binding, org.springframework.amqp.core.TopicExchange, org.springframework.context.annotation.Bean, TestBeans, TestBeans, Jackson2JsonMessageConverter, QueueConfig, QueueTopologyConfig
+Cohesion: 0.13
+Nodes (12): BackfillResult, GithubBackfillService, Builder, PullRequestBackfillResult, GithubRestClients, Builder, GithubTeamBackfillService, Builder (+4 more)
 
 ### Community 17 - "AI Cost Track API"
-Cohesion: 0.18
-Nodes (13): AiCostTrackController, AiCostTrackDtos, AiCostTrackResponse, Assumptions, DailySpendPoint, DeveloperAllocation, ImpactMetrics, Kpis (+5 more)
+Cohesion: 0.15
+Nodes (28): addTeamRepo(), connectGitlabProject(), disconnectJenkinsJob(), disconnectJiraProject(), disconnectRepo(), fetchJenkinsJobSyncStatus(), fetchJiraProjectSyncStatus(), fetchRepoSyncStatus() (+20 more)
 
 ### Community 18 - "Connector Admin & Auto-Refresh Services"
-Cohesion: 0.20
-Nodes (6): com.fasterxml.jackson.databind.node.ArrayNode, org.slf4j.Logger, org.springframework.stereotype.Service, org.springframework.web.client.RestClient, ConnectorAutoRefreshService, TimeoutRestClients
+Cohesion: 0.13
+Nodes (7): IdentityRepository, ObservedIdentity, Alias, Contributor, IdentityResolverTest, InMemoryRepository, Override
 
 ### Community 19 - "GitHub Event Publisher"
-Cohesion: 0.12
-Nodes (12): Override, EventPublisher, Override, GithubWebhookController, Override, RecordingEventPublisher, EventPublisher, Override (+4 more)
+Cohesion: 0.20
+Nodes (7): com.fasterxml.jackson.databind.node.ArrayNode, org.slf4j.Logger, org.springframework.stereotype.Service, org.springframework.web.client.RestClient, ConnectorAutoRefreshService, IdentityResolver, TimeoutRestClients
 
 ### Community 20 - "Admin REST Controllers"
+Cohesion: 0.18
+Nodes (12): AiCostTrackDtos, AiCostTrackResponse, Assumptions, DailySpendPoint, DeveloperAllocation, ImpactMetrics, Kpis, RoiMetrics (+4 more)
+
+### Community 21 - "API Security & RBAC"
+Cohesion: 0.13
+Nodes (9): CreateTeamRequest, RepoRequest, TeamAdminController, TeamCreated, NoSuchTeamException, TeamAdminService, TeamHasDependentsException, TeamAdminService.NoSuchTeamException (+1 more)
+
+### Community 22 - "AI Telemetry Backfill"
+Cohesion: 0.12
+Nodes (8): com.fasterxml.jackson.databind.ObjectMapper, GithubWebhookController, Builder, Builder, EventPublisher, JiraWebhookController, Builder, EventEnvelopeTest
+
+### Community 23 - "GitLab Backfill Service (Java)"
 Cohesion: 0.28
 Nodes (12): jakarta.servlet.http.HttpServletRequest, org.springframework.http.ResponseEntity, org.springframework.security.core.Authentication, org.springframework.web.bind.annotation.DeleteMapping, ConnectGithubTeamsRequest, ConnectGitlabGroupRequest, ConnectGitlabProjectRequest, ConnectJenkinsJobRequest (+4 more)
 
-### Community 21 - "API Security & RBAC"
-Cohesion: 0.20
-Nodes (4): org.junit.jupiter.api.Test, SetupSecurityTest, Stubs, SimpleGrantedAuthority
+### Community 24 - "Admin Panels (Teams/Users)"
+Cohesion: 0.14
+Nodes (5): org.springframework.security.oauth2.jwt.JwtEncoder, AuditEvent, AuditLog, AppUserRepository, DevTokenService
 
-### Community 22 - "AI Telemetry Backfill"
+### Community 25 - "TypeScript Config"
+Cohesion: 0.17
+Nodes (12): CategoryCount, InvestmentProfileDtos, InvestmentProfileResponse, LinkedPr, LinkedPrsPage, MonthlyBreakdown, TeamBreakdown, InvestmentProfileQueryService (+4 more)
+
+### Community 26 - "API Security & RBAC"
 Cohesion: 0.15
 Nodes (8): BackfillController, BackfillException, BackfillResult, ClaudeCodeUsageBackfillService, BackfillException, BackfillResult, CopilotUsageBackfillService, EventPublisher
 
-### Community 23 - "GitLab Backfill Service (Java)"
-Cohesion: 0.15
-Nodes (9): com.fasterxml.jackson.databind.ObjectMapper, GitlabGroupBackfillService, GroupBackfillResult, Builder, RetryingJsonFetcher, EventPublisher, GitlabWebhookController, EventEnvelope (+1 more)
+### Community 27 - "Jenkins/Jira Backfill"
+Cohesion: 0.12
+Nodes (5): org.junit.jupiter.api.BeforeEach, org.springframework.test.context.TestPropertySource, GithubWebhookControllerTest, GitlabWebhookControllerTest, TestBeans
 
-### Community 24 - "Admin Panels (Teams/Users)"
-Cohesion: 0.13
-Nodes (18): deleteTeam(), fetchInvestmentProfile(), fetchRepos(), fetchTeams(), InvestmentProfileResponse, Team, RepoTeamsPanel(), handleDeleteTeam() (+10 more)
-
-### Community 25 - "TypeScript Config"
+### Community 28 - "Connector Containerization (ADR-0007)"
 Cohesion: 0.09
 Nodes (21): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, lib, module, moduleDetection, moduleResolution (+13 more)
 
-### Community 26 - "API Security & RBAC"
-Cohesion: 0.29
-Nodes (13): org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest, org.springframework.boot.test.context.TestConfiguration, org.springframework.context.annotation.Import, org.springframework.security.core.authority.SimpleGrantedAuthority, org.springframework.test.web.servlet.MockMvc, JwtConfig, SecurityConfig, AdminConnectorSecurityTest (+5 more)
-
-### Community 27 - "Jenkins/Jira Backfill"
-Cohesion: 0.13
-Nodes (9): Builder, BackfillController, BackfillException, BackfillResult, Builder, JiraBackfillService, EventPublisher, JiraWebhookController (+1 more)
-
-### Community 28 - "Connector Containerization (ADR-0007)"
-Cohesion: 0.18
-Nodes (20): ADR-0007: Containerize connector-jenkins, ADR-0007 Document, ADR-0002: Queue-isolated connectors, single Postgres MVP, ADR-0003: Event envelope contract and queue topology, ADR-0005: Containerize connector-gitlab, Connector: GitLab (+ CI/CD), Connector: Jenkins, Deployment Guide (+12 more)
-
 ### Community 29 - "Frontend Auth & App Shell"
-Cohesion: 0.14
-Nodes (16): getSession(), logout(), readSession(), Role, Session, App(), AppShell(), initialsFor() (+8 more)
+Cohesion: 0.22
+Nodes (3): org.junit.jupiter.api.Test, JiraWebhookControllerTest, SimpleGrantedAuthority
 
 ### Community 30 - "Admin Domain Services"
-Cohesion: 0.17
-Nodes (5): org.springframework.security.oauth2.jwt.JwtEncoder, AuditEvent, AuditLog, AppUserRepository, DevTokenService
+Cohesion: 0.30
+Nodes (15): org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest, org.springframework.boot.test.context.TestConfiguration, org.springframework.context.annotation.Import, org.springframework.security.core.authority.SimpleGrantedAuthority, org.springframework.test.web.servlet.MockMvc, JwtConfig, SecurityConfig, AdminConnectorSecurityTest (+7 more)
 
 ### Community 31 - "AppUser & Dev-Token Auth"
-Cohesion: 0.23
-Nodes (5): AppUser, DevTokenServiceTest, FakeAppUserRepository, Override, RecordingAuditLog
+Cohesion: 0.15
+Nodes (9): GitlabGroupBackfillService, GroupBackfillResult, Builder, RetryingJsonFetcher, GitlabRestClients, Builder, EventPublisher, GitlabWebhookController (+1 more)
 
 ### Community 32 - "Functional Spec Modules"
-Cohesion: 0.15
-Nodes (18): Admin Console module, AI Cost Track module, Cockpit module (DORA), Code Review Analytics module, Functional Specification, Investment Profile module, Jira Work Items module, Personal Activity module (+10 more)
+Cohesion: 0.14
+Nodes (15): getSession(), logout(), readSession(), Role, Session, App(), AppShell(), initialsFor() (+7 more)
 
 ### Community 33 - "Admin API Client"
-Cohesion: 0.18
-Nodes (20): connectJenkinsJob(), connectJiraProject(), disconnectJenkinsJob(), disconnectJiraProject(), fetchJenkinsJobSyncStatus(), fetchJiraProjectSyncStatus(), ConnectJenkinsJobForm(), handleSubmit() (+12 more)
-
-### Community 34 - "Investment Profile API"
-Cohesion: 0.18
-Nodes (10): CategoryCount, InvestmentProfileDtos, InvestmentProfileResponse, MonthlyBreakdown, TeamBreakdown, InvestmentProfileQueryService, CategoryCount, InvestmentProfileResponse (+2 more)
-
-### Community 35 - "GitLab Backfill Service (Java)"
 Cohesion: 0.22
 Nodes (8): com.aiimpacteval.connector.gitlab.events.EventPublisher, RetryingJsonFetcher, BackfillController, BackfillResult, GitlabBackfillService, Builder, MergeRequestBackfillResult, EventEnvelope
 
+### Community 34 - "Investment Profile API"
+Cohesion: 0.26
+Nodes (5): AppUser, DevTokenServiceTest, FakeAppUserRepository, Override, RecordingAuditLog
+
+### Community 35 - "GitLab Backfill Service (Java)"
+Cohesion: 0.15
+Nodes (9): Override, EventPublisher, Override, Override, RecordingEventPublisher, EventPublisher, Override, Override (+1 more)
+
 ### Community 36 - "Architecture Containers (C4)"
-Cohesion: 0.11
-Nodes (19): AI-03: Adoption rate, ADR-0001: Technology stack, ADR-0004: Auth, RBAC and audit enforcement in api-core, ADR-0006: Scheduled connector auto-refresh, API Core (Spring Boot), Connector: AI Telemetry, Connector: GitHub (+ Actions), Connector: Jira (+11 more)
+Cohesion: 0.16
+Nodes (6): org.springframework.jdbc.core.JdbcTemplate, Builder, AuditEntry, AuditQueryService, Override, JdbcAuditLog
 
 ### Community 37 - "Connector Health Service"
 Cohesion: 0.19
-Nodes (7): AdminConnectorService, ConnectorHealth, ConnectorStatus, CONNECTED, NOT_CONNECTED, STALE, AdminController
+Nodes (6): AdminConnectorService, ConnectorHealth, ConnectorStatus, CONNECTED, NOT_CONNECTED, STALE
 
 ### Community 38 - "Admin User Service"
-Cohesion: 0.29
-Nodes (3): AdminUserService, AppUserView, NoSuchAdminUserException
-
-### Community 39 - "AI Cost Track Metrics (AI-01..05)"
-Cohesion: 0.16
-Nodes (16): AI-01: Total AI spend, AI-02: Cost per PR / dev-day, AI-04: AI-assisted vs non-AI delta, AI-05: Dollar ROI figure, Metric Definitions, DORA-1: Deployment frequency, DORA-2: Lead time for changes, DORA-2b: Ticket lead time (+8 more)
-
-### Community 40 - "Repo Sync Frontend"
-Cohesion: 0.19
-Nodes (16): addTeamRepo(), connectGitlabProject(), connectRepo(), disconnectRepo(), fetchRepoSyncStatus(), removeTeamRepo(), ConnectGitlabProjectForm(), handleSubmit() (+8 more)
-
-### Community 41 - "RabbitMQ Event Publishing (Connectors)"
-Cohesion: 0.15
-Nodes (8): Jackson2JsonMessageConverter, org.springframework.amqp.support.converter.Jackson2JsonMessageConverter, Jackson2JsonMessageConverter, RabbitTemplate, RabbitConfig, RabbitTemplate, RabbitConfig, Jackson2JsonMessageConverter
-
-### Community 42 - "Clock Config (Connectors)"
-Cohesion: 0.17
-Nodes (6): org.springframework.context.annotation.Configuration, ClockConfig, ClockConfig, ClockConfig, ClockConfig, ClockConfig
-
-### Community 43 - "JDBC Audit & Team Repos"
-Cohesion: 0.16
-Nodes (5): org.springframework.jdbc.core.JdbcTemplate, Builder, AuditQueryService, Override, JdbcAuditLog
-
-### Community 44 - "Personal Activity API"
 Cohesion: 0.20
 Nodes (7): OwnPr, PersonalActivityResponse, PersonalDtos, ReviewGiven, OwnPr, ReviewGiven, PersonalQueryService
 
-### Community 45 - "API Security & RBAC"
+### Community 39 - "AI Cost Track Metrics (AI-01..05)"
 Cohesion: 0.16
 Nodes (8): CockpitQueryService, com.aiimpacteval.apicore.metrics.CockpitController, com.aiimpacteval.apicore.metrics.CockpitQueryService, JwtConfig, SecurityConfig, CockpitSecurityTest, ScopeResolver, Stubs
 
-### Community 46 - "Analytics & Reporting Epics"
-Cohesion: 0.30
-Nodes (15): FRD v1.0 — AI Impact Evaluation, Product Requirements Document v1.0, E1: Onboarding & Connectors, E10: AI Code Review Agent, E11: Custom Reporting & Query Layer, E2: Identity & Team Normalization, E4: Cockpit / Executive Dashboard, E5: Investment Profile (+7 more)
+### Community 40 - "Repo Sync Frontend"
+Cohesion: 0.32
+Nodes (13): FRD v1.0 — AI Impact Evaluation, Cockpit module, Product Requirements Document v1.0, E10: AI Code Review Agent, E11: Custom Reporting & Query Layer, E2: Identity & Team Normalization, E4: Cockpit / Executive Dashboard, E5: Investment Profile (+5 more)
 
-### Community 47 - "Admin REST Controllers"
-Cohesion: 0.18
-Nodes (6): CreateTeamRequest, RepoRequest, TeamAdminController, TeamCreated, TeamAdminService.NoSuchTeamException, TeamAdminService.TeamHasDependentsException
+### Community 41 - "RabbitMQ Event Publishing (Connectors)"
+Cohesion: 0.27
+Nodes (12): createAdminUser(), setAdminUserActive(), updateAdminUserGithubLogin(), updateAdminUserRole(), NewUserForm(), handleSubmit(), roleBadge(), roleNeedsGithub() (+4 more)
 
-### Community 48 - "Admin REST Controllers"
-Cohesion: 0.26
-Nodes (4): com.aiimpacteval.apicore.security.ScopeResolver, TeamController, TeamQueryService, TeamSummary
-
-### Community 49 - "No-Data-Loss Ingestion"
-Cohesion: 0.17
-Nodes (13): FR-1.4 Resilient, idempotent ingestion pipeline, FR-1.8 No-data-loss guarantee, connector-ai-telemetry, staging.ai_usage_state, usage.snapshot event (Claude Code / Copilot), connector-ai-telemetry config (usage-file seam), Dead-letter queue (staging.events.dlq), Idempotent staging writes (FR-1.8) (+5 more)
-
-### Community 50 - "Jira Work Items Dashboard"
+### Community 42 - "Clock Config (Connectors)"
 Cohesion: 0.18
 Nodes (7): fetchJiraDashboard(), JiraDashboardResponse, Jira(), SortBy, SortDir, STATUS_COLORS, statusBadge()
 
-### Community 51 - "API Security & RBAC"
-Cohesion: 0.22
-Nodes (4): org.junit.jupiter.api.BeforeEach, org.springframework.test.context.TestPropertySource, GithubWebhookControllerTest, JiraWebhookControllerTest
-
-### Community 52 - "JDBC AppUser Repository"
+### Community 43 - "JDBC Audit & Team Repos"
 Cohesion: 0.27
 Nodes (3): org.springframework.jdbc.core.RowMapper, Override, JdbcAppUserRepository
 
-### Community 54 - "Identity Service & Infra"
-Cohesion: 0.18
-Nodes (12): ADR-0005: Containerize connector-gitlab, Multi-stage Docker build (Maven build stage + Alpine JRE runtime stage), Non-root container runtime user (aiimpacteval), ConnectorAutoRefreshService, ADR-0006: Scheduled connector auto-refresh, Two-signal connector staleness design (last checked vs last data change), api-core connectors.* base-url config block, POST /webhooks/github (+4 more)
-
-### Community 55 - "Connector Backfill Services"
+### Community 45 - "API Security & RBAC"
 Cohesion: 0.27
 Nodes (4): org.springframework.web.client.HttpClientErrorException, BackfillException, RateLimitException, RetryingJsonFetcher
 
-### Community 56 - "Setup Status API"
+### Community 46 - "Analytics & Reporting Epics"
+Cohesion: 0.27
+Nodes (7): CockpitDtos, CockpitResponse, CockpitTile, DailyValue, CockpitQueryService, CockpitResponse, TileSpec
+
+### Community 47 - "Admin REST Controllers"
 Cohesion: 0.29
 Nodes (4): SetupController, ChecklistItem, SetupQueryService, SetupStatus
 
-### Community 57 - "Frontend Mock Data"
+### Community 48 - "Admin REST Controllers"
 Cohesion: 0.18
 Nodes (10): admin, AgingPr, AuditEntry, codeReview, ConnectorStatus, investmentProfile, InvestmentSlice, InvestmentTrendPoint (+2 more)
 
-### Community 58 - "Admin REST Controllers"
-Cohesion: 0.29
-Nodes (6): org.springframework.web.bind.annotation.PatchMapping, AdminUserController, CreateUserRequest, SetActiveRequest, UpdateGithubLoginRequest, UpdateRoleRequest
+### Community 49 - "No-Data-Loss Ingestion"
+Cohesion: 0.24
+Nodes (10): Non-Negotiable Product Rules, AI adoption & ROI in financial terms (BO-3), Analytics layer only (never replaces tools), BRD Summary — AI Impact Evaluation, Least-Privilege Integrations, No Manual Tagging Dependency, No Surveillance Features (ethical exclusion), Five RBAC roles (Admin/Eng Leader/Manager/IC/Finance) (+2 more)
 
-### Community 59 - "Admin Domain Services"
-Cohesion: 0.25
-Nodes (3): NoSuchTeamException, TeamAdminService, TeamHasDependentsException
-
-### Community 60 - "Cockpit Query Service"
-Cohesion: 0.31
-Nodes (7): CockpitDtos, CockpitResponse, CockpitTile, DailyValue, CockpitQueryService, CockpitResponse, TileSpec
-
-### Community 61 - "JDBC Audit & Team Repos"
-Cohesion: 0.22
-Nodes (3): Override, JdbcTeamRepository, TeamRepository
-
-### Community 62 - "Identity Event Extraction"
-Cohesion: 0.25
-Nodes (4): MemberRef, TeamSnapshot, TeamSnapshotParser, TeamSnapshotParserTest
-
-### Community 63 - "AI Cost Track (Frontend)"
+### Community 50 - "Jira Work Items Dashboard"
 Cohesion: 0.24
 Nodes (7): AiCostTrackResponse, fetchAiCostTrack(), AiCostTrack(), currency(), Tab, TABS, TOOL_COLORS
 
-### Community 64 - "Code Review (Frontend)"
+### Community 51 - "API Security & RBAC"
 Cohesion: 0.24
 Nodes (6): CodeReviewResponse, fetchCodeReview(), ageBadge(), CodeReview(), SortBy, SortDir
 
-### Community 65 - "JDBC Identity Repository"
-Cohesion: 0.29
-Nodes (3): org.springframework.stereotype.Repository, Override, JdbcIdentityRepository
-
-### Community 67 - "Staging Writer Integration Tests"
-Cohesion: 0.24
-Nodes (3): GitlabWebhookControllerTest, RecordingEventPublisher, TestBeans
-
-### Community 68 - "Jenkins Backfill Service"
+### Community 53 - "API Security & RBAC"
 Cohesion: 0.36
 Nodes (4): BackfillController, BackfillException, BackfillResult, JenkinsBackfillService
 
-### Community 70 - "API Security & RBAC"
+### Community 55 - "Connector Backfill Services"
+Cohesion: 0.25
+Nodes (9): FR-1.4 Resilient, idempotent ingestion pipeline, FR-1.8 No-data-loss guarantee, E1: Onboarding & Connectors, connector-jira, Jira webhook (shared token), Dead-letter queue (staging.events.dlq), Idempotent staging writes (FR-1.8), ingestion-writer (+1 more)
+
+### Community 56 - "Setup Status API"
+Cohesion: 0.25
+Nodes (9): Investment Profile module, Jira Work Items module, No-manual-tagging product rule, No-surveillance product rule, Personal Activity module, Jira Work Items metrics definitions, 2026-09-16 Jira Work Items dashboard entry, README Golden Rules (+1 more)
+
+### Community 57 - "Frontend Mock Data"
 Cohesion: 0.31
 Nodes (5): JwtAuthenticationConverter, org.springframework.security.config.annotation.web.builders.HttpSecurity, org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter, org.springframework.security.web.SecurityFilterChain, org.springframework.web.cors.CorsConfigurationSource
 
-### Community 71 - "Frontend API Types"
+### Community 58 - "Admin REST Controllers"
+Cohesion: 0.31
+Nodes (3): org.springframework.stereotype.Repository, Override, JdbcTeamRepository
+
+### Community 59 - "Admin Domain Services"
+Cohesion: 0.39
+Nodes (4): BackfillController, BackfillException, BackfillResult, JiraBackfillService
+
+### Community 60 - "Cockpit Query Service"
+Cohesion: 0.33
+Nodes (3): MemberRef, TeamSnapshot, TeamSnapshotParserTest
+
+### Community 61 - "JDBC Audit & Team Repos"
 Cohesion: 0.32
 Nodes (6): fetchSetupStatus(), SetupChecklistItem, SetupStatus, formatMinutes(), Setup(), TimeToValuePanel()
 
-### Community 72 - "API Security & RBAC"
+### Community 62 - "Identity Event Extraction"
 Cohesion: 0.25
 Nodes (7): fromString(), Role, ADMIN, ENG_LEADER, FINANCE_READONLY, IC, MANAGER
 
-### Community 73 - "System Architecture Concepts"
+### Community 63 - "AI Cost Track (Frontend)"
+Cohesion: 0.33
+Nodes (7): CLAUDE.md — AI Agent Rules & Documentation Policy, Mandatory Documentation Policy, BRD Summary, Functional Requirements Document v1.0, ADR-0000 Template, ADR-0001 Core Technology Stack, Core Technology Stack
+
+### Community 64 - "Code Review (Frontend)"
+Cohesion: 0.29
+Nodes (7): Security & Privacy Standards, Secrets & Third-Party Credential Handling, ADR-0004 Authentication, RBAC & Audit, Append-Only Audit Log, Dev-Token Bridge, JWT Resource Server (RS256), RBAC Five Roles
+
+### Community 65 - "JDBC Identity Repository"
 Cohesion: 0.29
 Nodes (7): ADR-0002 Queue-Isolated Connectors, Single Postgres, Layered Schemas (staging/core/mart), Queue-Isolated Connector Services, ADR-0003 Event Envelope & Queue Topology, Event Envelope Contract, Idempotency Key (source, sourceId, eventType), RabbitMQ Topology (aiimpacteval.events)
 
-### Community 74 - "Logo & Brand (Public)"
+### Community 66 - "Webhook Token Verification"
 Cohesion: 0.38
 Nodes (7): Purple-to-Cyan Gradient, AI Impact Evaluation Logo, Mallify Platform Brand, Serif M Monogram, Mallify Logo, Elegant Serif M Monogram, Mallify AI-Powered Analytical Platform
 
-### Community 75 - "Particle Field Animation"
+### Community 67 - "Staging Writer Integration Tests"
 Cohesion: 0.38
 Nodes (4): makeDotTexture(), ParticleField(), animate(), renderFrame()
 
-### Community 76 - "Vercel Deploy Config"
+### Community 68 - "Jenkins Backfill Service"
 Cohesion: 0.29
 Nodes (6): buildCommand, framework, installCommand, outputDirectory, rewrites, $schema
 
-### Community 79 - "Frontend API Types"
+### Community 72 - "API Security & RBAC"
+Cohesion: 0.33
+Nodes (6): ConnectorAutoRefreshService, ADR-0006: Scheduled connector auto-refresh, Two-signal connector staleness design (last checked vs last data change), ADR-0006: Scheduled connector auto-refresh, connector-jenkins application.yml config, connector-jira application.yml config
+
+### Community 73 - "System Architecture Concepts"
 Cohesion: 0.53
 Nodes (5): fetchPersonalActivity(), PersonalActivity, ageBadge(), Personal(), reviewStateBadge()
 
-### Community 80 - "Connector RabbitMQ Config"
+### Community 74 - "Logo & Brand (Public)"
 Cohesion: 0.33
-Nodes (3): Jackson2JsonMessageConverter, RabbitTemplate, RabbitConfig
+Nodes (3): Override, RecordingEventPublisher, TestBeans
 
-### Community 81 - "Connector RabbitMQ Config"
-Cohesion: 0.33
-Nodes (3): Jackson2JsonMessageConverter, RabbitTemplate, RabbitConfig
+### Community 75 - "Particle Field Animation"
+Cohesion: 0.40
+Nodes (5): DORA & Delivery module (BRD 8.2), E3: DORA & Delivery Metrics, DORA metrics computation, mart.metric_daily, metrics-engine
 
-### Community 82 - "Connector RabbitMQ Config"
-Cohesion: 0.33
-Nodes (3): Jackson2JsonMessageConverter, RabbitTemplate, RabbitConfig
+### Community 76 - "Vercel Deploy Config"
+Cohesion: 0.40
+Nodes (5): AI-01: Total AI spend, AI-04: AI-assisted vs. non-AI delta, AI-05: Dollar ROI figure, ai-cost.* assumptions config block, GET /metrics/ai-cost-track
 
-### Community 83 - "Team Event Generator"
+### Community 77 - "Webhook Token Verification"
+Cohesion: 0.50
+Nodes (5): Engineering Standards, Contract-First API (OpenAPI), Testing Standards (metric tests, fixtures), Trunk-Based Development & Conventional Commits, Frontend README
+
+### Community 78 - "JWT RSA Key Config"
 Cohesion: 0.70
 Nodes (4): emit(), iso(), main(), datetime
 
-### Community 84 - "Demo History Seeder"
+### Community 79 - "Frontend API Types"
 Cohesion: 0.60
 Nodes (3): port_healthy(), seed-demo-history.sh script, wait_healthy()
 
-### Community 85 - "Extra Teams Seeder"
+### Community 80 - "Connector RabbitMQ Config"
 Cohesion: 0.60
 Nodes (3): port_healthy(), seed-more-teams.sh script, wait_healthy()
 
-### Community 86 - "E2E Smoke Test"
+### Community 81 - "Connector RabbitMQ Config"
 Cohesion: 0.60
 Nodes (3): post_github(), smoke-e2e.sh script, wait_healthy()
 
-### Community 88 - "Seed Event Generator"
+### Community 82 - "Connector RabbitMQ Config"
+Cohesion: 0.40
+Nodes (5): connector-ai-telemetry, staging.ai_usage_state, usage.snapshot event (Claude Code / Copilot), connector-ai-telemetry config (usage-file seam), Copilot seat-cost assumption (ingestion-writer)
+
+### Community 84 - "Demo History Seeder"
+Cohesion: 0.50
+Nodes (4): Investment Profile PR<->Jira verification drill-down, 2026-09-17 Investment Profile PR<->Jira drill-down entry, jira.site-base-url config, GET /metrics/investment-profile/prs
+
+### Community 86 - "E2E Smoke Test"
 Cohesion: 0.83
 Nodes (3): iso(), main(), datetime
 
-### Community 89 - "Backend Start Script"
+### Community 87 - "AI Network Background"
 Cohesion: 0.83
 Nodes (3): start-backend.sh script, start(), wait_healthy()
 
+### Community 88 - "Seed Event Generator"
+Cohesion: 1.00
+Nodes (3): AWS Deployment Plan, AWS Tier 1: Single EC2 instance, AWS Tier 2: Managed services (RDS/Amazon MQ/ECS Fargate)
+
+### Community 89 - "Backend Start Script"
+Cohesion: 1.00
+Nodes (3): connectRepo(), ConnectRepoForm(), handleSubmit()
+
+## Ambiguous Edges - Review These
+- `AI Impact Evaluation README` → `CHANGELOG`  [AMBIGUOUS]
+  README.md · relation: references
+
 ## Knowledge Gaps
-- **202 isolated node(s):** `TileSpec`, `AgingPr`, `AuditEntry`, `ConnectorStatus`, `InvestmentSlice` (+197 more)
+- **266 isolated node(s):** `Tier`, `SortBy`, `SortDir`, `AgingPr`, `AuditEntry` (+261 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **30 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **107 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `JiraDashboardQueryService` connect `Code Review Analytics API` to `Connector Admin & Auto-Refresh Services`, `Admin REST Controllers`, `JDBC Audit & Team Repos`?**
-  _High betweenness centrality (0.024) - this node is a cross-community bridge._
-- **Why does `ConnectorAdminService` connect `Connector Admin Controller` to `Connector Admin & Auto-Refresh Services`, `JDBC Audit & Team Repos`, `Admin REST Controllers`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
-- **Why does `EventEnvelope` connect `GitHub Event Publisher` to `Identity Resolution & Connector Event Wiring`, `Jenkins Backfill Service`, `GitHub Backfill Service`, `RabbitMQ Event Publishing (Connectors)`, `Connector Admin & Auto-Refresh Services`, `API Security & RBAC`, `AI Telemetry Backfill`, `GitLab Backfill Service (Java)`, `API Security & RBAC`, `Jenkins/Jira Backfill`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
-- **What connects `TileSpec`, `AgingPr`, `AuditEntry` to the rest of the system?**
-  _202 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What is the exact relationship between `AI Impact Evaluation README` and `CHANGELOG`?**
+  _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
+- **Why does `EventEnvelope` connect `GitLab Backfill Service (Java)` to `Identity Resolution & Connector Event Wiring`, `Code Review Analytics API`, `Connector Admin Controller`, `Admin Domain Services`, `Logo & Brand (Public)`, `Queue Config & Test Beans`, `GitHub Event Publisher`, `API Security & RBAC`, `AI Telemetry Backfill`, `API Security & RBAC`, `Jenkins/Jira Backfill`?**
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+- **Why does `AiCostTrackQueryService` connect `Admin REST Controllers` to `GitHub Event Publisher`, `Architecture Containers (C4)`, `Admin REST Controllers`?**
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
+- **Why does `StagingEventWriter` connect `Identity Resolution & Connector Event Wiring` to `Code Review Analytics API`, `Frontend Dependencies`, `Architecture Containers (C4)`, `GitHub Event Publisher`, `AI Telemetry Backfill`, `Jenkins/Jira Backfill`?**
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
+- **What connects `Tier`, `SortBy`, `SortDir` to the rest of the system?**
+  _266 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Identity Resolution & Connector Event Wiring` be split into smaller, more focused modules?**
-  _Cohesion score 0.057871692366266894 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05448774466584377 - nodes in this community are weakly interconnected._
 - **Should `Code Review Analytics API` be split into smaller, more focused modules?**
-  _Cohesion score 0.07597402597402597 - nodes in this community are weakly interconnected._
-- **Should `Staging Writer Integration Tests` be split into smaller, more focused modules?**
-  _Cohesion score 0.09959183673469388 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0502814987381091 - nodes in this community are weakly interconnected._
