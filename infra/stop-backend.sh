@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Stops the plain-process backend services started by start-backend.sh. Infra and the
-# containerized connectors (postgres/rabbitmq/gitlab/jenkins/connector-jenkins) are left
-# running — use `docker compose -f infra/docker-compose.yml down` to stop those too.
+# Stops the plain-process backend services started by start-backend.sh (this now includes
+# connector-gitlab and connector-jenkins — ADR-0008 de-containerized both). Infra (postgres,
+# rabbitmq, the real Jenkins CI server) is left running — use
+# `docker compose -f infra/docker-compose.yml down` to stop that too.
 set -uo pipefail
 
 PID_FILE="/tmp/aiimpacteval-backend.pids"

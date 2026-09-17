@@ -38,34 +38,15 @@ services:
       timeout: 5s
       retries: 10
 
-  # connector-gitlab and connector-jenkins are containerized — see ADR-0005/ADR-0007. The
-  # others (github, jira, ai-telemetry) still run locally via `mvn spring-boot:run` per their
-  # READMEs.
-  gitlab:
-    build:
-      context: ../services
-      dockerfile: connectors/connector-gitlab/Dockerfile
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USERNAME: aiimpacteval
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-aiimpacteval_local}
-      GITLAB_WEBHOOK_SECRET: ${GITLAB_WEBHOOK_SECRET:-}
-      GITLAB_TOKEN: ${GITLAB_TOKEN:-}
-      GITLAB_API_BASE_URL: ${GITLAB_API_BASE_URL:-https://gitlab.com/api/v4}
-      GITLAB_BACKFILL_DAYS: ${GITLAB_BACKFILL_DAYS:-90}
-    ports:
-      - "${CONNECTOR_GITLAB_PORT:-8088}:8088"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8088/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-  # The real Jenkins CI server used for local dev/testing (ADR-0007) — not application code we
-  # build, so no Dockerfile of our own, same treatment as postgres/rabbitmq above. Reuses the
+  # Neither connector is containerized anymore — see ADR-0008 (supersedes ADR-0005/ADR-0007).
+  # Both connector-gitlab and connector-jenkins now run as plain processes via
+  # infra/start-backend.sh, same as connector-github/jira/ai-telemetry. Their Dockerfiles are
+  # kept for reference but are no longer built by this stack.
+  #
+  # The real Jenkins CI server used for local dev/testing (still containerized — it's not
+  # application code we build, same treatment as postgres/rabbitmq above) is the one real
+  # dependency connector-jenkins has; it's reachable from a plain-process connector-jenkins at
+  # http://localhost:9090 (see infra/start-backend.sh), no compose network needed. Reuses the
   # pre-existing `jenkins_home` named volume (external: true, see below) so job history/config
   # from before this was brought under compose survives unchanged.
   jenkins:
@@ -80,35 +61,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 15
-
-  # Backfills Jenkins build history into the shared pipeline (ADR-0007, same containerization
-  # template ADR-0005 established for connector-gitlab). JENKINS_BASE_URL points at the `jenkins`
-  # service by its compose network name/port, not localhost:9090 (host-only, unreachable from
-  # inside this container) — that host-facing default is what connector-jenkins's README/
-  # application.yml still use for the "run locally without Docker" path.
-  connector-jenkins:
-    build:
-      context: ../services
-      dockerfile: connectors/connector-jenkins/Dockerfile
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      jenkins:
-        condition: service_healthy
-    environment:
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USERNAME: aiimpacteval
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-aiimpacteval_local}
-      JENKINS_BASE_URL: http://jenkins:8080
-      JENKINS_USERNAME: ${JENKINS_USERNAME:-}
-      JENKINS_API_TOKEN: ${JENKINS_API_TOKEN:-}
-    ports:
-      - "${CONNECTOR_JENKINS_PORT:-8086}:8086"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8086/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
 
 volumes:
   pgdata:

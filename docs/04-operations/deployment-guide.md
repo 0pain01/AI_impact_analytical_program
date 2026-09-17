@@ -277,29 +277,31 @@ moving to a managed multi-instance setup) is a connection-string change, not a r
 
 | Service | Containerized? | Notes |
 |---|---|---|
-| **connector-gitlab** | **Yes** (ADR-0005) | Multi-stage build: `maven:3.9-eclipse-temurin-21-alpine` compiles, `eclipse-temurin:21-jre-alpine` ships (no build toolchain in the runtime image), runs as a non-root user created in the image. Build context is the Maven **reactor root** (`services/`), because the image needs the parent POM and `platform-common` — see `services/connectors/connector-gitlab/Dockerfile`. |
-| **connector-jenkins** | **Yes** (ADR-0007) | Same template as connector-gitlab, exactly — see `services/connectors/connector-jenkins/Dockerfile`. |
-| **Jenkins CI server itself** | **Yes**, as infra (ADR-0007) | Not application code — `jenkins/jenkins:lts` run as a plain `infra/docker-compose.yml` service (`jenkins`), same treatment as Postgres/RabbitMQ. Needed only for local dev/testing against a real Jenkins instance; a real deployment points `JENKINS_BASE_URL` at whatever Jenkins your org already runs, and doesn't need this service at all. |
+| **connector-gitlab** | **No** (was, ADR-0005; de-containerized ADR-0008) | Runs as a plain process via `infra/start-backend.sh`, same as connector-github/jira/ai-telemetry. Its Dockerfile still exists and builds (`services/connectors/connector-gitlab/Dockerfile`) if you want it containerized for some other reason, but `infra/docker-compose.yml` no longer builds or runs it. |
+| **connector-jenkins** | **No** (was, ADR-0007; de-containerized ADR-0008) | Same story as connector-gitlab — plain process via `start-backend.sh`, Dockerfile kept but unused by default. Needs `JENKINS_BASE_URL` pointed at the Jenkins server below; `start-backend.sh` exports it automatically. |
+| **Jenkins CI server itself** | **Yes**, as infra (ADR-0007, unchanged by ADR-0008) | Not application code — `jenkins/jenkins:lts` run as a plain `infra/docker-compose.yml` service (`jenkins`), same treatment as Postgres/RabbitMQ. Needed only for local dev/testing against a real Jenkins instance; a real deployment points `JENKINS_BASE_URL` at whatever Jenkins your org already runs, and doesn't need this service at all. |
 | Everything else (frontend, api-core, metrics-engine, identity-service, ingestion-writer, connector-github/jira/ai-telemetry) | No — plain process | Run via `mvn spring-boot:run` / `java -jar` (backend) or `npm run dev` / a static build (frontend), started by `infra/start-backend.sh` for local dev. |
 
-**Why not everything is containerized yet:** connector-gitlab was the newest addition at the
-point Docker packaging was introduced, and containerizing it first established the template
-(base images, build strategy, non-root user) deliberately, rather than containerizing everything
-at once and discovering the pattern was wrong across nine services simultaneously. ADR-0005
-explicitly scoped itself to just that one service; ADR-0007 later extended the same template to
-connector-jenkins (plus brought the local Jenkins CI server under the same compose stack) for the
-identical reason — friction actually observed (the Admin console's Jenkins "Refresh" needing a
-manually-started connector every time), not a blanket policy change. **Seven backend services
-(api-core, metrics-engine, identity-service, ingestion-writer, connector-github, connector-jira,
-connector-ai-telemetry) are still plain processes. If you're taking this to a real cloud
-deployment, containerizing the rest is where you start** — see §6.
+**Nothing is containerized locally right now except infrastructure.** connector-gitlab and
+connector-jenkins were containerized in turn (ADR-0005, then ADR-0007) mostly to establish a
+Docker-packaging template and, for Jenkins specifically, to fix an observed "Admin console
+Refresh does nothing because the connector wasn't manually started" friction. Neither reason
+survived scrutiny once compared side by side against the ongoing cost of a mixed local/
+containerized stack (two start mechanisms, two places to check logs, and a real double-start
+port-conflict bug that cost from exactly that split) — ADR-0008 reverted both, folding them back
+into `start-backend.sh`'s plain-process list, which fixes the same "forgot to start it" friction
+without needing a container at all. **All nine backend services are plain processes today. If
+you're taking this to a real cloud deployment, containerizing all nine is where you start** — see
+§6.
 
 ## 6. Containerizing the rest, for a real deployment
 
-None of the other seven services need any code change to run in a container — they're already
+None of the nine backend services need any code change to run in a container — they're already
 plain Spring Boot (or, for the frontend, static-buildable) apps with all configuration already
-externalized to environment variables (see §4 and §8). Copy `connector-gitlab`'s Dockerfile
-pattern for each: a `maven:3.9-eclipse-temurin-21-alpine` build stage (with the same reactor-root
+externalized to environment variables (see §4 and §8), and two of them (`connector-gitlab`,
+`connector-jenkins`) already have a working Dockerfile to start from even though neither is used
+by the local-dev stack today (ADR-0008). Copy that Dockerfile pattern for each: a
+`maven:3.9-eclipse-temurin-21-alpine` build stage (with the same reactor-root
 build-context trick — only the sibling modules' *POMs* get copied in for dependency resolution,
 never their sources, so editing one service can't invalidate another's Docker layer cache),
 `eclipse-temurin:21-jre-alpine` runtime stage, non-root user. The frontend needs a different
@@ -344,14 +346,13 @@ needs a publicly reachable HTTPS URL once deployed — this is automatic once th
 actually deployed behind your ingress/load balancer; it's only a local-dev problem (needing a
 tunnel like ngrok), not a cloud-deployment one.
 
-**Local-dev gotcha, not a cloud-deployment one:** `infra/docker-compose.yml` reads `infra/.env`
-automatically for the two containerized connectors (gitlab, jenkins). A connector started
-directly via `mvn spring-boot:run` (github, jira, ai-telemetry — or gitlab/jenkins run outside
-Docker) does **not** get `infra/.env` for free; source it into your shell first
-(`set -a; source infra/.env; set +a` on bash) or it runs unauthenticated/misconfigured with no
-error at startup — the symptom shows up later as a real backfill call failing (e.g. connector-jira
-throwing `UnknownHostException: unconfigured.invalid`), not as a clear "missing credential" error
-up front.
+**Local-dev gotcha, not a cloud-deployment one:** every connector today runs as a plain process
+(ADR-0008 removed the two that used to be containerized), so none of them get `infra/.env` for
+free the way a `docker-compose.yml`-managed service would — source it into your shell first
+(`set -a; source infra/.env; set +a` on bash) before running `start-backend.sh`, or a connector
+runs unauthenticated/misconfigured with no error at startup — the symptom shows up later as a
+real backfill call failing (e.g. connector-jira throwing `UnknownHostException:
+unconfigured.invalid`), not as a clear "missing credential" error up front.
 
 ### 7.2 Deployment order
 
@@ -471,3 +472,12 @@ full blow-by-blow lives in [`docs/CHANGELOG.md`](../CHANGELOG.md) and the indivi
   `staging.raw_event`'s own uniqueness constraint silently deduplicates before the projection
   is rebuilt. Documented, not silently patched — the real fix touches ADR-0003's idempotency
   contract for every connector, not just Jira/Jenkins, and needs its own decision first.
+- **connector-gitlab and connector-jenkins de-containerized again** (ADR-0008, reverting the
+  ADR-0005/ADR-0007 containerization decisions above) — revisited once it was clear neither
+  connector's original reason for being containerized (establishing a Docker template; fixing an
+  "Admin console Refresh does nothing" friction) justified the ongoing cost of a mixed local/
+  containerized stack, especially after that exact split caused a real double-start port conflict
+  on `:8086` earlier in this project's history. Both now run as plain processes via
+  `start-backend.sh`, same as every other connector; the real Jenkins CI server itself stays
+  containerized (it's infrastructure, not application code, and always was independent of
+  connector-jenkins's own packaging choice).

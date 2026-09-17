@@ -3,6 +3,15 @@
 One line per user-visible or architecturally significant change. Newest first.
 
 ## 2026-09-17
+- **De-containerized connector-gitlab and connector-jenkins (ADR-0008), reverting ADR-0005/
+  ADR-0007.** Both now run as plain processes via `infra/start-backend.sh`, same as every other
+  connector; `infra/docker-compose.yml` is back to infra-only (Postgres, RabbitMQ, the real
+  Jenkins CI server — that last one is unchanged, it's infrastructure the platform consumes, not
+  application code). Neither connector's original reason for being containerized (establishing a
+  Docker template; fixing the Admin console's Jenkins "Refresh" friction) held up against the
+  ongoing cost of a mixed local/containerized stack — the same split that caused a real
+  double-start port conflict on `:8086` earlier. No functional change to either connector (same
+  env vars, health checks, ports); both Dockerfiles are kept in the repo, just unused by default.
 - Repo hygiene: removed files that don't belong in a code repo and gitignored their categories
   so they can't silently come back. `Mallify_Client_Presentation.pptx` (old pre-rename branding —
   the 2026-07-14 Mallify→AI Impact Evaluation rename pass had explicitly deferred this, see this

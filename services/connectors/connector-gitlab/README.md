@@ -31,9 +31,12 @@ an implementation gap, and nothing here guesses a mapping for unresolved discuss
 Also not yet: job-level pipeline detection, adaptive rate-limit throttling, webhook-gap healing
 poller.
 
-This and `connector-jenkins` (ADR-0007) are the only connectors packaged as Docker images
-(ADR-0005) — the others (`connector-github`, `connector-jira`, `connector-ai-telemetry`) still
-run locally via `mvn spring-boot:run` per their own READMEs.
+Runs as a plain process via `infra/start-backend.sh`, same as every other connector. It *was*
+packaged as a Docker image (ADR-0005) alongside `connector-jenkins` (ADR-0007), but was
+de-containerized (ADR-0008): unlike `connector-jenkins`, it has no same-stack dependency to
+gate startup on — it talks to the real `gitlab.com` API directly, same as `connector-github`
+talks to `api.github.com`. The Dockerfile is kept for reference (see "Run with Docker" below)
+but is no longer built by `infra/docker-compose.yml`.
 
 ## Endpoints
 
@@ -76,7 +79,7 @@ mvn -pl connectors/connector-gitlab -am spring-boot:run
 
 Requires RabbitMQ reachable per the env vars above (`infra/docker-compose.yml` starts it).
 
-## Run with Docker
+## Run with Docker (optional — kept for reference, not used by `infra/docker-compose.yml`)
 
 Build context is the Maven reactor root (`services/`), since the image needs the parent POM
 and `platform-common`:
@@ -89,11 +92,9 @@ docker run --rm -p 8088:8088 \
   connector-gitlab
 ```
 
-Or via compose from the repo root — this also wires it to the shared RabbitMQ:
-
-```
-docker compose -f infra/docker-compose.yml up --build gitlab
-```
+This connector is no longer wired into `infra/docker-compose.yml` (ADR-0008) — the Dockerfile
+still builds and runs standalone as shown above if you want it containerized for some other
+reason, but the default local-dev path is "Run locally" above.
 
 ## Tests
 

@@ -9,10 +9,16 @@ per ADR-0003. Owns **no business logic** (ADR-0002); writes into the same provid
 Webhook Trigger plugin wired up). No incremental "since" cursor — each backfill call re-fetches
 the job's full build list (bounded by Jenkins' own build retention).
 
-Packaged as a Docker image (ADR-0007, following `connector-gitlab`'s ADR-0005 template) — see
-"Run with Docker" below. `infra/docker-compose.yml` also runs a real Jenkins CI server
-(`jenkins/jenkins:lts`) alongside this connector, so `docker compose up` exercises the whole
-Jenkins path without any manual steps.
+Runs as a plain process via `infra/start-backend.sh`, same as every other connector.
+`infra/docker-compose.yml` still runs a real Jenkins CI server (`jenkins/jenkins:lts`) as local
+dev/test infrastructure — this connector talks to it at `http://localhost:9090`. It *was*
+packaged as a Docker image itself (ADR-0007, following `connector-gitlab`'s ADR-0005 template),
+specifically to avoid the Admin console's "Refresh" silently doing nothing when nobody had
+manually started this connector — but was de-containerized (ADR-0008) along with
+`connector-gitlab`; `start-backend.sh` now starts it automatically like every other plain-process
+connector, so that original friction is addressed a different way (by not being forgettable in
+the first place) rather than by containerizing it. The Dockerfile is kept for reference — see
+"Run with Docker" below — but is no longer built by `infra/docker-compose.yml`.
 
 ## Endpoints
 
@@ -58,7 +64,7 @@ Requires RabbitMQ reachable per the env vars above (`infra/docker-compose.yml` s
 `JENKINS_BASE_URL` pointing at a real Jenkins instance — `http://localhost:9090` if using the
 Jenkins server `infra/docker-compose.yml` also runs (see below).
 
-## Run with Docker
+## Run with Docker (optional — kept for reference, not used by `infra/docker-compose.yml`)
 
 Build context is the Maven reactor root (`services/`), since the image needs the parent POM
 and `platform-common`:
@@ -71,12 +77,11 @@ docker run --rm -p 8086:8086 \
   connector-jenkins
 ```
 
-Or via compose from the repo root — this also starts the real Jenkins CI server and wires this
-connector to it and to the shared RabbitMQ over the compose network (ADR-0007):
-
-```
-docker compose -f infra/docker-compose.yml up --build jenkins connector-jenkins
-```
+This connector is no longer wired into `infra/docker-compose.yml` (ADR-0008) — the Dockerfile
+still builds and runs standalone as shown above if you want it containerized for some other
+reason, but the default local-dev path is "Run locally" above (which `start-backend.sh` does for
+you, `JENKINS_BASE_URL` included). `infra/docker-compose.yml` still runs the real Jenkins CI
+server this connector needs, whichever way you run the connector itself.
 
 ## Tests
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Single-command local dev startup: infra (Postgres + RabbitMQ) + all seven remaining plain-
-# process backend services. connector-gitlab and connector-jenkins are NOT started here — both
-# are containerized (ADR-0005/ADR-0007) and come up via the bare `docker compose up` call below
-# instead, same as the real Jenkins CI server `connector-jenkins` talks to. A bare `docker
-# compose up` with no service names starts every service defined in docker-compose.yml, so all
-# three come up automatically with infra — don't also add a `start connector-jenkins` line below,
-# it would port-conflict with the containerized one on :8086.
+# Single-command local dev startup: infra (Postgres + RabbitMQ + the real Jenkins CI server) +
+# all nine backend services as plain processes. Neither connector-gitlab nor connector-jenkins is
+# containerized anymore (ADR-0008 supersedes ADR-0005/ADR-0007) — both run here the same way
+# connector-github/jira/ai-telemetry always have. Only the real Jenkins CI server itself
+# (jenkins/jenkins:lts) still comes up via the bare `docker compose up` call below, as local
+# dev/test infrastructure for connector-jenkins to backfill from — connector-jenkins reaches it
+# at localhost:9090 (JENKINS_BASE_URL, exported below), not over a compose network.
 # connector-ai-telemetry needs CLAUDE_CODE_USAGE_FILE / COPILOT_USAGE_FILE exported before
 # running this script to actually backfill anything (it starts fine without them, same as
 # connector-github starts fine without GITHUB_TOKEN) — point them at
@@ -19,7 +19,7 @@ JAVA_BIN="${JAVA_HOME:+$JAVA_HOME/bin/}java"
 PID_FILE="/tmp/aiimpacteval-backend.pids"
 : > "$PID_FILE"
 
-echo "1/3 Starting infra (postgres + rabbitmq + gitlab + jenkins + connector-jenkins)..."
+echo "1/3 Starting infra (postgres + rabbitmq + jenkins)..."
 docker compose -f "$ROOT/infra/docker-compose.yml" up -d --wait
 
 echo "2/3 Building all services (mvn package -DskipTests)..."
@@ -36,10 +36,17 @@ start() { # name, module-path, port
 start api-core                 api-core                       8080
 start ingestion-writer         ingestion-writer                8082
 start connector-github         connectors/connector-github     8081
+start connector-gitlab         connectors/connector-gitlab     8088
 start connector-jira           connectors/connector-jira       8083
 start metrics-engine           metrics-engine                  8084
 start identity-service         identity-service                8085
 start connector-ai-telemetry   connectors/connector-ai-telemetry 8087
+
+# connector-jenkins needs JENKINS_BASE_URL pointing at the real Jenkins server started above —
+# it has no default (deliberately, per the no-fabrication policy: an unset value must fail
+# honestly, never silently guess a URL), so it's exported just for this one process rather than
+# globally, matching the host-facing address docker-compose maps Jenkins to (JENKINS_PORT).
+JENKINS_BASE_URL="http://localhost:${JENKINS_PORT:-9090}" start connector-jenkins connectors/connector-jenkins 8086
 
 wait_healthy() { # url, name
   for _ in $(seq 1 60); do
@@ -53,6 +60,7 @@ echo "Waiting for health checks..."
 wait_healthy http://localhost:8080/actuator/health "api-core"
 wait_healthy http://localhost:8082/actuator/health "ingestion-writer"
 wait_healthy http://localhost:8081/actuator/health "connector-github"
+wait_healthy http://localhost:8088/actuator/health "connector-gitlab"
 wait_healthy http://localhost:8083/actuator/health "connector-jira"
 wait_healthy http://localhost:8084/actuator/health "metrics-engine"
 wait_healthy http://localhost:8085/actuator/health "identity-service"
@@ -60,6 +68,6 @@ wait_healthy http://localhost:8086/actuator/health "connector-jenkins"
 wait_healthy http://localhost:8087/actuator/health "connector-ai-telemetry"
 
 echo
-echo "All 7 backend services + infra (incl. containerized gitlab/jenkins/connector-jenkins) are up. PIDs recorded in $PID_FILE."
+echo "All 9 backend services + infra (postgres/rabbitmq/jenkins) are up. PIDs recorded in $PID_FILE."
 echo "Frontend: cd frontend && npm install && npm run dev"
 echo "Stop everything: ./infra/stop-backend.sh"

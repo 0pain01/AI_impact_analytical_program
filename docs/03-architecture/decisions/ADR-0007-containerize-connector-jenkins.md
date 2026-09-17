@@ -1,6 +1,8 @@
 # ADR-0007: Containerize connector-jenkins and bring the local Jenkins CI server under the compose stack
 
-- **Status:** Accepted
+- **Status:** Partially superseded by ADR-0008 — `connector-jenkins`'s own containerization
+  (decision point 2 below) was reverted; the `jenkins` CI server itself (decision point 1) is
+  unchanged and still runs exactly as described here.
 - **Date:** 2026-09-17
 - **Deciders:** Engineering
 - **BRD traceability:** NFR Extensibility (§11.2); FR-1.3 (CI/CD ingestion); ADR-0002 (queue-isolated connectors); ADR-0005 (containerize connector-gitlab — the template this follows)
