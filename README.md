@@ -31,7 +31,7 @@ AI Impact Evaluation is an AI-native **Software Engineering Intelligence (SEI)**
 ## ✨ Features
 
 ### Data Integration — 5 connectors live
-- **Source Control:** GitHub — signature-verified webhooks + PR/commit backfill (`connector-github`); GitLab — token-verified webhooks + merge-request/commit/pipeline backfill (`connector-gitlab`, one of two connectors packaged as a Docker image alongside `connector-jenkins` — see ADR-0005/ADR-0007)
+- **Source Control:** GitHub — signature-verified webhooks + PR/commit backfill (`connector-github`); GitLab — token-verified webhooks + merge-request/commit/pipeline backfill (`connector-gitlab`)
 - **Project Management:** Jira — token-verified webhooks + issue backfill with changelogs (`connector-jira`)
 - **CI/CD:** GitHub Actions (via `connector-github`), Jenkins (`connector-jenkins`), **and** GitLab CI/CD pipelines (via `connector-gitlab`) all write into the same provider-agnostic `workflow_run_state` table, so DORA metrics see any source the same way. One real fidelity gap for GitLab: pipelines carry no per-run *name* to match the deploy/hotfix pattern against (unlike a GitHub Actions workflow or Jenkins job name) — the closest field is the pipeline's git ref, so `METRICS_DEPLOY_WORKFLOW_PATTERN`/`METRICS_HOTFIX_WORKFLOW_PATTERN` need your deploy branch name (e.g. `main|production`) for GitLab deployments to be detected — see `metric-definitions.md`'s GitLab section and connector-gitlab's README
 - **AI coding assistants:** Claude Code and GitHub Copilot usage ingestion (`connector-ai-telemetry`) — reads usage-report files shaped exactly like each vendor's real Admin API response, architected so a genuine enterprise export is a drop-in swap later
@@ -162,12 +162,11 @@ For detailed C4 diagrams and data flows, see [System Architecture](docs/03-archi
    ```bash
    ./infra/start-backend.sh
    ```
-   Builds and starts all 7 remaining plain-process backend services: `api-core`,
-   `ingestion-writer`, `connector-github`, `connector-jira`, `connector-ai-telemetry`,
-   `metrics-engine`, `identity-service`. It also brings up infra (Postgres/RabbitMQ) *and* the
-   two containerized connectors via a bare `docker compose up`, which starts every service
-   defined in `docker-compose.yml` — so `connector-gitlab`, the real Jenkins CI server, and
-   `connector-jenkins` come up automatically too, no separate step needed.
+   Builds and starts all 9 backend services as plain processes: `api-core`, `ingestion-writer`,
+   `connector-github`, `connector-gitlab`, `connector-jira`, `connector-jenkins`,
+   `connector-ai-telemetry`, `metrics-engine`, `identity-service`. It also brings up infra
+   (Postgres/RabbitMQ + the real Jenkins CI server) via `docker compose up` — that's
+   infrastructure only now (ADR-0008); no connector is containerized.
    > `connector-github`/`connector-jira` start fine with no credentials — they just won't be
    > able to reach GitHub/Jira until you export their tokens first (see each connector's README
    > under `services/connectors/*/README.md` for the exact env vars; note a plain `mvn
@@ -320,9 +319,9 @@ AI_impact_analytical_program/
 │   ├── ingestion-writer/        # Idempotent event ingestion + staging projections
 │   ├── connectors/              # One service per external tool
 │   │   ├── connector-github/    # Source control + GitHub Actions CI/CD
-│   │   ├── connector-gitlab/    # Source control + GitLab CI/CD (Docker image, ADR-0005)
+│   │   ├── connector-gitlab/    # Source control + GitLab CI/CD
 │   │   ├── connector-jira/      # Ticketing
-│   │   ├── connector-jenkins/   # Alt. CI/CD source (Docker image, ADR-0007)
+│   │   ├── connector-jenkins/   # Alt. CI/CD source
 │   │   └── connector-ai-telemetry/  # Claude Code + GitHub Copilot usage ingestion
 │   ├── platform-common/         # Shared contracts: event envelope, queue topology,
 │   │                            # outbound HTTP client timeout config

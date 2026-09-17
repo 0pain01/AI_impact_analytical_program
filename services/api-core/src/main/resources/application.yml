@@ -47,6 +47,20 @@ connectors:
   # vendor API aggressively.
   auto-refresh-interval-ms: ${CONNECTOR_AUTO_REFRESH_INTERVAL_MS:1800000}
 
+jira:
+  # The real Jira Cloud/Server site (e.g. https://yourorg.atlassian.net), for constructing a
+  # clickable "view in Jira" link on Investment Profile's PR<->ticket verification drill-down.
+  # Reuses connector-jira's own JIRA_BASE_URL env var (see connector-jira/src/main/resources/
+  # application.yml) rather than inventing a second env var for the same real URL — connector-
+  # jira already needs it to call the real Jira API, so both services read one value from one
+  # place instead of risking the two silently drifting apart. Deliberately NOT the same *Spring
+  # property* as connectors.jira.base-url above, though — that one is connector-jira's own
+  # internal service URL (e.g. http://localhost:8083), not a browsable Jira site, and would
+  # produce a broken link if reused here. Empty by default: the drill-down shows the issue key as
+  # plain text with no link rather than fabricating a URL pattern that might not match a
+  # self-managed/Server instance.
+  site-base-url: ${JIRA_BASE_URL:}
+
 ai-cost:
   # Org-configurable AI Cost Track assumptions (AI-01/AI-03 edge cases, metric-definitions.md) —
   # surfaced back in the API response, never hidden constants. Must match ingestion-writer's own

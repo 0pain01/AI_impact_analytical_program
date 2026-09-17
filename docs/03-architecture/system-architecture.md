@@ -77,7 +77,7 @@ flowchart TB
 
   subgraph Ingestion["Ingestion Layer"]
     CGH["Connector: GitHub<br/>(also carries GH Actions CI/CD)"]
-    CGL["Connector: GitLab<br/>(also carries GitLab CI/CD pipelines;<br/>containerized, ADR-0005)"]
+    CGL["Connector: GitLab<br/>(also carries GitLab CI/CD pipelines)"]
     CJR["Connector: Jira"]
     CJK["Connector: Jenkins<br/>(alt. CI/CD source, PRD E1-S3)"]
     CSQ["Connector: SonarQube (P2)"]
@@ -107,11 +107,13 @@ flowchart TB
 **Deployment note (MVP):** one PostgreSQL instance with three schemas (`staging`, `core`,
 `mart`) — see ADR-0002. The schema separation preserves a clean migration path to a dedicated
 analytical store (ClickHouse or warehouse) when event volume demands it, without re-architecture.
-Backend services otherwise run as local processes (`infra/start-backend.sh`); `connector-gitlab`
-(ADR-0005) and `connector-jenkins` (ADR-0007) are the exceptions, packaged as Docker images built
-via `infra/docker-compose.yml` — the template for containerizing further services if/when that
-becomes the norm. The compose stack also runs a real Jenkins CI server (`jenkins/jenkins:lts`,
-ADR-0007) as local dev/test infrastructure, alongside Postgres and RabbitMQ.
+Every backend service runs as a local process (`infra/start-backend.sh`) — `connector-gitlab` and
+`connector-jenkins` were briefly containerized (ADR-0005/ADR-0007) but were de-containerized
+(ADR-0008) once the mixed local/containerized setup's cost outweighed the reasons either was
+containerized in the first place. The compose stack still runs a real Jenkins CI server
+(`jenkins/jenkins:lts`, ADR-0007) as local dev/test infrastructure, alongside Postgres and
+RabbitMQ — that part is unchanged, since it's infrastructure this platform consumes, not
+application code.
 
 **For a full narrative walkthrough** — what each service does in detail, why it's shaped this
 way, exactly how the pieces connect, what's containerized today, and a complete cloud-deployment
@@ -229,5 +231,8 @@ outage; dashboards serve last-computed metrics with a freshness indicator.
 See [decisions/](decisions/). Current: ADR-0001 (technology stack), ADR-0002 (queue-isolated
 connectors, single Postgres for MVP), ADR-0003 (event envelope contract and queue topology),
 ADR-0004 (authentication, RBAC, and audit enforcement in api-core), ADR-0005 (containerize
-connector-gitlab), ADR-0006 (scheduled connector auto-refresh for Jira/Jenkins), ADR-0007
-(containerize connector-jenkins; bring the local Jenkins CI server under the compose stack).
+connector-gitlab — superseded by ADR-0008), ADR-0006 (scheduled connector auto-refresh for
+Jira/Jenkins), ADR-0007 (containerize connector-jenkins; bring the local Jenkins CI server under
+the compose stack — the containerization half superseded by ADR-0008, the CI-server half still
+stands), ADR-0008 (de-containerize connector-gitlab and connector-jenkins; the real Jenkins CI
+server stays containerized as infra).

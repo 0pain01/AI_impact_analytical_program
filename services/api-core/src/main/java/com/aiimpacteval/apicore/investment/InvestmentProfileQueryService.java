@@ -2,8 +2,11 @@ package com.aiimpacteval.apicore.investment;
 
 import com.aiimpacteval.apicore.investment.InvestmentProfileDtos.CategoryCount;
 import com.aiimpacteval.apicore.investment.InvestmentProfileDtos.InvestmentProfileResponse;
+import com.aiimpacteval.apicore.investment.InvestmentProfileDtos.LinkedPr;
+import com.aiimpacteval.apicore.investment.InvestmentProfileDtos.LinkedPrsPage;
 import com.aiimpacteval.apicore.investment.InvestmentProfileDtos.MonthlyBreakdown;
 import com.aiimpacteval.apicore.investment.InvestmentProfileDtos.TeamBreakdown;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +14,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -36,11 +40,19 @@ import java.util.UUID;
 public class InvestmentProfileQueryService {
 
     private static final List<String> CATEGORIES = List.of("Planned", "Unplanned", "Rework", "Unclassifiable");
+    private static final Set<String> VALID_CATEGORIES = Set.copyOf(CATEGORIES);
 
     private final JdbcTemplate jdbcTemplate;
+    private final String jiraSiteBaseUrl;
 
-    public InvestmentProfileQueryService(JdbcTemplate jdbcTemplate) {
+    public InvestmentProfileQueryService(JdbcTemplate jdbcTemplate,
+                                         @Value("${jira.site-base-url:}") String jiraSiteBaseUrl) {
         this.jdbcTemplate = jdbcTemplate;
+        // Trim a trailing slash so "https://x.atlassian.net/" and "https://x.atlassian.net" both
+        // produce the same well-formed "https://x.atlassian.net/browse/KEY" — a config typo
+        // shouldn't silently double up the slash.
+        this.jiraSiteBaseUrl = (jiraSiteBaseUrl == null || jiraSiteBaseUrl.isBlank())
+                ? null : jiraSiteBaseUrl.replaceAll("/+$", "");
     }
 
     public InvestmentProfileResponse investmentProfile(int windowDays, String scope) {
@@ -164,4 +176,79 @@ public class InvestmentProfileQueryService {
             counts[idx] += n;
         }
     }
+
+    /**
+     * The per-PR verification drill-down: every PR/MR in scope with exactly what it was
+     * classified from ({@code extractedIssueKey} — whatever the title-regex found, even if it
+     * didn't resolve to a real issue) and what it matched (the real Jira issue's summary/
+     * project/status, if any) — so a human can eyeball "yes, that's the right ticket" instead of
+     * trusting the regex match blindly. Same CLASSIFIED_CTE category logic as the aggregate
+     * queries above, just carrying the raw PR/issue columns through instead of collapsing to a
+     * count.
+     */
+    public LinkedPrsPage linkedPrs(int windowDays, String scope, String category, int page, int pageSize) {
+        List<String> repos = resolveRepos(scope);
+        String reposCsv = repos == null ? null : String.join(",", repos);
+        String categoryFilter = category != null && VALID_CATEGORIES.contains(category) ? category : null;
+
+        String whereSql = "WHERE (?::text IS NULL OR category = ?)";
+        Object[] countArgs = {windowDays, reposCsv, reposCsv, categoryFilter, categoryFilter};
+
+        Long totalCount = jdbcTemplate.queryForObject(
+                LINKED_PR_CTE + "SELECT count(*) FROM classified " + whereSql, Long.class, countArgs);
+
+        int safeOffset = page * pageSize;
+        List<LinkedPr> items = jdbcTemplate.query(
+                LINKED_PR_CTE + "SELECT * FROM classified " + whereSql
+                        + " ORDER BY created_at DESC LIMIT ? OFFSET ?",
+                (rs, rowNum) -> {
+                    String jiraIssueKey = rs.getString("jira_issue_key");
+                    String jiraUrl = (jiraIssueKey == null || jiraSiteBaseUrl == null)
+                            ? null : jiraSiteBaseUrl + "/browse/" + jiraIssueKey;
+                    return new LinkedPr(
+                            rs.getString("repo"),
+                            rs.getString("pr_id"),
+                            rs.getObject("number") == null ? null : rs.getLong("number"),
+                            rs.getString("title"),
+                            rs.getString("author"),
+                            rs.getString("html_url"),
+                            rs.getTimestamp("created_at").toInstant().toString(),
+                            rs.getString("category"),
+                            rs.getString("extracted_issue_key"),
+                            jiraIssueKey,
+                            rs.getString("jira_summary"),
+                            rs.getString("jira_project_key"),
+                            rs.getString("jira_status"),
+                            jiraUrl);
+                },
+                windowDays, reposCsv, reposCsv, categoryFilter, categoryFilter, pageSize, safeOffset);
+
+        return new LinkedPrsPage(items, page, pageSize, totalCount == null ? 0 : totalCount);
+    }
+
+    private static final String LINKED_PR_CTE = """
+            WITH pr AS (
+                SELECT p.repo, p.pr_id, p.number, p.title, p.author, p.html_url, p.created_at,
+                       substring(p.title from '([A-Z][A-Z0-9]{1,9}-[0-9]+)') AS extracted_issue_key
+                FROM staging.pull_request_state p
+                WHERE p.created_at >= now() - (? || ' days')::interval
+                      AND (?::text IS NULL OR p.repo = ANY(string_to_array(?, ',')))
+            ),
+            classified AS (
+                SELECT
+                    pr.repo, pr.pr_id, pr.number, pr.title, pr.author, pr.html_url, pr.created_at,
+                    pr.extracted_issue_key,
+                    j.issue_key AS jira_issue_key, j.summary AS jira_summary,
+                    j.project_key AS jira_project_key, j.status AS jira_status,
+                    CASE
+                        WHEN pr.extracted_issue_key IS NULL THEN 'Unclassifiable'
+                        WHEN j.issue_key IS NULL THEN 'Unclassifiable'
+                        WHEN j.reopened THEN 'Rework'
+                        WHEN lower(j.issue_type) = 'bug' THEN 'Unplanned'
+                        ELSE 'Planned'
+                    END AS category
+                FROM pr
+                LEFT JOIN staging.jira_issue_state j ON j.issue_key = pr.extracted_issue_key
+            )
+            """;
 }

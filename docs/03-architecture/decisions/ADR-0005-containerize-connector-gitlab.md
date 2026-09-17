@@ -1,6 +1,6 @@
 # ADR-0005: Containerize connector-gitlab with a multi-stage Docker build
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0008 (connector-gitlab de-containerized — see that ADR for why)
 - **Date:** 2026-09-09
 - **Deciders:** Engineering
 - **BRD traceability:** NFR Extensibility (§11.2); FR-1.1 (source-control ingestion); ADR-0002 (queue-isolated connectors)

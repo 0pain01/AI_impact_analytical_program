@@ -873,3 +873,55 @@ export async function fetchInvestmentProfile(days = 90, scope = '*'): Promise<In
   const res = await authFetch(`/api/v1/metrics/investment-profile?${params.toString()}`)
   return res.json()
 }
+
+// LIVE: GET /api/v1/metrics/investment-profile/prs?days=&scope=&category=&page=&pageSize=
+// The verification drill-down: what Jira key each PR title's regex extracted vs. what it
+// actually matched, with a link straight to the real ticket, so a human can eyeball the
+// automatic match instead of trusting it blindly (there is no write side — see BRD no-manual-
+// tagging rule, functional-specification.md §2).
+export interface InvestmentProfileLinkedPr {
+  repo: string
+  prId: string
+  number: number | null
+  title: string
+  author: string
+  htmlUrl: string | null
+  createdAt: string
+  category: string
+  extractedIssueKey: string | null
+  jiraIssueKey: string | null
+  jiraSummary: string | null
+  jiraProjectKey: string | null
+  jiraStatus: string | null
+  jiraUrl: string | null
+}
+
+export interface InvestmentProfileLinkedPrsPage {
+  items: InvestmentProfileLinkedPr[]
+  page: number
+  pageSize: number
+  totalCount: number
+}
+
+export interface InvestmentProfileLinkedPrsParams {
+  days?: number
+  scope?: string
+  category?: string
+  page?: number
+  pageSize?: number
+}
+
+export async function fetchInvestmentProfileLinkedPrs(
+  params: InvestmentProfileLinkedPrsParams = {},
+): Promise<InvestmentProfileLinkedPrsPage> {
+  const { days = 90, scope = '*', category, page = 0, pageSize = 20 } = params
+  const query = new URLSearchParams({
+    days: String(days),
+    scope,
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+  if (category) query.set('category', category)
+  const res = await authFetch(`/api/v1/metrics/investment-profile/prs?${query.toString()}`)
+  return res.json()
+}

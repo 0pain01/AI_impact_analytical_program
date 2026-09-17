@@ -112,6 +112,14 @@ connected Jira project's issue keys is genuinely, correctly reported as 100% "Un
 this is not a bug, it's the honest result of there being no linkage data to classify against. The
 platform never guesses a classification from a PR title alone.
 
+**Verification drill-down:** because that classification depends entirely on PR-title convention
+rather than a tool-enforced link, the tab includes a read-only, per-PR table showing exactly which
+Jira key each PR/MR's title matched (or failed to match) and what that key resolved to, each with
+a direct link — so a human can visually confirm the automatic match is correct instead of trusting
+the regex blindly. Filterable by category, paginated. There is no way to manually correct or
+override a match from this view; confirming a bad match is a signal to fix the underlying PR-title
+convention, not to hand-tag individual PRs (no-manual-tagging rule, §2).
+
 ### 4.4 Code Review Analytics
 
 **Purpose:** review-process health — where PRs/MRs actually spend time, and who's carrying the

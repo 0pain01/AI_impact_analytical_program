@@ -20,7 +20,7 @@ does from a user's perspective, see the
 | Migrations | Flyway | — | Forward-only, expand/contract; owned entirely by `api-core` |
 | Auth | JWT (RS256), Spring Security resource server | — | ADR-0004 |
 | Build | Maven (multi-module reactor), Vite | — | |
-| Containerization | Docker (multi-stage), Docker Compose | — | ADR-0005; currently only `connector-gitlab` |
+| Containerization | Docker (multi-stage), Docker Compose | — | ADR-0008; only infra (Postgres/RabbitMQ/Jenkins CI server) today — no connector is containerized locally |
 
 ## 2. Repository / module layout
 
@@ -33,7 +33,7 @@ services/
   ingestion-writer/       sole writer to staging.* — consumes every event
   connectors/
     connector-github/     GitHub + GitHub Actions
-    connector-gitlab/     GitLab + GitLab CI/CD (the one Dockerized service, ADR-0005)
+    connector-gitlab/     GitLab + GitLab CI/CD
     connector-jira/       Jira
     connector-jenkins/    Jenkins
     connector-ai-telemetry/  Claude Code + GitHub Copilot usage
@@ -285,14 +285,13 @@ gap is called out in its respective service's README rather than left undocument
 
 ## 10. CI/CD and local development
 
-- **Local dev:** `infra/start-backend.sh` builds the full Maven reactor once, then starts seven
-  of the nine backend services as plain `java -jar` processes with health-check polling.
-  `connector-gitlab` and `connector-jenkins` (the two containerized services, ADR-0005/ADR-0007)
-  come up automatically instead, via the script's own bare `docker compose -f
-  infra/docker-compose.yml up -d --wait` call — a bare `docker compose up` with no service names
-  starts every service the compose file defines, so Postgres, RabbitMQ, both containerized
-  connectors, and the real Jenkins CI server `connector-jenkins` talks to all start together, no
-  separate step needed.
+- **Local dev:** `infra/start-backend.sh` builds the full Maven reactor once, then starts all
+  nine backend services as plain `java -jar` processes with health-check polling (ADR-0008 —
+  `connector-gitlab` and `connector-jenkins` were containerized for a time, ADR-0005/ADR-0007,
+  but were reverted back to plain processes here). The script's own bare `docker compose -f
+  infra/docker-compose.yml up -d --wait` call brings up only infrastructure now: Postgres,
+  RabbitMQ, and the real Jenkins CI server `connector-jenkins` talks to (at `localhost:9090`,
+  exported into `connector-jenkins`'s environment by the script — no compose network involved).
 - **Contract-first API changes:** the OpenAPI spec is meant to be updated before implementing an
   endpoint change (engineering standards §5); §5 above notes where this has drifted in practice —
   treat that as a backlog item, not a template to repeat.

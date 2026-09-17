@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { fetchInvestmentProfile, fetchTeams, type InvestmentProfileResponse, type Team } from '../api'
+import {
+  fetchInvestmentProfile,
+  fetchInvestmentProfileLinkedPrs,
+  fetchTeams,
+  type InvestmentProfileLinkedPrsPage,
+  type InvestmentProfileResponse,
+  type Team,
+} from '../api'
 
 const CATEGORY_COLORS: Record<string, string> = {
   Planned: '#0f172a',
@@ -9,6 +16,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Unclassifiable: '#94a3b8',
 }
 const CATEGORY_ORDER = ['Planned', 'Unplanned', 'Rework', 'Unclassifiable']
+const DRILLDOWN_PAGE_SIZE = 20
 
 /**
  * Investment Profile tab (PRD E5-S1). Scope is picked here, not passed in from a parent —
@@ -24,6 +32,12 @@ export default function InvestmentProfile() {
   const [teamId, setTeamId] = useState('')
   const [repoInput, setRepoInput] = useState('')
   const [repoScope, setRepoScope] = useState('')
+
+  const [linkedPrs, setLinkedPrs] = useState<InvestmentProfileLinkedPrsPage | null>(null)
+  const [linkedPrsError, setLinkedPrsError] = useState<string | null>(null)
+  const [linkedPrsLoading, setLinkedPrsLoading] = useState(true)
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [drilldownPage, setDrilldownPage] = useState(0)
 
   useEffect(() => {
     fetchTeams()
@@ -54,6 +68,31 @@ export default function InvestmentProfile() {
       cancelled = true
     }
   }, [scope])
+
+  // Resets to page 0 whenever scope or the category filter changes, same convention as
+  // CodeReview/Jira's paginated tables.
+  useEffect(() => {
+    setDrilldownPage(0)
+  }, [scope, categoryFilter])
+
+  useEffect(() => {
+    let cancelled = false
+    setLinkedPrsLoading(true)
+    setLinkedPrsError(null)
+    fetchInvestmentProfileLinkedPrs({ days: 90, scope, category: categoryFilter || undefined, page: drilldownPage, pageSize: DRILLDOWN_PAGE_SIZE })
+      .then((d) => {
+        if (!cancelled) setLinkedPrs(d)
+      })
+      .catch((e: Error) => {
+        if (!cancelled) setLinkedPrsError(e.message)
+      })
+      .finally(() => {
+        if (!cancelled) setLinkedPrsLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [scope, categoryFilter, drilldownPage])
 
   function applyRepoFilter(e: React.FormEvent) {
     e.preventDefault()
@@ -218,6 +257,129 @@ export default function InvestmentProfile() {
           )}
         </>
       )}
+
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4">
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-slate-700">Verify PR ↔ Jira ticket matching</p>
+            <p className="text-xs text-slate-400">
+              Every PR/MR in scope, exactly what issue key its title matched, and what that resolved to — so you
+              can confirm the automatic match is correct instead of trusting the regex blindly.
+            </p>
+          </div>
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="rounded-md border border-slate-200 px-2 py-1 text-sm"
+          >
+            <option value="">All categories</option>
+            {CATEGORY_ORDER.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {linkedPrsError && (
+          <p className="py-6 text-center text-sm text-red-600">Could not load the drill-down: {linkedPrsError}</p>
+        )}
+
+        {!linkedPrsError && linkedPrsLoading && (
+          <div className="mt-3 h-40 animate-pulse rounded-lg bg-slate-100" />
+        )}
+
+        {!linkedPrsError && !linkedPrsLoading && linkedPrs && (
+          linkedPrs.items.length > 0 ? (
+            <>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-xs text-slate-400">
+                      <th className="pb-2 pr-4 uppercase tracking-wide">PR</th>
+                      <th className="pb-2 pr-4 uppercase tracking-wide">Extracted key</th>
+                      <th className="pb-2 pr-4 uppercase tracking-wide">Matched Jira issue</th>
+                      <th className="pb-2 pr-4 uppercase tracking-wide">Category</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {linkedPrs.items.map((pr) => (
+                      <tr key={`${pr.repo}/${pr.prId}`} className="border-b border-slate-100 last:border-0 align-top">
+                        <td className="py-2 pr-4">
+                          {pr.htmlUrl ? (
+                            <a href={pr.htmlUrl} target="_blank" rel="noreferrer" className="font-medium text-blue-700 hover:underline">
+                              {pr.repo}#{pr.number ?? pr.prId}
+                            </a>
+                          ) : (
+                            <p className="font-medium">
+                              {pr.repo}#{pr.number ?? pr.prId}
+                            </p>
+                          )}
+                          <p className="text-xs text-slate-400">{pr.title}</p>
+                        </td>
+                        <td className="py-2 pr-4 text-slate-600">{pr.extractedIssueKey ?? '—'}</td>
+                        <td className="py-2 pr-4">
+                          {pr.jiraIssueKey ? (
+                            <>
+                              {pr.jiraUrl ? (
+                                <a href={pr.jiraUrl} target="_blank" rel="noreferrer" className="font-medium text-blue-700 hover:underline">
+                                  {pr.jiraIssueKey}
+                                </a>
+                              ) : (
+                                <p className="font-medium text-slate-700">{pr.jiraIssueKey}</p>
+                              )}
+                              <p className="text-xs text-slate-400">{pr.jiraSummary}</p>
+                            </>
+                          ) : (
+                            <span className="text-slate-400">No match</span>
+                          )}
+                        </td>
+                        <td className="py-2">
+                          <span
+                            className="rounded px-2 py-0.5 text-xs font-medium text-white"
+                            style={{ backgroundColor: CATEGORY_COLORS[pr.category] ?? '#94a3b8' }}
+                          >
+                            {pr.category}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
+                <span>
+                  {linkedPrs.totalCount} PR{linkedPrs.totalCount === 1 ? '' : 's'} in scope · page {drilldownPage + 1} of{' '}
+                  {Math.max(1, Math.ceil(linkedPrs.totalCount / DRILLDOWN_PAGE_SIZE))}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setDrilldownPage((p) => Math.max(0, p - 1))}
+                    disabled={drilldownPage === 0}
+                    className="rounded-md border border-slate-200 px-3 py-1 disabled:opacity-40"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    onClick={() =>
+                      setDrilldownPage((p) =>
+                        Math.min(Math.max(0, Math.ceil(linkedPrs.totalCount / DRILLDOWN_PAGE_SIZE) - 1), p + 1),
+                      )
+                    }
+                    disabled={drilldownPage >= Math.ceil(linkedPrs.totalCount / DRILLDOWN_PAGE_SIZE) - 1}
+                    className="rounded-md border border-slate-200 px-3 py-1 disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="py-6 text-center text-sm text-slate-400">No pull requests match this filter in this window.</p>
+          )
+        )}
+      </div>
     </section>
   )
 }

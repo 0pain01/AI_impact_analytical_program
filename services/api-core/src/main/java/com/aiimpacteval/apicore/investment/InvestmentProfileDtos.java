@@ -26,6 +26,24 @@ public final class InvestmentProfileDtos {
     public record TeamBreakdown(String team, int planned, int unplanned, int rework, int unclassifiable) {
     }
 
+    /**
+     * One PR/MR with exactly what it was classified from and what it matched — the "can I verify
+     * this is actually the right ticket" drill-down. {@code extractedIssueKey} is whatever the
+     * title-regex found (or null if nothing matched the pattern at all) — shown even when it
+     * didn't resolve to a real issue, so a typo is visible as a typo rather than just vanishing
+     * into "Unclassifiable" with no explanation. The {@code jira*} fields are null together
+     * whenever there was no match; {@code jiraUrl} is null even on a real match if
+     * {@code jira.site-base-url} isn't configured (no fabricated link pattern).
+     */
+    public record LinkedPr(String repo, String prId, Long number, String title, String author,
+                           String htmlUrl, String createdAt, String category, String extractedIssueKey,
+                           String jiraIssueKey, String jiraSummary, String jiraProjectKey, String jiraStatus,
+                           String jiraUrl) {
+    }
+
+    public record LinkedPrsPage(List<LinkedPr> items, int page, int pageSize, long totalCount) {
+    }
+
     private InvestmentProfileDtos() {
     }
 }
