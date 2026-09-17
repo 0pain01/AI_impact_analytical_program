@@ -256,8 +256,48 @@ name-pattern heuristic) are both tracked as follow-up work, not implemented.
   on some customers' Jira sites, which the no-fabrication rule this platform holds itself to
   forbids.
 
+## Investment Profile PR↔Jira verification drill-down — v1 (2026-09-17)
+
+> **Status:** live. Computed by `InvestmentProfileQueryService.linkedPrs()` in api-core. Not a
+> new metric in itself — it's a read-only, per-PR audit view over the same Planned/Unplanned/
+> Rework/Unclassifiable classification Investment Profile's aggregate charts already use (see
+> `staging.jira_issue_state` join above). It exists because that classification depends entirely
+> on a PR/MR title containing a well-formed Jira key (`PROJ-123`) — a convention, not something
+> enforced by any tool — so a team that doesn't follow it, or a one-off typo, is otherwise
+> invisible inside an aggregate percentage. This view surfaces the individual match so a human can
+> confirm it, rather than the platform silently trusting a regex.
+
+- **What each row shows:** the PR/MR (with a link to it on GitHub or GitLab —
+  `staging.pull_request_state.html_url`, populated for both sources), the exact issue key
+  extracted from its title (`extractedIssueKey` — shown even when it does **not** resolve to a
+  real issue, so a typo like `PROJ-1o2` is visible as a typo instead of vanishing into
+  "Unclassifiable" with no explanation), and — when the key did resolve — the matched issue's
+  summary/project/status plus a link straight to it in the real Jira site.
+- **`jiraUrl` construction:** `{jira.site-base-url}/browse/{issueKey}`, and only when both
+  `jira.site-base-url` is configured (an org's real Jira Cloud/Server URL, e.g.
+  `https://yourorg.atlassian.net` — deliberately a separate config key from
+  `connectors.jira.base-url`, which is connector-jira's own internal service URL and would
+  produce a broken link here) and the issue actually matched. No config → the issue key is shown
+  as plain text with no link, never a guessed URL pattern.
+- **Filtering/paging:** optional `category` filter (one of the four classification categories),
+  paged newest-PR-first, same `page`/`pageSize`/`totalCount` convention as Code Review's aging-PR
+  table and the Jira Work Items worklist.
+- **Explicitly read-only:** there is no corresponding write/override endpoint. Confirming a
+  mismatch here is a signal to fix the *team's* PR-title convention (or, longer-term, reconsider
+  the classification heuristic) — not to hand-tag individual PRs, which the BRD's no-manual-
+  tagging rule (§2) forbids regardless of how it's framed.
+- **Sources:** `staging.pull_request_state`, `staging.jira_issue_state` — the same tables and the
+  same title-regex/reopened/issue_type logic as Investment Profile's aggregate `breakdown`/
+  `trend`/`byTeam` (see the CLASSIFIED_CTE shared by both).
+
 ## Changelog
 
+- 2026-09-17 — Investment Profile PR↔Jira verification drill-down shipped live:
+  `GET /api/v1/metrics/investment-profile/prs`, a read-only per-PR audit table (extracted issue
+  key, matched Jira issue, category, links to both) so a human can confirm the title-regex
+  classification is matching the right ticket instead of trusting it blindly. New
+  `jira.site-base-url` config (distinct from `connectors.jira.base-url`) drives the "view in
+  Jira" link; empty by default, no fabricated URL pattern.
 - 2026-09-16 — Jira Work Items dashboard definitions authored and shipped live: open issues,
   resolved-in-window, median resolution time, reopen rate, overdue count, pipeline-shape
   (status-category), type/priority/assignee/label backlog breakdowns, resolution trend, and a

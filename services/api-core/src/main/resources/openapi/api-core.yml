@@ -170,6 +170,75 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/JiraDashboardResponse" }
+  /metrics/investment-profile:
+    get:
+      operationId: getInvestmentProfile
+      summary: Investment Profile — PRs classified Planned/Unplanned/Rework/Unclassifiable (PRD E5-S1)
+      description: >
+        Classifies each PR/MR by extracting a Jira issue key from its title
+        (`[A-Z][A-Z0-9]{1,9}-[0-9]+`) and joining to staging.jira_issue_state: no key found, or
+        the key doesn't match a known issue, → Unclassifiable; matched issue reopened after being
+        marked done → Rework; issue type Bug → Unplanned; anything else → Planned. Requires an
+        analytical role (ADMIN, ENG_LEADER, MANAGER, FINANCE_READONLY); IC is denied.
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 180, default: 90 }
+        - name: scope
+          in: query
+          required: false
+          schema: { type: string, default: "*" }
+          description: "\"*\" for org-wide, a team UUID, or a repo full name."
+      responses:
+        "200":
+          description: Investment Profile breakdown/trend/byTeam for the requested scope and window.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InvestmentProfileResponse" }
+  /metrics/investment-profile/prs:
+    get:
+      operationId: getInvestmentProfileLinkedPrs
+      summary: Investment Profile PR↔Jira drill-down — verify the automatic ticket match (PRD E5-S1)
+      description: >
+        Read-only, per-PR verification view: for every PR/MR in scope, shows exactly which Jira
+        key its title's regex extracted (even when it didn't resolve, so a typo is visible as a
+        typo rather than vanishing into "Unclassifiable") and — when it did resolve — the matched
+        issue's summary/project/status plus a link straight to that ticket (`jiraUrl` is null
+        unless `jira.site-base-url` is configured; never a fabricated link pattern). Exists so a
+        human can eyeball the automatic Jira↔Git match is correct rather than trusting the
+        title-regex heuristic blindly — there is no corresponding write endpoint, per the BRD's
+        no-manual-tagging rule (functional-specification.md §2). Requires an analytical role
+        (ADMIN, ENG_LEADER, MANAGER, FINANCE_READONLY); IC is denied.
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 180, default: 90 }
+        - name: scope
+          in: query
+          required: false
+          schema: { type: string, default: "*" }
+          description: "\"*\" for org-wide, a team UUID, or a repo full name."
+        - name: category
+          in: query
+          required: false
+          schema: { type: string, enum: [Planned, Unplanned, Rework, Unclassifiable] }
+          description: Omit for every category; an unrecognized value is treated the same as omitted.
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: pageSize
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: One page of PR↔Jira drill-down rows, newest PR first.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InvestmentProfileLinkedPrsPage" }
   /teams:
     get:
       operationId: listTeams
@@ -616,6 +685,72 @@ components:
             licensedSeatsAssumed: { type: integer }
             blendedHourlyRateUsd: { type: number }
             methodologyNote: { type: string }
+    InvestmentProfileResponse:
+      type: object
+      required: [windowLabel, breakdown, trend, byTeam]
+      properties:
+        windowLabel: { type: string }
+        breakdown:
+          type: array
+          items:
+            type: object
+            required: [category, count]
+            properties:
+              category: { type: string, enum: [Planned, Unplanned, Rework, Unclassifiable] }
+              count: { type: integer }
+        trend:
+          type: array
+          items:
+            type: object
+            required: [month, planned, unplanned, rework, unclassifiable]
+            properties:
+              month: { type: string, description: "e.g. \"Jan\"." }
+              planned: { type: integer }
+              unplanned: { type: integer }
+              rework: { type: integer }
+              unclassifiable: { type: integer }
+        byTeam:
+          type: array
+          items:
+            type: object
+            required: [team, planned, unplanned, rework, unclassifiable]
+            properties:
+              team: { type: string }
+              planned: { type: integer }
+              unplanned: { type: integer }
+              rework: { type: integer }
+              unclassifiable: { type: integer }
+    InvestmentProfileLinkedPrsPage:
+      type: object
+      required: [items, page, pageSize, totalCount]
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        totalCount: { type: integer }
+        items:
+          type: array
+          items:
+            type: object
+            required: [repo, prId, title, author, createdAt, category]
+            properties:
+              repo: { type: string }
+              prId: { type: string }
+              number: { type: [integer, "null"] }
+              title: { type: string }
+              author: { type: string }
+              htmlUrl: { type: [string, "null"], description: "Link to the PR/MR itself on GitHub or GitLab." }
+              createdAt: { type: string, format: date-time }
+              category: { type: string, enum: [Planned, Unplanned, Rework, Unclassifiable] }
+              extractedIssueKey:
+                type: [string, "null"]
+                description: "Whatever the title-regex found, shown even if it didn't resolve to a real issue."
+              jiraIssueKey: { type: [string, "null"] }
+              jiraSummary: { type: [string, "null"] }
+              jiraProjectKey: { type: [string, "null"] }
+              jiraStatus: { type: [string, "null"] }
+              jiraUrl:
+                type: [string, "null"]
+                description: "Null unless jira.site-base-url is configured, even on a real match — never a fabricated link pattern."
     JiraDashboardResponse:
       type: object
       required: [windowLabel, kpis, statusBreakdown, typeBreakdown, priorityBreakdown,

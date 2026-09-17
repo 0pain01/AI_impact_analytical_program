@@ -12,6 +12,15 @@ One line per user-visible or architecturally significant change. Newest first.
   ongoing cost of a mixed local/containerized stack — the same split that caused a real
   double-start port conflict on `:8086` earlier. No functional change to either connector (same
   env vars, health checks, ports); both Dockerfiles are kept in the repo, just unused by default.
+- **Investment Profile: PR↔Jira ticket verification drill-down.** The Planned/Unplanned/Rework/
+  Unclassifiable classification depends on a PR/MR title containing a well-formed Jira key — a
+  convention, not something any tool enforces, so a bad match was previously invisible inside an
+  aggregate percentage. New `GET /api/v1/metrics/investment-profile/prs` (read-only, paginated,
+  filterable by category) shows every PR/MR with the exact key its title matched and what that
+  key resolved to, each linked out (to the PR/MR itself, and — when `jira.site-base-url` is
+  configured — straight to the matched Jira ticket), so a human can confirm the automatic match
+  rather than trust it blindly. New Investment Profile UI table; no write/override path, per the
+  no-manual-tagging rule.
 - Repo hygiene: removed files that don't belong in a code repo and gitignored their categories
   so they can't silently come back. `Mallify_Client_Presentation.pptx` (old pre-rename branding —
   the 2026-07-14 Mallify→AI Impact Evaluation rename pass had explicitly deferred this, see this
